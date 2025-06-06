@@ -1,11 +1,14 @@
 
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
-import Layout from "@/components/Layout";
-import Dashboard from "@/components/Dashboard";
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 
-const DashboardPage = () => {
+interface ProtectedRouteProps {
+  children: React.ReactNode;
+  requireAdmin?: boolean;
+}
+
+const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps) => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
 
@@ -27,11 +30,7 @@ const DashboardPage = () => {
     return null;
   }
 
-  return (
-    <Layout>
-      <Dashboard />
-    </Layout>
-  );
+  return <>{children}</>;
 };
 
-export default DashboardPage;
+export default ProtectedRoute;

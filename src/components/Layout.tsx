@@ -27,8 +27,11 @@ import {
   LogOut,
   Boxes,
   Calendar,
-  Search
+  Search,
+  UserPlus
 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 const navigationItems = [
   {
@@ -88,18 +91,27 @@ const navigationItems = [
     ]
   },
   {
+    title: "User Management",
+    icon: Users,
+    items: [
+      { title: "Register User", url: "/register" },
+      { title: "Manage Users", url: "/users/manage" },
+      { title: "Roles & Permissions", url: "/users/roles" },
+    ]
+  },
+  {
     title: "Settings",
     icon: Settings,
     items: [
       { title: "Company", url: "/settings/company" },
-      { title: "Users", url: "/settings/users" },
-      { title: "Roles", url: "/settings/roles" },
       { title: "System", url: "/settings/system" },
     ]
   }
 ];
 
 const AppSidebar = () => {
+  const navigate = useNavigate();
+  
   return (
     <Sidebar className="border-r bg-slate-50">
       <SidebarHeader className="border-b bg-white p-4">
@@ -149,22 +161,38 @@ const AppSidebar = () => {
       </SidebarContent>
       
       <SidebarFooter className="border-t bg-white p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-              <Users className="h-4 w-4 text-white" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-slate-900">Admin User</p>
-              <p className="text-xs text-slate-600">Administrator</p>
-            </div>
-          </div>
-          <Button variant="ghost" size="sm">
-            <LogOut className="h-4 w-4" />
-          </Button>
-        </div>
+        <UserFooter />
       </SidebarFooter>
     </Sidebar>
+  );
+};
+
+const UserFooter = () => {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/login');
+  };
+
+  return (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center space-x-3">
+        <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+          <Users className="h-4 w-4 text-white" />
+        </div>
+        <div>
+          <p className="text-sm font-medium text-slate-900">
+            {user?.email?.split('@')[0] || 'User'}
+          </p>
+          <p className="text-xs text-slate-600">System User</p>
+        </div>
+      </div>
+      <Button variant="ghost" size="sm" onClick={handleSignOut}>
+        <LogOut className="h-4 w-4" />
+      </Button>
+    </div>
   );
 };
 

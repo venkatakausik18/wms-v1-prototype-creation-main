@@ -6,9 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Boxes, LogIn, Shield, Warehouse, BarChart3, Users, Package } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
-  const [isLogin, setIsLogin] = useState(true);
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
@@ -25,15 +26,14 @@ const Index = () => {
                 <p className="text-sm text-slate-600">Warehouse Management System</p>
               </div>
             </div>
-            <div className="flex items-center space-x-4 text-sm text-slate-600">
-              <div className="flex items-center space-x-1">
-                <Shield className="h-4 w-4" />
-                <span>Secure</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <BarChart3 className="h-4 w-4" />
-                <span>Analytics</span>
-              </div>
+            <div className="flex items-center space-x-4">
+              <Button 
+                onClick={() => navigate('/login')}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <LogIn className="h-4 w-4 mr-2" />
+                Login
+              </Button>
             </div>
           </div>
         </div>
@@ -96,7 +96,7 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Right side - Login Form */}
+          {/* Right side - Quick Access */}
           <div className="flex justify-center">
             <Card className="w-full max-w-md shadow-lg border-0 bg-white">
               <CardHeader className="text-center pb-4">
@@ -106,65 +106,28 @@ const Index = () => {
                   </div>
                 </div>
                 <CardTitle className="text-2xl text-slate-900">
-                  {isLogin ? "Welcome Back" : "Create Account"}
+                  Access Your System
                 </CardTitle>
                 <CardDescription>
-                  {isLogin 
-                    ? "Sign in to access your warehouse dashboard" 
-                    : "Get started with your warehouse management"
-                  }
+                  Sign in to access your warehouse dashboard
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {!isLogin && (
-                  <div className="space-y-2">
-                    <Label htmlFor="company">Company Name</Label>
-                    <Input id="company" placeholder="Enter your company name" />
-                  </div>
-                )}
-                
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" placeholder="Enter your email" />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input id="password" type="password" placeholder="Enter your password" />
-                </div>
-
-                {!isLogin && (
-                  <div className="space-y-2">
-                    <Label htmlFor="confirm-password">Confirm Password</Label>
-                    <Input id="confirm-password" type="password" placeholder="Confirm your password" />
-                  </div>
-                )}
-
-                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                  {isLogin ? "Sign In" : "Create Account"}
+                <Button 
+                  onClick={() => navigate('/login')}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  <LogIn className="h-4 w-4 mr-2" />
+                  Login to Dashboard
                 </Button>
-
+                
                 <Separator />
-
+                
                 <div className="text-center">
-                  <button
-                    onClick={() => setIsLogin(!isLogin)}
-                    className="text-sm text-blue-600 hover:text-blue-700 hover:underline"
-                  >
-                    {isLogin 
-                      ? "Don't have an account? Sign up" 
-                      : "Already have an account? Sign in"
-                    }
-                  </button>
+                  <p className="text-sm text-slate-600">
+                    Need help? Contact your system administrator
+                  </p>
                 </div>
-
-                {isLogin && (
-                  <div className="text-center">
-                    <button className="text-sm text-slate-600 hover:text-slate-700 hover:underline">
-                      Forgot your password?
-                    </button>
-                  </div>
-                )}
               </CardContent>
             </Card>
           </div>

@@ -4436,7 +4436,14 @@ export type Database = {
       }
     }
     Functions: {
-      [_ in never]: never
+      get_user_id_from_auth: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
     }
     Enums: {
       account_type: "asset" | "liability" | "equity" | "income" | "expense"

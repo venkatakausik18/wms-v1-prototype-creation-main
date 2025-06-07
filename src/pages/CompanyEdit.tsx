@@ -76,17 +76,19 @@ const CompanyEdit = () => {
   });
 
   useEffect(() => {
-    if (!isNew) {
+    if (!isNew && companyId) {
       fetchCompany();
     }
   }, [companyId, isNew]);
 
   const fetchCompany = async () => {
+    if (!companyId || companyId === 'new') return;
+    
     try {
       const { data, error } = await supabase
         .from('companies')
         .select('*')
-        .eq('company_id', companyId)
+        .eq('company_id', parseInt(companyId))
         .single();
 
       if (error) throw error;
@@ -157,14 +159,14 @@ const CompanyEdit = () => {
       if (isNew) {
         const { error } = await supabase
           .from('companies')
-          .insert([saveData]);
+          .insert(saveData);
 
         if (error) throw error;
       } else {
         const { error } = await supabase
           .from('companies')
           .update(saveData)
-          .eq('company_id', companyId);
+          .eq('company_id', parseInt(companyId!));
 
         if (error) throw error;
       }

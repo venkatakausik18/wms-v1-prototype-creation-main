@@ -262,6 +262,7 @@ const Register = () => {
           role_id: parseInt(selectedRole),
           username: formData.username,
           email: formData.email,
+          password_hash: formData.password, // Add the required password_hash field
           full_name: formData.fullName,
           phone: formData.phone,
           address_line1: formData.addressLine1,
@@ -282,7 +283,6 @@ const Register = () => {
         .single();
 
       if (userError) {
-        // If user creation fails, we should clean up the auth user
         console.error('User creation error:', userError);
         toast({
           title: "Registration Failed",

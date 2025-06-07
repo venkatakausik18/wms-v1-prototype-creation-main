@@ -153,7 +153,7 @@ const Login = () => {
     }
   };
 
-  const createUserSession = async (userId: number) => {
+  const createUserSession = async (userId: number, sessionId: string) => {
     try {
       const expiresAt = new Date();
       expiresAt.setMinutes(expiresAt.getMinutes() + (rememberMe ? 1440 : 30)); // 24h or 30min
@@ -161,6 +161,7 @@ const Login = () => {
       await supabase
         .from('user_sessions')
         .insert({
+          session_id: sessionId,
           user_id: userId,
           ip_address: 'unknown', // Would need to get actual IP
           user_agent: navigator.userAgent,
@@ -257,8 +258,10 @@ const Login = () => {
         .update({ failed_login_attempts: 0, is_locked: false })
         .eq('user_id', userData.user_id);
 
-      // Create user session
-      await createUserSession(userData.user_id);
+      // Create user session with session ID from auth
+      if (authData.session) {
+        await createUserSession(userData.user_id, authData.session.access_token);
+      }
 
       toast({
         title: "Login Successful",

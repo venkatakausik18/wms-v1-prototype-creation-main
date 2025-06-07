@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -83,7 +82,7 @@ const Register = () => {
             role_name
           )
         `)
-        .eq('auth_user_id', user?.id)
+        .eq('email', user?.email)
         .single();
 
       if (error || !userData) {
@@ -258,7 +257,6 @@ const Register = () => {
       const { data: userData, error: userError } = await supabase
         .from('users')
         .insert({
-          auth_user_id: authData.user.id,
           company_id: currentUserCompanyId,
           branch_id: parseInt(selectedBranch),
           role_id: parseInt(selectedRole),
@@ -285,7 +283,7 @@ const Register = () => {
 
       if (userError) {
         // If user creation fails, we should clean up the auth user
-        await supabase.auth.admin.deleteUser(authData.user.id);
+        console.error('User creation error:', userError);
         toast({
           title: "Registration Failed",
           description: userError.message,

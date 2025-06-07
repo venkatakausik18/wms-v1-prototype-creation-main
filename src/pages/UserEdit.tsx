@@ -205,7 +205,7 @@ const UserEdit = () => {
         console.warn('Invalid notification_preferences JSON');
       }
 
-      // Prepare user data without auth_user_id for now
+      // Prepare user data
       const saveData = {
         full_name: data.full_name,
         employee_code: data.employee_code || null,
@@ -234,11 +234,15 @@ const UserEdit = () => {
       };
 
       if (isNew) {
-        // For new users, we'll skip Supabase Auth integration for now
-        // and just create the user record directly
+        // For new users, add password_hash field (in real app, this should be properly hashed)
+        const userDataWithPassword = {
+          ...saveData,
+          password_hash: data.password || 'temp_password', // Temporary solution
+        };
+
         const { data: userData, error } = await supabase
           .from('users')
-          .insert(saveData)
+          .insert(userDataWithPassword)
           .select()
           .single();
 
@@ -271,6 +275,15 @@ const UserEdit = () => {
 
         // If password is being changed
         if (data.password) {
+          // Update password_hash in users table
+          const { error: passwordUpdateError } = await supabase
+            .from('users')
+            .update({ password_hash: data.password })
+            .eq('user_id', parseInt(userId!));
+
+          if (passwordUpdateError) console.warn('Password update failed:', passwordUpdateError);
+
+          // Insert into password history
           const { error: passwordError } = await supabase
             .from('password_history')
             .insert({

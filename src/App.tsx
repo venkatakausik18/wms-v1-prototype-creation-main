@@ -14,6 +14,12 @@ import CompanySettings from "./pages/CompanySettings";
 import CompanyEdit from "./pages/CompanyEdit";
 import UserList from "./pages/UserList";
 import UserEdit from "./pages/UserEdit";
+import WarehouseList from "./pages/WarehouseList";
+import WarehouseEdit from "./pages/WarehouseEdit";
+import WarehouseZones from "./pages/WarehouseZones";
+import WarehouseZoneEdit from "./pages/WarehouseZoneEdit";
+import StorageBins from "./pages/StorageBins";
+import StorageBinEdit from "./pages/StorageBinEdit";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,6 +43,15 @@ const App = () => (
             <Route path="/settings/users/add" element={<UserEdit />} />
             <Route path="/settings/users/edit/:userId" element={<UserEdit />} />
             <Route path="/settings/users/view/:userId" element={<UserEdit />} />
+            <Route path="/masters/warehouse/list" element={<WarehouseList />} />
+            <Route path="/masters/warehouse/add" element={<WarehouseEdit />} />
+            <Route path="/masters/warehouse/edit/:warehouseId" element={<WarehouseEdit />} />
+            <Route path="/masters/warehouse/:warehouseId/zones" element={<WarehouseZones />} />
+            <Route path="/masters/warehouse/:warehouseId/zones/add" element={<WarehouseZoneEdit />} />
+            <Route path="/masters/warehouse/zones/:zoneId/edit" element={<WarehouseZoneEdit />} />
+            <Route path="/masters/warehouse/zones/:zoneId/bins" element={<StorageBins />} />
+            <Route path="/masters/warehouse/zones/:zoneId/bins/add" element={<StorageBinEdit />} />
+            <Route path="/masters/warehouse/bins/:binId/edit" element={<StorageBinEdit />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

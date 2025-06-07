@@ -175,40 +175,81 @@ const UserEdit = () => {
     try {
       setLoading(true);
 
-      // Parse JSON fields
+      // Parse JSON fields safely
+      let loginTimeRestrictions = null;
+      let commissionStructure = null;
+      let targetAssignment = null;
+      let notificationPreferences = null;
+
+      try {
+        loginTimeRestrictions = data.login_time_restrictions ? JSON.parse(data.login_time_restrictions) : null;
+      } catch (e) {
+        console.warn('Invalid login_time_restrictions JSON');
+      }
+
+      try {
+        commissionStructure = data.commission_structure ? JSON.parse(data.commission_structure) : null;
+      } catch (e) {
+        console.warn('Invalid commission_structure JSON');
+      }
+
+      try {
+        targetAssignment = data.target_assignment ? JSON.parse(data.target_assignment) : null;
+      } catch (e) {
+        console.warn('Invalid target_assignment JSON');
+      }
+
+      try {
+        notificationPreferences = data.notification_preferences ? JSON.parse(data.notification_preferences) : null;
+      } catch (e) {
+        console.warn('Invalid notification_preferences JSON');
+      }
+
+      // Prepare user data without auth_user_id for now
       const saveData = {
-        ...data,
-        login_time_restrictions: data.login_time_restrictions ? JSON.parse(data.login_time_restrictions) : null,
-        commission_structure: data.commission_structure ? JSON.parse(data.commission_structure) : null,
-        target_assignment: data.target_assignment ? JSON.parse(data.target_assignment) : null,
-        notification_preferences: data.notification_preferences ? JSON.parse(data.notification_preferences) : null,
+        full_name: data.full_name,
+        employee_code: data.employee_code || null,
+        email: data.email,
+        phone: data.phone || null,
+        address_line1: data.address_line1 || null,
+        address_line2: data.address_line2 || null,
+        city: data.city || null,
+        state: data.state || null,
+        pin_code: data.pin_code || null,
+        date_of_birth: data.date_of_birth || null,
+        date_of_joining: data.date_of_joining || null,
+        department: data.department || null,
+        designation: data.designation || null,
+        reporting_manager_id: data.reporting_manager_id || null,
+        username: data.username,
+        role_id: data.role_id,
+        ip_restrictions: data.ip_restrictions || null,
+        login_time_restrictions: loginTimeRestrictions,
+        commission_structure: commissionStructure,
+        target_assignment: targetAssignment,
+        notification_preferences: notificationPreferences,
+        language_preference: data.language_preference || 'en',
+        is_active: data.is_active,
+        company_id: 1, // Default company_id for now
       };
 
       if (isNew) {
-        // Create user in Supabase Auth first
-        if (data.password) {
-          const { data: authData, error: authError } = await supabase.auth.signUp({
-            email: data.email,
-            password: data.password,
-          });
+        // For new users, we'll skip Supabase Auth integration for now
+        // and just create the user record directly
+        const { data: userData, error } = await supabase
+          .from('users')
+          .insert(saveData)
+          .select()
+          .single();
 
-          if (authError) throw authError;
+        if (error) throw error;
 
-          // Insert user record
-          const { error } = await supabase
-            .from('users')
-            .insert({
-              ...saveData,
-              auth_user_id: authData.user?.id,
-            });
-
-          if (error) throw error;
-
-          // Insert password history
+        // Insert password history if password is provided
+        if (data.password && userData) {
           const { error: passwordError } = await supabase
             .from('password_history')
             .insert({
-              user_id: authData.user?.id,
+              user_id: userData.user_id,
               password_hash: data.password, // In real app, hash this
             });
 
@@ -230,14 +271,6 @@ const UserEdit = () => {
 
         // If password is being changed
         if (data.password) {
-          // Update auth password
-          const { error: authError } = await supabase.auth.updateUser({
-            password: data.password,
-          });
-
-          if (authError) console.warn('Auth password update failed:', authError);
-
-          // Insert password history
           const { error: passwordError } = await supabase
             .from('password_history')
             .insert({

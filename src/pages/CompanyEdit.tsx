@@ -134,11 +134,11 @@ const CompanyEdit = () => {
     try {
       setLoading(true);
 
-      // Prepare data for database
+      // Prepare data for database - ensure all required fields are present
       const saveData = {
-        ...data,
-        email: data.email || null,
-        website: data.website || null,
+        company_code: data.company_code,
+        company_name: data.company_name,
+        business_type: data.business_type,
         registration_number: data.registration_number || null,
         pan_number: data.pan_number || null,
         gst_number: data.gst_number || null,
@@ -146,9 +146,16 @@ const CompanyEdit = () => {
         address_line2: data.address_line2 || null,
         city: data.city || null,
         state: data.state || null,
+        country: data.country || 'India',
         pin_code: data.pin_code || null,
         phone: data.phone || null,
+        email: data.email || null,
+        website: data.website || null,
         financial_year_start: data.financial_year_start || null,
+        default_currency: data.default_currency || 'INR',
+        decimal_places_amount: data.decimal_places_amount,
+        decimal_places_quantity: data.decimal_places_quantity,
+        decimal_places_rate: data.decimal_places_rate,
       };
 
       if (isNew) {

@@ -1,78 +1,76 @@
 
-import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import Layout from "@/components/Layout";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Upload, Save, ArrowLeft } from "lucide-react";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
-import { useToast } from "@/hooks/use-toast";
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { toast } from '@/hooks/use-toast';
+import { ArrowLeft } from 'lucide-react';
 
-interface CompanyFormData {
-  company_code: string;
-  company_name: string;
-  business_type: string;
-  registration_number: string;
-  pan_number: string;
-  gst_number: string;
-  address_line1: string;
-  address_line2: string;
-  city: string;
-  state: string;
-  country: string;
-  pin_code: string;
-  phone: string;
-  email: string;
-  website: string;
-  logo_path: string;
-  digital_signature_path: string;
-  financial_year_start: Date | null;
-  default_currency: string;
-  decimal_places_amount: number;
-  decimal_places_quantity: number;
-  decimal_places_rate: number;
-}
+const businessTypes = ['retail', 'wholesale', 'manufacturing', 'distribution'] as const;
+
+const companySchema = z.object({
+  company_code: z.string().min(1, 'Company code is required'),
+  company_name: z.string().min(1, 'Company name is required'),
+  business_type: z.enum(businessTypes),
+  registration_number: z.string().optional(),
+  pan_number: z.string().optional(),
+  gst_number: z.string().optional(),
+  address_line1: z.string().optional(),
+  address_line2: z.string().optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  country: z.string().default('India'),
+  pin_code: z.string().optional(),
+  phone: z.string().optional(),
+  email: z.string().email().optional().or(z.literal('')),
+  website: z.string().optional(),
+  financial_year_start: z.string().optional(),
+  default_currency: z.string().default('INR'),
+  decimal_places_amount: z.number().min(0).max(6).default(2),
+  decimal_places_quantity: z.number().min(0).max(6).default(3),
+  decimal_places_rate: z.number().min(0).max(6).default(4),
+});
+
+type CompanyFormData = z.infer<typeof companySchema>;
 
 const CompanyEdit = () => {
-  const { companyId } = useParams();
+  const { companyId } = useParams<{ companyId: string }>();
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const isNew = companyId === 'new';
+  const isNew = !companyId || companyId === 'new';
+  const [loading, setLoading] = useState(false);
 
-  const [loading, setLoading] = useState(!isNew);
-  const [saving, setSaving] = useState(false);
-  const [formData, setFormData] = useState<CompanyFormData>({
-    company_code: '',
-    company_name: '',
-    business_type: 'private_limited',
-    registration_number: '',
-    pan_number: '',
-    gst_number: '',
-    address_line1: '',
-    address_line2: '',
-    city: '',
-    state: '',
-    country: 'India',
-    pin_code: '',
-    phone: '',
-    email: '',
-    website: '',
-    logo_path: '',
-    digital_signature_path: '',
-    financial_year_start: null,
-    default_currency: 'INR',
-    decimal_places_amount: 2,
-    decimal_places_quantity: 3,
-    decimal_places_rate: 4,
+  const form = useForm<CompanyFormData>({
+    resolver: zodResolver(companySchema),
+    defaultValues: {
+      company_code: '',
+      company_name: '',
+      business_type: 'retail',
+      registration_number: '',
+      pan_number: '',
+      gst_number: '',
+      address_line1: '',
+      address_line2: '',
+      city: '',
+      state: '',
+      country: 'India',
+      pin_code: '',
+      phone: '',
+      email: '',
+      website: '',
+      financial_year_start: '',
+      default_currency: 'INR',
+      decimal_places_amount: 2,
+      decimal_places_quantity: 3,
+      decimal_places_rate: 4,
+    },
   });
 
   useEffect(() => {
@@ -85,6 +83,7 @@ const CompanyEdit = () => {
     if (!companyId || companyId === 'new') return;
     
     try {
+      setLoading(true);
       const { data, error } = await supabase
         .from('companies')
         .select('*')
@@ -93,67 +92,63 @@ const CompanyEdit = () => {
 
       if (error) throw error;
 
-      setFormData({
-        ...data,
-        financial_year_start: data.financial_year_start ? new Date(data.financial_year_start) : null,
-      });
+      if (data) {
+        // Format the data to match form expectations
+        const formData: CompanyFormData = {
+          company_code: data.company_code || '',
+          company_name: data.company_name || '',
+          business_type: (data.business_type as typeof businessTypes[number]) || 'retail',
+          registration_number: data.registration_number || '',
+          pan_number: data.pan_number || '',
+          gst_number: data.gst_number || '',
+          address_line1: data.address_line1 || '',
+          address_line2: data.address_line2 || '',
+          city: data.city || '',
+          state: data.state || '',
+          country: data.country || 'India',
+          pin_code: data.pin_code || '',
+          phone: data.phone || '',
+          email: data.email || '',
+          website: data.website || '',
+          financial_year_start: data.financial_year_start || '',
+          default_currency: data.default_currency || 'INR',
+          decimal_places_amount: data.decimal_places_amount || 2,
+          decimal_places_quantity: data.decimal_places_quantity || 3,
+          decimal_places_rate: data.decimal_places_rate || 4,
+        };
+        form.reset(formData);
+      }
     } catch (error) {
       console.error('Error fetching company:', error);
       toast({
-        title: "Error",
-        description: "Failed to fetch company details",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to fetch company details',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleInputChange = (field: keyof CompanyFormData, value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
-  const handleFileUpload = async (file: File, field: 'logo_path' | 'digital_signature_path') => {
+  const onSubmit = async (data: CompanyFormData) => {
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random()}.${fileExt}`;
-      const filePath = `${field}/${fileName}`;
+      setLoading(true);
 
-      const { error: uploadError } = await supabase.storage
-        .from('company-files')
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data } = supabase.storage
-        .from('company-files')
-        .getPublicUrl(filePath);
-
-      handleInputChange(field, data.publicUrl);
-
-      toast({
-        title: "Success",
-        description: "File uploaded successfully",
-      });
-    } catch (error) {
-      console.error('Upload error:', error);
-      toast({
-        title: "Error",
-        description: "Failed to upload file",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleSave = async () => {
-    setSaving(true);
-    try {
+      // Prepare data for database
       const saveData = {
-        ...formData,
-        financial_year_start: formData.financial_year_start?.toISOString().split('T')[0] || null,
+        ...data,
+        email: data.email || null,
+        website: data.website || null,
+        registration_number: data.registration_number || null,
+        pan_number: data.pan_number || null,
+        gst_number: data.gst_number || null,
+        address_line1: data.address_line1 || null,
+        address_line2: data.address_line2 || null,
+        city: data.city || null,
+        state: data.state || null,
+        pin_code: data.pin_code || null,
+        phone: data.phone || null,
+        financial_year_start: data.financial_year_start || null,
       };
 
       if (isNew) {
@@ -162,6 +157,11 @@ const CompanyEdit = () => {
           .insert(saveData);
 
         if (error) throw error;
+        
+        toast({
+          title: 'Success',
+          description: 'Company created successfully',
+        });
       } else {
         const { error } = await supabase
           .from('companies')
@@ -169,436 +169,413 @@ const CompanyEdit = () => {
           .eq('company_id', parseInt(companyId!));
 
         if (error) throw error;
+        
+        toast({
+          title: 'Success',
+          description: 'Company updated successfully',
+        });
       }
-
-      toast({
-        title: "Success",
-        description: `Company ${isNew ? 'created' : 'updated'} successfully`,
-      });
 
       navigate('/settings/company');
     } catch (error) {
-      console.error('Save error:', error);
+      console.error('Error saving company:', error);
       toast({
-        title: "Error",
-        description: `Failed to ${isNew ? 'create' : 'update'} company`,
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to save company',
+        variant: 'destructive',
       });
     } finally {
-      setSaving(false);
+      setLoading(false);
     }
   };
 
-  if (loading) {
-    return (
-      <Layout>
-        <div className="flex items-center justify-center h-64">
-          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-        </div>
-      </Layout>
-    );
-  }
-
   return (
-    <Layout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Button variant="outline" size="sm" onClick={() => navigate('/settings/company')}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold text-slate-900">
-                {isNew ? 'Create Company' : 'Edit Company'}
-              </h1>
-              <p className="text-slate-600">
-                {isNew ? 'Set up a new company profile' : 'Update company information and settings'}
-              </p>
-            </div>
-          </div>
-          <Button onClick={handleSave} disabled={saving}>
-            <Save className="h-4 w-4 mr-2" />
-            {saving ? 'Saving...' : 'Save Changes'}
-          </Button>
-        </div>
-
-        <Tabs defaultValue="basic" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="basic">Basic Details</TabsTrigger>
-            <TabsTrigger value="financial">Financial Settings</TabsTrigger>
-            <TabsTrigger value="tax">Tax Configuration</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="basic" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Company Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="company_code">Company Code *</Label>
-                    <Input
-                      id="company_code"
-                      value={formData.company_code}
-                      onChange={(e) => handleInputChange('company_code', e.target.value)}
-                      placeholder="Enter unique company code"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="company_name">Company Name *</Label>
-                    <Input
-                      id="company_name"
-                      value={formData.company_name}
-                      onChange={(e) => handleInputChange('company_name', e.target.value)}
-                      placeholder="Enter company name"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="business_type">Business Type</Label>
-                    <Select
-                      value={formData.business_type}
-                      onValueChange={(value) => handleInputChange('business_type', value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="sole_proprietorship">Sole Proprietorship</SelectItem>
-                        <SelectItem value="partnership">Partnership</SelectItem>
-                        <SelectItem value="private_limited">Private Limited</SelectItem>
-                        <SelectItem value="public_limited">Public Limited</SelectItem>
-                        <SelectItem value="llp">LLP</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="registration_number">Registration Number</Label>
-                    <Input
-                      id="registration_number"
-                      value={formData.registration_number}
-                      onChange={(e) => handleInputChange('registration_number', e.target.value)}
-                      placeholder="Enter registration number"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="pan_number">PAN Number</Label>
-                    <Input
-                      id="pan_number"
-                      value={formData.pan_number}
-                      onChange={(e) => handleInputChange('pan_number', e.target.value)}
-                      placeholder="Enter PAN number"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="gst_number">GST Number</Label>
-                  <Input
-                    id="gst_number"
-                    value={formData.gst_number}
-                    onChange={(e) => handleInputChange('gst_number', e.target.value)}
-                    placeholder="Enter GST number"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Address Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="address_line1">Address Line 1</Label>
-                  <Input
-                    id="address_line1"
-                    value={formData.address_line1}
-                    onChange={(e) => handleInputChange('address_line1', e.target.value)}
-                    placeholder="Enter address line 1"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="address_line2">Address Line 2</Label>
-                  <Input
-                    id="address_line2"
-                    value={formData.address_line2}
-                    onChange={(e) => handleInputChange('address_line2', e.target.value)}
-                    placeholder="Enter address line 2"
-                  />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="city">City</Label>
-                    <Input
-                      id="city"
-                      value={formData.city}
-                      onChange={(e) => handleInputChange('city', e.target.value)}
-                      placeholder="Enter city"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="state">State</Label>
-                    <Input
-                      id="state"
-                      value={formData.state}
-                      onChange={(e) => handleInputChange('state', e.target.value)}
-                      placeholder="Enter state"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="pin_code">Pin Code</Label>
-                    <Input
-                      id="pin_code"
-                      value={formData.pin_code}
-                      onChange={(e) => handleInputChange('pin_code', e.target.value)}
-                      placeholder="Enter pin code"
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="country">Country</Label>
-                  <Input
-                    id="country"
-                    value={formData.country}
-                    onChange={(e) => handleInputChange('country', e.target.value)}
-                    placeholder="Enter country"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Contact Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone</Label>
-                    <Input
-                      id="phone"
-                      value={formData.phone}
-                      onChange={(e) => handleInputChange('phone', e.target.value)}
-                      placeholder="Enter phone number"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => handleInputChange('email', e.target.value)}
-                      placeholder="Enter email address"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="website">Website</Label>
-                    <Input
-                      id="website"
-                      value={formData.website}
-                      onChange={(e) => handleInputChange('website', e.target.value)}
-                      placeholder="Enter website URL"
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>File Uploads</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Company Logo</Label>
-                    <div className="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center">
-                      <Upload className="h-8 w-8 mx-auto text-slate-400 mb-2" />
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) handleFileUpload(file, 'logo_path');
-                        }}
-                        className="hidden"
-                        id="logo-upload"
-                      />
-                      <label htmlFor="logo-upload" className="cursor-pointer">
-                        <Button variant="outline" size="sm" asChild>
-                          <span>Upload Logo</span>
-                        </Button>
-                      </label>
-                      {formData.logo_path && (
-                        <p className="text-xs text-green-600 mt-2">Logo uploaded</p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Digital Signature</Label>
-                    <div className="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center">
-                      <Upload className="h-8 w-8 mx-auto text-slate-400 mb-2" />
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) handleFileUpload(file, 'digital_signature_path');
-                        }}
-                        className="hidden"
-                        id="signature-upload"
-                      />
-                      <label htmlFor="signature-upload" className="cursor-pointer">
-                        <Button variant="outline" size="sm" asChild>
-                          <span>Upload Signature</span>
-                        </Button>
-                      </label>
-                      {formData.digital_signature_path && (
-                        <p className="text-xs text-green-600 mt-2">Signature uploaded</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="financial" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Financial Year & Currency</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Financial Year Start</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full justify-start text-left font-normal",
-                            !formData.financial_year_start && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {formData.financial_year_start ? (
-                            format(formData.financial_year_start, "PPP")
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={formData.financial_year_start || undefined}
-                          onSelect={(date) => handleInputChange('financial_year_start', date)}
-                          initialFocus
-                          className="pointer-events-auto"
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="default_currency">Default Currency</Label>
-                    <Select
-                      value={formData.default_currency}
-                      onValueChange={(value) => handleInputChange('default_currency', value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="INR">INR (Indian Rupee)</SelectItem>
-                        <SelectItem value="USD">USD (US Dollar)</SelectItem>
-                        <SelectItem value="EUR">EUR (Euro)</SelectItem>
-                        <SelectItem value="GBP">GBP (British Pound)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Decimal Places Configuration</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="decimal_places_amount">Amount Decimal Places</Label>
-                    <Input
-                      id="decimal_places_amount"
-                      type="number"
-                      min="0"
-                      max="6"
-                      value={formData.decimal_places_amount}
-                      onChange={(e) => handleInputChange('decimal_places_amount', parseInt(e.target.value))}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="decimal_places_quantity">Quantity Decimal Places</Label>
-                    <Input
-                      id="decimal_places_quantity"
-                      type="number"
-                      min="0"
-                      max="6"
-                      value={formData.decimal_places_quantity}
-                      onChange={(e) => handleInputChange('decimal_places_quantity', parseInt(e.target.value))}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="decimal_places_rate">Rate Decimal Places</Label>
-                    <Input
-                      id="decimal_places_rate"
-                      type="number"
-                      min="0"
-                      max="6"
-                      value={formData.decimal_places_rate}
-                      onChange={(e) => handleInputChange('decimal_places_rate', parseInt(e.target.value))}
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="tax" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>GST Configuration</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="text-sm text-slate-600 mb-4">
-                  GST Number: {formData.gst_number || 'Not set'}
-                </div>
-                <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
-                  <div>
-                    <h4 className="font-medium text-slate-900">Tax Configuration Setup</h4>
-                    <p className="text-sm text-slate-600">
-                      Set up detailed tax rates, HSN codes, and exemption categories
-                    </p>
-                  </div>
-                  <Button variant="outline" onClick={() => navigate('/settings/tax-configurations')}>
-                    Configure Tax Settings
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+    <div className="container mx-auto py-6 px-4">
+      <div className="flex items-center mb-6">
+        <Button variant="ghost" onClick={() => navigate('/settings/company')} className="mr-4">
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Companies
+        </Button>
+        <h1 className="text-3xl font-bold">
+          {isNew ? 'Add New Company' : 'Edit Company'}
+        </h1>
       </div>
-    </Layout>
+
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          {/* Basic Details */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Basic Details</CardTitle>
+              <CardDescription>
+                Enter the basic information about the company
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="company_code"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Company Code *</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="Enter company code" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="company_name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Company Name *</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="Enter company name" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="business_type"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Business Type</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select business type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="retail">Retail</SelectItem>
+                          <SelectItem value="wholesale">Wholesale</SelectItem>
+                          <SelectItem value="manufacturing">Manufacturing</SelectItem>
+                          <SelectItem value="distribution">Distribution</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="registration_number"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Registration Number</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="Enter registration number" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="pan_number"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>PAN Number</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="Enter PAN number" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="gst_number"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>GST Number</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="Enter GST number" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* Address Fields */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="address_line1"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Address Line 1</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="Enter address line 1" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="address_line2"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Address Line 2</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="Enter address line 2" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="city"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>City</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="Enter city" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="state"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>State</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="Enter state" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="country"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Country</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="Enter country" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="pin_code"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>PIN Code</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="Enter PIN code" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* Contact Fields */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <FormField
+                  control={form.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Phone</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="Enter phone number" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input {...field} type="email" placeholder="Enter email address" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="website"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Website</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="Enter website URL" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Financial Settings */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Financial Settings</CardTitle>
+              <CardDescription>
+                Configure financial and accounting settings
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="financial_year_start"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Financial Year Start</FormLabel>
+                      <FormControl>
+                        <Input {...field} type="date" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="default_currency"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Default Currency</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="e.g., INR, USD" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="decimal_places_amount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Decimal Places - Amount</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          type="number"
+                          min="0"
+                          max="6"
+                          onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="decimal_places_quantity"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Decimal Places - Quantity</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          type="number"
+                          min="0"
+                          max="6"
+                          onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="decimal_places_rate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Decimal Places - Rate</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          type="number"
+                          min="0"
+                          max="6"
+                          onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Tax Configuration */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Tax Configuration</CardTitle>
+              <CardDescription>
+                Basic tax settings (detailed configuration available separately)
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                GST Number: {form.watch('gst_number') || 'Not set'}
+              </p>
+              <p className="text-sm text-muted-foreground mt-2">
+                For detailed tax configuration, visit{' '}
+                <Button variant="link" className="p-0 h-auto text-sm">
+                  Tax Settings
+                </Button>
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Submit Button */}
+          <div className="flex gap-4">
+            <Button type="submit" disabled={loading}>
+              {loading ? 'Saving...' : isNew ? 'Create Company' : 'Update Company'}
+            </Button>
+            <Button type="button" variant="outline" onClick={() => navigate('/settings/company')}>
+              Cancel
+            </Button>
+          </div>
+        </form>
+      </Form>
+    </div>
   );
 };
 

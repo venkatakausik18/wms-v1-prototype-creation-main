@@ -12,6 +12,8 @@ import Register from "./pages/Register";
 import ResetPassword from "./pages/ResetPassword";
 import CompanySettings from "./pages/CompanySettings";
 import CompanyEdit from "./pages/CompanyEdit";
+import UserList from "./pages/UserList";
+import UserEdit from "./pages/UserEdit";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +33,10 @@ const App = () => (
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/settings/company" element={<CompanySettings />} />
             <Route path="/settings/company/edit/:companyId" element={<CompanyEdit />} />
+            <Route path="/settings/users/list" element={<UserList />} />
+            <Route path="/settings/users/add" element={<UserEdit />} />
+            <Route path="/settings/users/edit/:userId" element={<UserEdit />} />
+            <Route path="/settings/users/view/:userId" element={<UserEdit />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

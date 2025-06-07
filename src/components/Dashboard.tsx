@@ -1,8 +1,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
 import { 
   Package, 
   TrendingUp, 
@@ -13,47 +12,101 @@ import {
   AlertTriangle,
   CheckCircle,
   Clock,
-  BarChart3
+  BarChart3,
+  DollarSign,
+  Wallet,
+  CreditCard,
+  Percent
 } from "lucide-react";
+import KPICard from "./dashboard/KPICard";
+import ChartsSection from "./dashboard/ChartsSection";
+import AlertsPanel from "./dashboard/AlertsPanel";
 
 const Dashboard = () => {
-  // Mock data for demonstration
-  const kpiData = [
+  // Primary KPIs data
+  const primaryKPIs = [
     {
-      title: "Total Products",
-      value: "2,847",
+      title: "Today's Sales Revenue",
+      value: "₹2,45,678",
       change: "+12.5%",
-      trend: "up",
-      icon: Package,
-      color: "text-blue-600",
-      bgColor: "bg-blue-100"
+      trend: "up" as const,
+      icon: DollarSign,
+      color: "text-green-600",
+      bgColor: "bg-green-100",
+      subtitle: "vs yesterday ₹2,18,340"
     },
     {
-      title: "Low Stock Items",
-      value: "23",
-      change: "-8.2%",
-      trend: "down",
-      icon: AlertTriangle,
-      color: "text-orange-600",
-      bgColor: "bg-orange-100"
+      title: "Current Stock Value",
+      value: "₹45,67,890",
+      change: "+3.2%",
+      trend: "up" as const,
+      icon: Package,
+      color: "text-blue-600",
+      bgColor: "bg-blue-100",
+      subtitle: "across all warehouses"
     },
     {
       title: "Pending Orders",
       value: "156",
       change: "+15.3%",
-      trend: "up",
+      trend: "up" as const,
       icon: Clock,
-      color: "text-purple-600",
-      bgColor: "bg-purple-100"
+      color: "text-orange-600",
+      bgColor: "bg-orange-100",
+      badge: { text: "23 Urgent", variant: "destructive" as const }
     },
     {
-      title: "Active Users",
-      value: "42",
-      change: "+2.1%",
-      trend: "up",
-      icon: Users,
-      color: "text-green-600",
-      bgColor: "bg-green-100"
+      title: "Cash + Bank Balance",
+      value: "₹12,34,567",
+      change: "-5.1%",
+      trend: "down" as const,
+      icon: Wallet,
+      color: "text-purple-600",
+      bgColor: "bg-purple-100",
+      subtitle: "Cash: ₹2,34,567 | Bank: ₹10,00,000"
+    }
+  ];
+
+  // Secondary KPIs data
+  const secondaryKPIs = [
+    {
+      title: "Today's Purchase Amount",
+      value: "₹1,23,456",
+      change: "+8.7%",
+      trend: "up" as const,
+      icon: ShoppingCart,
+      color: "text-indigo-600",
+      bgColor: "bg-indigo-100"
+    },
+    {
+      title: "Low Stock Alerts",
+      value: "23",
+      change: "-12.0%",
+      trend: "down" as const,
+      icon: AlertTriangle,
+      color: "text-red-600",
+      bgColor: "bg-red-100",
+      badge: { text: "5 Critical", variant: "destructive" as const }
+    },
+    {
+      title: "Overdue Payments",
+      value: "₹89,456",
+      change: "+23.1%",
+      trend: "up" as const,
+      icon: CreditCard,
+      color: "text-yellow-600",
+      bgColor: "bg-yellow-100",
+      subtitle: "32 invoices pending"
+    },
+    {
+      title: "Profit Margin",
+      value: "18.5%",
+      change: "+2.3%",
+      trend: "up" as const,
+      icon: Percent,
+      color: "text-emerald-600",
+      bgColor: "bg-emerald-100",
+      subtitle: "Monthly average"
     }
   ];
 
@@ -64,41 +117,32 @@ const Dashboard = () => {
     { id: "ST-045", type: "Stock Transfer", amount: "₹12,340", status: "Completed", time: "8 hours ago" },
   ];
 
-  const warehouseStatus = [
-    { name: "Main Warehouse", capacity: 85, available: "850 sq ft", status: "High" },
-    { name: "Secondary Storage", capacity: 62, available: "1,200 sq ft", status: "Medium" },
-    { name: "Cold Storage", capacity: 94, available: "150 sq ft", status: "Critical" },
-  ];
-
   return (
-    <div className="space-y-6">
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {kpiData.map((kpi) => (
-          <Card key={kpi.title} className="border-0 shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-slate-600">{kpi.title}</p>
-                  <p className="text-2xl font-bold text-slate-900 mt-1">{kpi.value}</p>
-                  <div className="flex items-center mt-2">
-                    {kpi.trend === "up" ? (
-                      <TrendingUp className="h-4 w-4 text-green-600 mr-1" />
-                    ) : (
-                      <TrendingDown className="h-4 w-4 text-red-600 mr-1" />
-                    )}
-                    <span className={`text-sm ${kpi.trend === "up" ? "text-green-600" : "text-red-600"}`}>
-                      {kpi.change}
-                    </span>
-                  </div>
-                </div>
-                <div className={`p-3 rounded-lg ${kpi.bgColor}`}>
-                  <kpi.icon className={`h-6 w-6 ${kpi.color}`} />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+    <div className="space-y-8">
+      {/* Primary KPIs */}
+      <div>
+        <h2 className="text-lg font-semibold text-slate-900 mb-4">Key Performance Indicators</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {primaryKPIs.map((kpi, index) => (
+            <KPICard key={index} {...kpi} />
+          ))}
+        </div>
+      </div>
+
+      {/* Secondary KPIs */}
+      <div>
+        <h2 className="text-lg font-semibold text-slate-900 mb-4">Business Metrics</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {secondaryKPIs.map((kpi, index) => (
+            <KPICard key={index} {...kpi} />
+          ))}
+        </div>
+      </div>
+
+      {/* Charts & Analytics Section */}
+      <div>
+        <h2 className="text-lg font-semibold text-slate-900 mb-4">Analytics & Insights</h2>
+        <ChartsSection />
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
@@ -114,9 +158,9 @@ const Dashboard = () => {
           <CardContent>
             <div className="space-y-4">
               {recentTransactions.map((transaction) => (
-                <div key={transaction.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
+                <div key={transaction.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors">
                   <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-white rounded-lg">
+                    <div className="p-2 bg-white rounded-lg shadow-sm">
                       <Archive className="h-4 w-4 text-slate-600" />
                     </div>
                     <div>
@@ -146,40 +190,8 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Warehouse Status */}
-        <Card className="border-0 shadow-sm">
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Package className="h-5 w-5 mr-2" />
-              Warehouse Status
-            </CardTitle>
-            <CardDescription>Current capacity and availability</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {warehouseStatus.map((warehouse) => (
-              <div key={warehouse.name} className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <p className="font-medium text-slate-900">{warehouse.name}</p>
-                  <Badge 
-                    variant={warehouse.status === "Critical" ? "destructive" : 
-                            warehouse.status === "High" ? "secondary" : "outline"}
-                    className="text-xs"
-                  >
-                    {warehouse.status}
-                  </Badge>
-                </div>
-                <Progress value={warehouse.capacity} className="h-2" />
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-slate-600">{warehouse.capacity}% used</span>
-                  <span className="text-slate-600">{warehouse.available} available</span>
-                </div>
-              </div>
-            ))}
-            <Button variant="outline" className="w-full mt-4">
-              Manage Warehouses
-            </Button>
-          </CardContent>
-        </Card>
+        {/* Alerts Panel */}
+        <AlertsPanel />
       </div>
 
       {/* Quick Actions */}
@@ -190,27 +202,27 @@ const Dashboard = () => {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            <Button variant="outline" className="h-20 flex flex-col space-y-2">
+            <Button variant="outline" className="h-20 flex flex-col space-y-2 hover:bg-blue-50 hover:border-blue-200">
               <Package className="h-5 w-5" />
               <span className="text-xs">Add Product</span>
             </Button>
-            <Button variant="outline" className="h-20 flex flex-col space-y-2">
+            <Button variant="outline" className="h-20 flex flex-col space-y-2 hover:bg-green-50 hover:border-green-200">
               <ShoppingCart className="h-5 w-5" />
               <span className="text-xs">Create Order</span>
             </Button>
-            <Button variant="outline" className="h-20 flex flex-col space-y-2">
+            <Button variant="outline" className="h-20 flex flex-col space-y-2 hover:bg-purple-50 hover:border-purple-200">
               <Archive className="h-5 w-5" />
               <span className="text-xs">Stock Entry</span>
             </Button>
-            <Button variant="outline" className="h-20 flex flex-col space-y-2">
+            <Button variant="outline" className="h-20 flex flex-col space-y-2 hover:bg-orange-50 hover:border-orange-200">
               <Users className="h-5 w-5" />
               <span className="text-xs">Add Customer</span>
             </Button>
-            <Button variant="outline" className="h-20 flex flex-col space-y-2">
+            <Button variant="outline" className="h-20 flex flex-col space-y-2 hover:bg-indigo-50 hover:border-indigo-200">
               <BarChart3 className="h-5 w-5" />
               <span className="text-xs">View Reports</span>
             </Button>
-            <Button variant="outline" className="h-20 flex flex-col space-y-2">
+            <Button variant="outline" className="h-20 flex flex-col space-y-2 hover:bg-emerald-50 hover:border-emerald-200">
               <CheckCircle className="h-5 w-5" />
               <span className="text-xs">Audit Trail</span>
             </Button>

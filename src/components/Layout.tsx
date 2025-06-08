@@ -46,7 +46,7 @@ const navigationItems = [
       { title: "Products", url: "/masters/products/list" },
       { title: "Brands", url: "/masters/brands/list" },
       { title: "Categories", url: "/masters/categories/list" },
-      { title: "Customers", url: "/masters/customers" },
+      { title: "Customers", url: "/masters/customers/list" },
       { title: "Vendors", url: "/masters/vendors" },
     ]
   },

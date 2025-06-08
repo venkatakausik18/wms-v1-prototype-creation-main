@@ -26,6 +26,9 @@ import BrandList from "./pages/BrandList";
 import BrandEdit from "./pages/BrandEdit";
 import CategoryList from "./pages/CategoryList";
 import CategoryEdit from "./pages/CategoryEdit";
+import CustomerList from "./pages/CustomerList";
+import CustomerEdit from "./pages/CustomerEdit";
+import CustomerAddresses from "./pages/CustomerAddresses";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -67,6 +70,11 @@ const App = () => (
             <Route path="/masters/categories/list" element={<CategoryList />} />
             <Route path="/masters/categories/add" element={<CategoryEdit />} />
             <Route path="/masters/categories/edit/:categoryId" element={<CategoryEdit />} />
+            <Route path="/masters/customers/list" element={<CustomerList />} />
+            <Route path="/masters/customers/add" element={<CustomerEdit />} />
+            <Route path="/masters/customers/edit/:customerId" element={<CustomerEdit />} />
+            <Route path="/masters/customers/view/:customerId" element={<CustomerEdit />} />
+            <Route path="/masters/customers/:customerId/addresses" element={<CustomerAddresses />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -17,7 +17,7 @@ interface Customer {
   customer_id: number;
   customer_code: string;
   customer_name: string;
-  customer_type: string;
+  customer_type: 'individual' | 'company';
   primary_phone: string;
   email: string;
   credit_limit: number;
@@ -63,7 +63,7 @@ const CustomerList = () => {
       }
 
       if (customerTypeFilter !== "all") {
-        query = query.eq('customer_type', customerTypeFilter);
+        query = query.eq('customer_type', customerTypeFilter as 'individual' | 'company');
       }
 
       if (activeFilter !== "all") {
@@ -79,12 +79,17 @@ const CustomerList = () => {
         throw error;
       }
 
-      // Calculate outstanding amounts for each customer
+      // Calculate outstanding amounts for each customer using the database function
       const customersWithOutstanding = await Promise.all(
         (data || []).map(async (customer) => {
-          const { data: outstandingData } = await supabase.rpc('calculate_customer_outstanding', {
-            p_customer_id: customer.customer_id
-          }).single();
+          const { data: outstandingData, error: outstandingError } = await supabase
+            .rpc('calculate_customer_outstanding', {
+              p_customer_id: customer.customer_id
+            });
+
+          if (outstandingError) {
+            console.error('Error calculating outstanding for customer:', customer.customer_id, outstandingError);
+          }
 
           return {
             ...customer,

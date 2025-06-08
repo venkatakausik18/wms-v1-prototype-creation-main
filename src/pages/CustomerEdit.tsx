@@ -17,7 +17,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 interface CustomerFormData {
   customer_code: string;
-  customer_type: string;
+  customer_type: 'individual' | 'company';
   customer_name: string;
   company_name: string;
   contact_person: string;
@@ -38,12 +38,12 @@ interface CustomerFormData {
   interest_rate: number;
   discount_percent: number;
   opening_balance: number;
-  opening_balance_type: string;
+  opening_balance_type: 'debit' | 'credit';
   salesperson_id: number | null;
   territory: string;
   customer_group: string;
   price_list: string;
-  preferred_communication: string;
+  preferred_communication: 'email' | 'phone' | 'sms' | 'post';
   language_preference: string;
   bank_name: string;
   bank_account_number: string;
@@ -128,17 +128,17 @@ const CustomerEdit = () => {
     enabled: !!customerId,
   });
 
-  // Fetch salespeople for dropdown
+  // Fetch salespeople for dropdown - using auth_user_id field that exists in users table
   const { data: salespeople } = useQuery({
     queryKey: ['salespeople'],
     queryFn: async () => {
       console.log('Fetching salespeople');
       const { data, error } = await supabase
         .from('users')
-        .select('user_id, first_name, last_name, email')
+        .select('user_id, email, auth_user_id')
         .eq('company_id', 1) // You might want to get this from context/auth
         .eq('is_active', true)
-        .order('first_name');
+        .order('email');
 
       if (error) {
         console.error('Error fetching salespeople:', error);
@@ -383,7 +383,7 @@ const CustomerEdit = () => {
                   <Label htmlFor="customer_type">Customer Type *</Label>
                   <Select
                     value={formData.customer_type}
-                    onValueChange={(value) => handleInputChange('customer_type', value)}
+                    onValueChange={(value: 'individual' | 'company') => handleInputChange('customer_type', value)}
                     disabled={isViewMode}
                   >
                     <SelectTrigger>
@@ -674,7 +674,7 @@ const CustomerEdit = () => {
                   <Label htmlFor="opening_balance_type">Balance Type</Label>
                   <Select
                     value={formData.opening_balance_type}
-                    onValueChange={(value) => handleInputChange('opening_balance_type', value)}
+                    onValueChange={(value: 'debit' | 'credit') => handleInputChange('opening_balance_type', value)}
                     disabled={isViewMode}
                   >
                     <SelectTrigger>
@@ -741,7 +741,7 @@ const CustomerEdit = () => {
                       <SelectItem value="none">No Salesperson</SelectItem>
                       {salespeople?.map((person) => (
                         <SelectItem key={person.user_id} value={person.user_id.toString()}>
-                          {person.first_name} {person.last_name}
+                          {person.email}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -789,7 +789,7 @@ const CustomerEdit = () => {
                   <Label htmlFor="preferred_communication">Preferred Communication</Label>
                   <Select
                     value={formData.preferred_communication}
-                    onValueChange={(value) => handleInputChange('preferred_communication', value)}
+                    onValueChange={(value: 'email' | 'phone' | 'sms' | 'post') => handleInputChange('preferred_communication', value)}
                     disabled={isViewMode}
                   >
                     <SelectTrigger>

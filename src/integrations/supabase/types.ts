@@ -4436,6 +4436,10 @@ export type Database = {
       }
     }
     Functions: {
+      calculate_customer_outstanding: {
+        Args: { p_customer_id: number }
+        Returns: number
+      }
       get_user_id_from_auth: {
         Args: Record<PropertyKey, never>
         Returns: number

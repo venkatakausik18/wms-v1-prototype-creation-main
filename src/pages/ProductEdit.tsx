@@ -279,7 +279,7 @@ const ProductEdit = () => {
         barcode: formData.barcode || null,
         qr_code: formData.qr_code || null,
         hsn_sac_code: formData.hsn_sac_code || null,
-        gender: validateEnumValue(formData.gender, ['male', 'female', 'unisex']) as 'male' | 'female' | 'unisex' | null,
+        gender: validateEnumValue(formData.gender, ['men', 'women', 'kids', 'unisex']) as 'men' | 'women' | 'kids' | 'unisex' | null,
         age_group: validateEnumValue(formData.age_group, ['infant', 'kids', 'adult']) as 'infant' | 'kids' | 'adult' | null,
         season: validateEnumValue(formData.season, ['spring', 'summer', 'autumn', 'winter', 'all_season']) as 'spring' | 'summer' | 'autumn' | 'winter' | 'all_season' | null,
         collection_name: formData.collection_name || null,
@@ -325,7 +325,7 @@ const ProductEdit = () => {
       } else {
         result = await supabase
           .from('products')
-          .insert(saveData);
+          .insert([saveData]);
       }
 
       if (result.error) throw result.error;
@@ -536,8 +536,9 @@ const ProductEdit = () => {
                           <SelectValue placeholder="Select gender" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="male">Male</SelectItem>
-                          <SelectItem value="female">Female</SelectItem>
+                          <SelectItem value="men">Men</SelectItem>
+                          <SelectItem value="women">Women</SelectItem>
+                          <SelectItem value="kids">Kids</SelectItem>
                           <SelectItem value="unisex">Unisex</SelectItem>
                         </SelectContent>
                       </Select>

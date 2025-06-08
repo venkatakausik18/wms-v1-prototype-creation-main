@@ -273,7 +273,7 @@ const ProductEdit = () => {
         product_name_local: formData.product_name_local || null,
         brand_id: formData.brand_id ? parseInt(formData.brand_id) : null,
         category_id: parseInt(formData.category_id),
-        product_type: validateEnumValue(formData.product_type, ['finished', 'raw_material', 'semi_finished']) as 'finished' | 'raw_material' | 'semi_finished' || 'finished',
+        product_type: validateEnumValue(formData.product_type, ['finished', 'raw_material', 'service', 'consumable']) as 'finished' | 'raw_material' | 'service' | 'consumable' || 'finished',
         primary_uom_id: parseInt(formData.primary_uom_id),
         secondary_uom_id: formData.secondary_uom_id ? parseInt(formData.secondary_uom_id) : null,
         barcode: formData.barcode || null,
@@ -459,7 +459,8 @@ const ProductEdit = () => {
                         <SelectContent>
                           <SelectItem value="finished">Finished</SelectItem>
                           <SelectItem value="raw_material">Raw Material</SelectItem>
-                          <SelectItem value="semi_finished">Semi Finished</SelectItem>
+                          <SelectItem value="service">Service</SelectItem>
+                          <SelectItem value="consumable">Consumable</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>

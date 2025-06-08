@@ -281,7 +281,7 @@ const ProductEdit = () => {
         hsn_sac_code: formData.hsn_sac_code || null,
         gender: validateEnumValue(formData.gender, ['men', 'women', 'kids', 'unisex']) as 'men' | 'women' | 'kids' | 'unisex' | null,
         age_group: validateEnumValue(formData.age_group, ['infant', 'kids', 'adult']) as 'infant' | 'kids' | 'adult' | null,
-        season: validateEnumValue(formData.season, ['spring', 'summer', 'autumn', 'winter', 'all_season']) as 'spring' | 'summer' | 'autumn' | 'winter' | 'all_season' | null,
+        season: validateEnumValue(formData.season, ['summer', 'winter', 'monsoon', 'all_season']) as 'summer' | 'winter' | 'monsoon' | 'all_season' | null,
         collection_name: formData.collection_name || null,
         style_number: formData.style_number || null,
         fabric_composition: formData.fabric_composition || null,
@@ -325,7 +325,7 @@ const ProductEdit = () => {
       } else {
         result = await supabase
           .from('products')
-          .insert([saveData]);
+          .insert(saveData);
       }
 
       if (result.error) throw result.error;
@@ -564,10 +564,9 @@ const ProductEdit = () => {
                           <SelectValue placeholder="Select season" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="spring">Spring</SelectItem>
                           <SelectItem value="summer">Summer</SelectItem>
-                          <SelectItem value="autumn">Autumn</SelectItem>
                           <SelectItem value="winter">Winter</SelectItem>
+                          <SelectItem value="monsoon">Monsoon</SelectItem>
                           <SelectItem value="all_season">All Season</SelectItem>
                         </SelectContent>
                       </Select>

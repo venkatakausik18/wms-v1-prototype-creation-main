@@ -20,6 +20,8 @@ import WarehouseZones from "./pages/WarehouseZones";
 import WarehouseZoneEdit from "./pages/WarehouseZoneEdit";
 import StorageBins from "./pages/StorageBins";
 import StorageBinEdit from "./pages/StorageBinEdit";
+import ProductList from "./pages/ProductList";
+import ProductEdit from "./pages/ProductEdit";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -52,6 +54,9 @@ const App = () => (
             <Route path="/masters/warehouse/zones/:zoneId/bins" element={<StorageBins />} />
             <Route path="/masters/warehouse/zones/:zoneId/bins/add" element={<StorageBinEdit />} />
             <Route path="/masters/warehouse/bins/:binId/edit" element={<StorageBinEdit />} />
+            <Route path="/masters/products/list" element={<ProductList />} />
+            <Route path="/masters/products/add" element={<ProductEdit />} />
+            <Route path="/masters/products/edit/:productId" element={<ProductEdit />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

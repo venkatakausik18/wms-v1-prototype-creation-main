@@ -57,7 +57,7 @@ const BrandEdit = () => {
       const { data, error } = await supabase
         .from('brands')
         .select('*')
-        .eq('brand_id', brandId)
+        .eq('brand_id', parseInt(brandId)) // Convert string to number
         .single();
 
       if (error) {
@@ -194,17 +194,17 @@ const BrandEdit = () => {
         manufacturer_contact: formData.manufacturer_contact.trim() || null,
         brand_category: formData.brand_category.trim() || null,
         is_active: formData.is_active,
-        created_by: parseInt(user.id),
+        created_by: parseInt(user.id), // Convert string to number
       };
 
       console.log('Saving brand data:', saveData);
 
       let result;
-      if (isEditMode) {
+      if (isEditMode && brandId) {
         result = await supabase
           .from('brands')
           .update(saveData)
-          .eq('brand_id', brandId);
+          .eq('brand_id', parseInt(brandId)); // Convert string to number
       } else {
         result = await supabase
           .from('brands')

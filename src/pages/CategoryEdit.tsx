@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -342,15 +341,15 @@ const CategoryEdit = () => {
               <div className="space-y-2">
                 <Label htmlFor="parent_category_id">Parent Category</Label>
                 <Select
-                  value={formData.parent_category_id?.toString() || ""}
-                  onValueChange={(value) => handleInputChange('parent_category_id', value ? parseInt(value) : null)}
+                  value={formData.parent_category_id?.toString() || "none"}
+                  onValueChange={(value) => handleInputChange('parent_category_id', value === "none" ? null : parseInt(value))}
                   disabled={isViewMode}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select parent category (optional)" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">No Parent (Root Level)</SelectItem>
+                    <SelectItem value="none">No Parent (Root Level)</SelectItem>
                     {filteredParentCategories.map((cat) => (
                       <SelectItem key={cat.category_id} value={cat.category_id.toString()}>
                         {cat.category_name} (Level {cat.category_level})

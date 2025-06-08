@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { 
   Sidebar, 
@@ -46,7 +45,7 @@ const navigationItems = [
       { title: "Warehouses", url: "/masters/warehouse/list" },
       { title: "Products", url: "/masters/products/list" },
       { title: "Brands", url: "/masters/brands/list" },
-      { title: "Categories", url: "/masters/categories" },
+      { title: "Categories", url: "/masters/categories/list" },
       { title: "Customers", url: "/masters/customers" },
       { title: "Vendors", url: "/masters/vendors" },
     ]

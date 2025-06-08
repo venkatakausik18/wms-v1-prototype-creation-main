@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -137,6 +137,7 @@ const ProductEdit = () => {
   const [uoms, setUOMs] = useState<UOM[]>([]);
   const [loading, setLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [company, setCompany] = useState<any>(null);
 
   useEffect(() => {
     if (user) {
@@ -145,6 +146,14 @@ const ProductEdit = () => {
         fetchProductData();
       }
     }
+    const fetchCompany = async () => {
+      const { data, error } = await supabase
+        .from('companies')
+        .select('company_id, company_name, company_code')
+        .single();
+      if (!error) setCompany(data);
+    };
+    fetchCompany();
   }, [user, productId, isEdit]);
 
   const fetchDropdownData = async () => {
@@ -358,27 +367,23 @@ const ProductEdit = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto p-6">
+      <div className="max-w-6xl mx-auto px-4 md:px-8 py-6">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <Button
-                variant="ghost"
-                onClick={() => navigate('/masters/products/list')}
-                className="mb-2"
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Products
+          <CardHeader>
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="sm" onClick={() => navigate('/masters/products/list')}>
+                <ArrowLeft className="h-4 w-4" />
               </Button>
-              <CardTitle>{isEdit ? 'Edit Product' : 'Add New Product'}</CardTitle>
+              <div>
+                <CardTitle>{isEdit ? 'Edit Product' : 'Add New Product'}</CardTitle>
+                <CardDescription>
+                  {company ? `${company.company_name} (${company.company_code})` : 'Loading...'}
+                </CardDescription>
+              </div>
             </div>
-            <Button onClick={handleSubmit} disabled={isSaving}>
-              <Save className="h-4 w-4 mr-2" />
-              {isSaving ? 'Saving...' : 'Save Product'}
-            </Button>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} className="space-y-6">
               <Tabs defaultValue="basic" className="w-full">
                 <TabsList className="grid w-full grid-cols-5">
                   <TabsTrigger value="basic">Basic Info</TabsTrigger>
@@ -387,9 +392,8 @@ const ProductEdit = () => {
                   <TabsTrigger value="stock">Stock</TabsTrigger>
                   <TabsTrigger value="other">Other</TabsTrigger>
                 </TabsList>
-
                 <TabsContent value="basic" className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <Label htmlFor="product_code">Product Code *</Label>
                       <Input
@@ -418,7 +422,7 @@ const ProductEdit = () => {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <Label htmlFor="brand_id">Brand</Label>
                       <Select value={formData.brand_id} onValueChange={(value) => updateFormData('brand_id', value)}>
@@ -466,7 +470,7 @@ const ProductEdit = () => {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <Label htmlFor="primary_uom_id">Primary UOM *</Label>
                       <Select value={formData.primary_uom_id} onValueChange={(value) => updateFormData('primary_uom_id', value)}>
@@ -895,6 +899,15 @@ const ProductEdit = () => {
                   </div>
                 </TabsContent>
               </Tabs>
+              <div className="flex gap-4 pt-6">
+                <Button type="submit" disabled={isSaving}>
+                  <Save className="h-4 w-4 mr-2" />
+                  {isSaving ? 'Saving...' : isEdit ? 'Update Product' : 'Save Product'}
+                </Button>
+                <Button type="button" variant="outline" onClick={() => navigate('/masters/products/list')}>
+                  Cancel
+                </Button>
+              </div>
             </form>
           </CardContent>
         </Card>

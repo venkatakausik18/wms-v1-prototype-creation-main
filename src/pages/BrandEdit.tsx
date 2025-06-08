@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -46,6 +45,7 @@ const BrandEdit = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string>('');
+  const [company, setCompany] = useState<any>(null);
 
   // Fetch brand data for editing
   const { data: brand, isLoading } = useQuery({
@@ -88,6 +88,17 @@ const BrandEdit = () => {
       }
     }
   }, [brand]);
+
+  useEffect(() => {
+    const fetchCompany = async () => {
+      const { data, error } = await supabase
+        .from('companies')
+        .select('company_id, company_name, company_code')
+        .single();
+      if (!error) setCompany(data);
+    };
+    fetchCompany();
+  }, []);
 
   const handleInputChange = (field: keyof BrandFormData, value: string | boolean) => {
     setFormData(prev => ({
@@ -265,10 +276,17 @@ const BrandEdit = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Brand Information</CardTitle>
-            <CardDescription>
-              {isViewMode ? 'Brand details are shown below' : 'Fill in the brand details below'}
-            </CardDescription>
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="sm" onClick={() => navigate('/masters/brands/list')}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div>
+                <CardTitle>{isEditMode ? 'Edit Brand' : isViewMode ? 'View Brand' : 'Add Brand'}</CardTitle>
+                <CardDescription>
+                  {company ? `${company.company_name} (${company.company_code})` : 'Loading...'}
+                </CardDescription>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">

@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -113,7 +112,6 @@ const Dashboard = () => {
   const recentTransactions = [
     { id: "GRN-001", type: "Goods Receipt", amount: "₹45,230", status: "Completed", time: "2 hours ago" },
     { id: "SO-156", type: "Sales Order", amount: "₹23,450", status: "Processing", time: "4 hours ago" },
-    { id: "PO-789", type: "Purchase Order", amount: "₹67,890", status: "Pending", time: "6 hours ago" },
     { id: "ST-045", type: "Stock Transfer", amount: "₹12,340", status: "Completed", time: "8 hours ago" },
   ];
 

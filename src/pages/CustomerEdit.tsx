@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -43,7 +42,7 @@ interface CustomerFormData {
   territory: string;
   customer_group: string;
   price_list: string;
-  preferred_communication: 'email' | 'phone' | 'sms' | 'post';
+  preferred_communication: 'email' | 'sms' | 'whatsapp' | 'phone';
   language_preference: string;
   bank_name: string;
   bank_account_number: string;
@@ -103,6 +102,7 @@ const CustomerEdit = () => {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [company, setCompany] = useState<any>(null);
 
   // Fetch customer data for editing
   const { data: customer, isLoading } = useQuery({
@@ -128,14 +128,14 @@ const CustomerEdit = () => {
     enabled: !!customerId,
   });
 
-  // Fetch salespeople for dropdown - using auth_user_id field that exists in users table
+  // Fetch salespeople for dropdown - using user_id field that exists in users table
   const { data: salespeople } = useQuery({
     queryKey: ['salespeople'],
     queryFn: async () => {
       console.log('Fetching salespeople');
       const { data, error } = await supabase
         .from('users')
-        .select('user_id, email, auth_user_id')
+        .select('user_id, email')
         .eq('company_id', 1) // You might want to get this from context/auth
         .eq('is_active', true)
         .order('email');
@@ -191,6 +191,17 @@ const CustomerEdit = () => {
       });
     }
   }, [customer]);
+
+  useEffect(() => {
+    const fetchCompany = async () => {
+      const { data, error } = await supabase
+        .from('companies')
+        .select('company_id, company_name, company_code')
+        .single();
+      if (!error) setCompany(data);
+    };
+    fetchCompany();
+  }, []);
 
   const handleInputChange = (field: keyof CustomerFormData, value: string | boolean | number | null) => {
     setFormData(prev => ({
@@ -321,12 +332,6 @@ const CustomerEdit = () => {
     }
   };
 
-  const getPageTitle = () => {
-    if (isViewMode) return 'View Customer';
-    if (isEditMode) return 'Edit Customer';
-    return 'Add Customer';
-  };
-
   if (customerId && isLoading) {
     return (
       <Layout>
@@ -339,34 +344,25 @@ const CustomerEdit = () => {
 
   return (
     <Layout>
-      <div className="max-w-4xl mx-auto space-y-6">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => navigate('/masters/customers/list')}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Customers
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">{getPageTitle()}</h1>
-            <p className="text-gray-600">
-              {isViewMode ? 'View customer details' : isEditMode ? 'Update customer information' : 'Create a new customer'}
-            </p>
-          </div>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Basic Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                Basic Information
-              </CardTitle>
-              <CardDescription>
-                Enter the customer's basic details
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="max-w-6xl mx-auto px-4 md:px-8 py-6">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="sm" onClick={() => navigate('/masters/customers/list')}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div>
+                <CardTitle>{isEditMode ? 'Edit Customer' : isViewMode ? 'View Customer' : 'Add Customer'}</CardTitle>
+                <CardDescription>
+                  {company ? `${company.company_name} (${company.company_code})` : 'Loading...'}
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Basic Information */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="customer_code">Customer Code *</Label>
                   <Input
@@ -407,10 +403,8 @@ const CustomerEdit = () => {
                     required
                   />
                 </div>
-              </div>
 
-              {formData.customer_type === 'company' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {formData.customer_type === 'company' && (
                   <div className="space-y-2">
                     <Label htmlFor="company_name">Company Name *</Label>
                     <Input
@@ -422,21 +416,19 @@ const CustomerEdit = () => {
                       required
                     />
                   </div>
+                )}
 
-                  <div className="space-y-2">
-                    <Label htmlFor="contact_person">Contact Person</Label>
-                    <Input
-                      id="contact_person"
-                      value={formData.contact_person}
-                      onChange={(e) => handleInputChange('contact_person', e.target.value)}
-                      placeholder="Enter contact person"
-                      disabled={isViewMode}
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="contact_person">Contact Person</Label>
+                  <Input
+                    id="contact_person"
+                    value={formData.contact_person}
+                    onChange={(e) => handleInputChange('contact_person', e.target.value)}
+                    placeholder="Enter contact person"
+                    disabled={isViewMode}
+                  />
                 </div>
-              )}
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="primary_phone">Primary Phone</Label>
                   <Input
@@ -470,9 +462,7 @@ const CustomerEdit = () => {
                     disabled={isViewMode}
                   />
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="website">Website</Label>
                   <Input
@@ -484,54 +474,33 @@ const CustomerEdit = () => {
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="business_type">Business Type</Label>
-                  <Input
-                    id="business_type"
-                    value={formData.business_type}
-                    onChange={(e) => handleInputChange('business_type', e.target.value)}
-                    placeholder="Enter business type"
-                    disabled={isViewMode}
-                  />
-                </div>
+                {formData.customer_type === 'individual' ? (
+                  <div className="space-y-2">
+                    <Label htmlFor="date_of_birth">Date of Birth</Label>
+                    <Input
+                      id="date_of_birth"
+                      type="date"
+                      value={formData.date_of_birth}
+                      onChange={(e) => handleInputChange('date_of_birth', e.target.value)}
+                      disabled={isViewMode}
+                    />
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Label htmlFor="date_of_incorporation">Date of Incorporation</Label>
+                    <Input
+                      id="date_of_incorporation"
+                      type="date"
+                      value={formData.date_of_incorporation}
+                      onChange={(e) => handleInputChange('date_of_incorporation', e.target.value)}
+                      disabled={isViewMode}
+                    />
+                  </div>
+                )}
               </div>
 
-              {formData.customer_type === 'individual' ? (
-                <div className="space-y-2">
-                  <Label htmlFor="date_of_birth">Date of Birth</Label>
-                  <Input
-                    id="date_of_birth"
-                    type="date"
-                    value={formData.date_of_birth}
-                    onChange={(e) => handleInputChange('date_of_birth', e.target.value)}
-                    disabled={isViewMode}
-                  />
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <Label htmlFor="date_of_incorporation">Date of Incorporation</Label>
-                  <Input
-                    id="date_of_incorporation"
-                    type="date"
-                    value={formData.date_of_incorporation}
-                    onChange={(e) => handleInputChange('date_of_incorporation', e.target.value)}
-                    disabled={isViewMode}
-                  />
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Tax & Legal Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Building className="h-5 w-5" />
-                Tax & Legal Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Tax & Legal Information */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="gst_number">GST Number</Label>
                   <Input
@@ -564,9 +533,7 @@ const CustomerEdit = () => {
                     disabled={isViewMode}
                   />
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="flex items-center space-x-2">
                   <Switch
                     id="tds_applicable"
@@ -590,15 +557,8 @@ const CustomerEdit = () => {
                   </div>
                 )}
               </div>
-            </CardContent>
-          </Card>
 
-          {/* Credit & Financial Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Credit & Financial Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
+              {/* Credit & Financial Information */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="credit_limit">Credit Limit</Label>
@@ -717,15 +677,8 @@ const CustomerEdit = () => {
                   disabled={isViewMode}
                 />
               </div>
-            </CardContent>
-          </Card>
 
-          {/* Business Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Business Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
+              {/* Business Information */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="salesperson_id">Salesperson</Label>
@@ -789,7 +742,7 @@ const CustomerEdit = () => {
                   <Label htmlFor="preferred_communication">Preferred Communication</Label>
                   <Select
                     value={formData.preferred_communication}
-                    onValueChange={(value: 'email' | 'phone' | 'sms' | 'post') => handleInputChange('preferred_communication', value)}
+                    onValueChange={(value: 'email' | 'sms' | 'whatsapp' | 'phone') => handleInputChange('preferred_communication', value)}
                     disabled={isViewMode}
                   >
                     <SelectTrigger>
@@ -797,9 +750,9 @@ const CustomerEdit = () => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="email">Email</SelectItem>
-                      <SelectItem value="phone">Phone</SelectItem>
                       <SelectItem value="sms">SMS</SelectItem>
-                      <SelectItem value="post">Post</SelectItem>
+                      <SelectItem value="whatsapp">WhatsApp</SelectItem>
+                      <SelectItem value="phone">Phone</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -823,15 +776,8 @@ const CustomerEdit = () => {
                   </Select>
                 </div>
               </div>
-            </CardContent>
-          </Card>
 
-          {/* Banking Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Banking Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
+              {/* Banking Information */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="bank_name">Bank Name</Label>
@@ -866,15 +812,8 @@ const CustomerEdit = () => {
                   />
                 </div>
               </div>
-            </CardContent>
-          </Card>
 
-          {/* Additional Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Additional Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
+              {/* Additional Information */}
               <div className="space-y-2">
                 <Label htmlFor="special_instructions">Special Instructions</Label>
                 <Textarea
@@ -896,34 +835,24 @@ const CustomerEdit = () => {
                 />
                 <Label htmlFor="is_active">Active</Label>
               </div>
-            </CardContent>
-          </Card>
 
-          {!isViewMode && (
-            <div className="flex gap-4 pt-6">
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Saving...' : isEditMode ? 'Update Customer' : 'Create Customer'}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => navigate('/masters/customers/list')}
-              >
-                Cancel
-              </Button>
-              {customerId && !isViewMode && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => navigate(`/masters/customers/${customerId}/addresses`)}
-                >
-                  <MapPin className="h-4 w-4 mr-2" />
-                  Manage Addresses
+              <div className="flex gap-4 pt-6">
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? 'Saving...' : isEditMode ? 'Update Customer' : 'Create Customer'}
                 </Button>
-              )}
-            </div>
-          )}
-        </form>
+                <Button type="button" variant="outline" onClick={() => navigate('/masters/customers/list')}>
+                  Cancel
+                </Button>
+                {customerId && !isViewMode && (
+                  <Button type="button" variant="ghost" onClick={() => navigate(`/masters/customers/${customerId}/addresses`)}>
+                    <MapPin className="h-4 w-4 mr-2" />
+                    Manage Addresses
+                  </Button>
+                )}
+              </div>
+            </form>
+          </CardContent>
+        </Card>
       </div>
     </Layout>
   );

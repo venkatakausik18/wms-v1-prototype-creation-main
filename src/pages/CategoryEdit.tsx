@@ -46,6 +46,7 @@ const CategoryEdit = () => {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [company, setCompany] = useState<any>(null);
 
   // Fetch category data for editing
   const { data: category, isLoading } = useQuery({
@@ -269,6 +270,17 @@ const CategoryEdit = () => {
     return 'Add Category';
   };
 
+  useEffect(() => {
+    const fetchCompany = async () => {
+      const { data, error } = await supabase
+        .from('companies')
+        .select('company_id, company_name, company_code')
+        .single();
+      if (!error) setCompany(data);
+    };
+    fetchCompany();
+  }, []);
+
   if (categoryId && isLoading) {
     return (
       <Layout>
@@ -305,10 +317,17 @@ const CategoryEdit = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Category Information</CardTitle>
-            <CardDescription>
-              {isViewMode ? 'Category details are shown below' : 'Fill in the category details below'}
-            </CardDescription>
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="sm" onClick={() => navigate('/masters/categories/list')}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div>
+                <CardTitle>{isEditMode ? 'Edit Category' : isViewMode ? 'View Category' : 'Add Category'}</CardTitle>
+                <CardDescription>
+                  {company ? `${company.company_name} (${company.company_code})` : 'Loading...'}
+                </CardDescription>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">

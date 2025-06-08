@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -191,7 +190,7 @@ const ProductEdit = () => {
       const { data, error } = await supabase
         .from('products')
         .select('*')
-        .eq('product_id', productId)
+        .eq('product_id', parseInt(productId))
         .single();
 
       if (error) throw error;
@@ -253,6 +252,10 @@ const ProductEdit = () => {
     }
   };
 
+  const validateEnumValue = (value: string, validValues: string[]): string | null => {
+    return validValues.includes(value) ? value : null;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -270,15 +273,15 @@ const ProductEdit = () => {
         product_name_local: formData.product_name_local || null,
         brand_id: formData.brand_id ? parseInt(formData.brand_id) : null,
         category_id: parseInt(formData.category_id),
-        product_type: formData.product_type,
+        product_type: validateEnumValue(formData.product_type, ['finished', 'raw_material', 'semi_finished']) as 'finished' | 'raw_material' | 'semi_finished' || 'finished',
         primary_uom_id: parseInt(formData.primary_uom_id),
         secondary_uom_id: formData.secondary_uom_id ? parseInt(formData.secondary_uom_id) : null,
         barcode: formData.barcode || null,
         qr_code: formData.qr_code || null,
         hsn_sac_code: formData.hsn_sac_code || null,
-        gender: formData.gender || null,
-        age_group: formData.age_group || null,
-        season: formData.season || null,
+        gender: validateEnumValue(formData.gender, ['male', 'female', 'unisex']) as 'male' | 'female' | 'unisex' | null,
+        age_group: validateEnumValue(formData.age_group, ['infant', 'toddler', 'kids', 'teen', 'adult']) as 'infant' | 'toddler' | 'kids' | 'teen' | 'adult' | null,
+        season: validateEnumValue(formData.season, ['spring', 'summer', 'autumn', 'winter', 'all_season']) as 'spring' | 'summer' | 'autumn' | 'winter' | 'all_season' | null,
         collection_name: formData.collection_name || null,
         style_number: formData.style_number || null,
         fabric_composition: formData.fabric_composition || null,
@@ -318,11 +321,11 @@ const ProductEdit = () => {
         result = await supabase
           .from('products')
           .update(saveData)
-          .eq('product_id', productId);
+          .eq('product_id', parseInt(productId));
       } else {
         result = await supabase
           .from('products')
-          .insert([saveData]);
+          .insert(saveData);
       }
 
       if (result.error) throw result.error;

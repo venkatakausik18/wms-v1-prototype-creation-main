@@ -23,7 +23,7 @@ const WarehouseZoneEdit = () => {
   const [formData, setFormData] = useState({
     zone_code: '',
     zone_name: '',
-    zone_type: '',
+    zone_type: 'storage' as 'receiving' | 'storage' | 'picking' | 'dispatch' | 'quarantine',
     temperature_min: '',
     temperature_max: '',
     special_handling_requirements: '',
@@ -84,7 +84,7 @@ const WarehouseZoneEdit = () => {
         setFormData({
           zone_code: data.zone_code || '',
           zone_name: data.zone_name || '',
-          zone_type: data.zone_type || '',
+          zone_type: data.zone_type || 'storage',
           temperature_min: data.temperature_min?.toString() || '',
           temperature_max: data.temperature_max?.toString() || '',
           special_handling_requirements: data.special_handling_requirements || '',
@@ -144,7 +144,7 @@ const WarehouseZoneEdit = () => {
       const saveData = {
         zone_code: formData.zone_code,
         zone_name: formData.zone_name,
-        zone_type: formData.zone_type || 'ambient',
+        zone_type: formData.zone_type,
         temperature_min: formData.temperature_min ? parseFloat(formData.temperature_min) : null,
         temperature_max: formData.temperature_max ? parseFloat(formData.temperature_max) : null,
         special_handling_requirements: formData.special_handling_requirements || null,
@@ -236,16 +236,19 @@ const WarehouseZoneEdit = () => {
                       <Label htmlFor="zone_type">Zone Type</Label>
                       <Select 
                         value={formData.zone_type} 
-                        onValueChange={(value) => setFormData(prev => ({ ...prev, zone_type: value }))}
+                        onValueChange={(value: 'receiving' | 'storage' | 'picking' | 'dispatch' | 'quarantine') => 
+                          setFormData(prev => ({ ...prev, zone_type: value }))
+                        }
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select type" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="ambient">Ambient</SelectItem>
-                          <SelectItem value="cold">Cold</SelectItem>
-                          <SelectItem value="frozen">Frozen</SelectItem>
-                          <SelectItem value="hazmat">Hazmat</SelectItem>
+                          <SelectItem value="receiving">Receiving</SelectItem>
+                          <SelectItem value="storage">Storage</SelectItem>
+                          <SelectItem value="picking">Picking</SelectItem>
+                          <SelectItem value="dispatch">Dispatch</SelectItem>
+                          <SelectItem value="quarantine">Quarantine</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>

@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Plus, Edit, Search } from "lucide-react";
+import { Plus, Edit, Search, Trash2 } from "lucide-react";
 
 interface Warehouse {
   warehouse_id: number;
@@ -26,12 +26,13 @@ interface Warehouse {
 const WarehouseList = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [filteredWarehouses, setFilteredWarehouses] = useState<Warehouse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [warehouseTypeFilter, setWarehouseTypeFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [selectedWarehouses, setSelectedWarehouses] = useState<number[]>([]);
 
   useEffect(() => {
@@ -46,7 +47,7 @@ const WarehouseList = () => {
 
   useEffect(() => {
     filterWarehouses();
-  }, [warehouses, searchTerm, warehouseTypeFilter, statusFilter]);
+  }, [warehouses, searchTerm, typeFilter, statusFilter]);
 
   const fetchWarehouses = async () => {
     try {
@@ -75,45 +76,66 @@ const WarehouseList = () => {
       );
     }
 
-    if (warehouseTypeFilter) {
-      filtered = filtered.filter(warehouse => warehouse.warehouse_type === warehouseTypeFilter);
+    if (typeFilter && typeFilter !== "all") {
+      filtered = filtered.filter(warehouse => warehouse.warehouse_type === typeFilter);
     }
 
-    if (statusFilter !== "") {
-      filtered = filtered.filter(warehouse => warehouse.is_active === (statusFilter === "true"));
+    if (statusFilter !== "all") {
+      filtered = filtered.filter(warehouse => 
+        statusFilter === "active" ? warehouse.is_active : !warehouse.is_active
+      );
     }
 
     setFilteredWarehouses(filtered);
   };
 
-  const handleBulkStatusChange = async (isActive: boolean) => {
+  const handleToggleActive = async (warehouseId: number, currentStatus: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('warehouses')
+        .update({ is_active: !currentStatus })
+        .eq('warehouse_id', warehouseId);
+
+      if (error) throw error;
+      
+      toast.success(`Warehouse ${!currentStatus ? 'activated' : 'deactivated'} successfully`);
+      fetchWarehouses();
+    } catch (error) {
+      console.error('Error updating warehouse status:', error);
+      toast.error('Failed to update warehouse status');
+    }
+  };
+
+  const handleBulkAction = async (action: string) => {
     if (selectedWarehouses.length === 0) {
-      toast.error('Please select warehouses to update');
+      toast.error('Please select warehouses first');
       return;
     }
 
     try {
-      const { error } = await supabase
-        .from('warehouses')
-        .update({ is_active: isActive })
-        .in('warehouse_id', selectedWarehouses);
-
-      if (error) throw error;
-
-      toast.success(`Warehouses ${isActive ? 'activated' : 'deactivated'} successfully`);
+      if (action === 'activate') {
+        const { error } = await supabase
+          .from('warehouses')
+          .update({ is_active: true })
+          .in('warehouse_id', selectedWarehouses);
+        
+        if (error) throw error;
+        toast.success('Selected warehouses activated');
+      } else if (action === 'deactivate') {
+        const { error } = await supabase
+          .from('warehouses')
+          .update({ is_active: false })
+          .in('warehouse_id', selectedWarehouses);
+        
+        if (error) throw error;
+        toast.success('Selected warehouses deactivated');
+      }
+      
       setSelectedWarehouses([]);
       fetchWarehouses();
     } catch (error) {
-      console.error('Error updating warehouses:', error);
-      toast.error('Failed to update warehouses');
-    }
-  };
-
-  const handleSelectWarehouse = (warehouseId: number, checked: boolean) => {
-    if (checked) {
-      setSelectedWarehouses(prev => [...prev, warehouseId]);
-    } else {
-      setSelectedWarehouses(prev => prev.filter(id => id !== warehouseId));
+      console.error('Error performing bulk action:', error);
+      toast.error('Failed to perform bulk action');
     }
   };
 
@@ -122,6 +144,14 @@ const WarehouseList = () => {
       setSelectedWarehouses(filteredWarehouses.map(w => w.warehouse_id));
     } else {
       setSelectedWarehouses([]);
+    }
+  };
+
+  const handleSelectWarehouse = (warehouseId: number, checked: boolean) => {
+    if (checked) {
+      setSelectedWarehouses(prev => [...prev, warehouseId]);
+    } else {
+      setSelectedWarehouses(prev => prev.filter(id => id !== warehouseId));
     }
   };
 
@@ -138,10 +168,10 @@ const WarehouseList = () => {
       <div className="space-y-6">
         <Card>
           <CardHeader>
-            <div className="flex justify-between items-center">
+            <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Warehouse Management</CardTitle>
-                <CardDescription>Manage your warehouses and storage facilities</CardDescription>
+                <CardTitle>Warehouse Master</CardTitle>
+                <CardDescription>Manage warehouse locations and configurations</CardDescription>
               </div>
               <Button onClick={() => navigate('/masters/warehouse/add')}>
                 <Plus className="mr-2 h-4 w-4" />
@@ -152,8 +182,8 @@ const WarehouseList = () => {
           <CardContent>
             <div className="space-y-4">
               {/* Filters */}
-              <div className="flex flex-wrap gap-4">
-                <div className="flex-1 min-w-[200px]">
+              <div className="flex gap-4">
+                <div className="flex-1">
                   <div className="relative">
                     <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -164,16 +194,15 @@ const WarehouseList = () => {
                     />
                   </div>
                 </div>
-                <Select value={warehouseTypeFilter} onValueChange={setWarehouseTypeFilter}>
+                <Select value={typeFilter} onValueChange={setTypeFilter}>
                   <SelectTrigger className="w-[180px]">
                     <SelectValue placeholder="Warehouse Type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Types</SelectItem>
+                    <SelectItem value="all">All Types</SelectItem>
                     <SelectItem value="main">Main</SelectItem>
-                    <SelectItem value="branch">Branch</SelectItem>
                     <SelectItem value="transit">Transit</SelectItem>
-                    <SelectItem value="retail">Retail</SelectItem>
+                    <SelectItem value="virtual">Virtual</SelectItem>
                   </SelectContent>
                 </Select>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -181,29 +210,24 @@ const WarehouseList = () => {
                     <SelectValue placeholder="Status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Status</SelectItem>
-                    <SelectItem value="true">Active</SelectItem>
-                    <SelectItem value="false">Inactive</SelectItem>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               {/* Bulk Actions */}
               {selectedWarehouses.length > 0 && (
-                <div className="flex gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => handleBulkStatusChange(true)}
-                  >
-                    Activate Selected ({selectedWarehouses.length})
+                <div className="flex gap-2 p-3 bg-muted rounded-lg">
+                  <span className="text-sm text-muted-foreground">
+                    {selectedWarehouses.length} selected
+                  </span>
+                  <Button size="sm" variant="outline" onClick={() => handleBulkAction('activate')}>
+                    Activate
                   </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => handleBulkStatusChange(false)}
-                  >
-                    Deactivate Selected ({selectedWarehouses.length})
+                  <Button size="sm" variant="outline" onClick={() => handleBulkAction('deactivate')}>
+                    Deactivate
                   </Button>
                 </div>
               )}
@@ -222,8 +246,7 @@ const WarehouseList = () => {
                       <TableHead>Code</TableHead>
                       <TableHead>Name</TableHead>
                       <TableHead>Type</TableHead>
-                      <TableHead>City</TableHead>
-                      <TableHead>State</TableHead>
+                      <TableHead>Location</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
@@ -231,13 +254,13 @@ const WarehouseList = () => {
                   <TableBody>
                     {isLoading ? (
                       <TableRow>
-                        <TableCell colSpan={8} className="text-center py-8">
+                        <TableCell colSpan={7} className="text-center py-8">
                           Loading warehouses...
                         </TableCell>
                       </TableRow>
                     ) : filteredWarehouses.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={8} className="text-center py-8">
+                        <TableCell colSpan={7} className="text-center py-8">
                           No warehouses found
                         </TableCell>
                       </TableRow>
@@ -255,8 +278,7 @@ const WarehouseList = () => {
                           <TableCell className="font-medium">{warehouse.warehouse_code}</TableCell>
                           <TableCell>{warehouse.warehouse_name}</TableCell>
                           <TableCell className="capitalize">{warehouse.warehouse_type}</TableCell>
-                          <TableCell>{warehouse.city}</TableCell>
-                          <TableCell>{warehouse.state}</TableCell>
+                          <TableCell>{warehouse.city}, {warehouse.state}</TableCell>
                           <TableCell>
                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                               warehouse.is_active 
@@ -281,6 +303,13 @@ const WarehouseList = () => {
                                 onClick={() => navigate(`/masters/warehouse/${warehouse.warehouse_id}/zones`)}
                               >
                                 Zones
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleToggleActive(warehouse.warehouse_id, warehouse.is_active)}
+                              >
+                                {warehouse.is_active ? 'Deactivate' : 'Activate'}
                               </Button>
                             </div>
                           </TableCell>

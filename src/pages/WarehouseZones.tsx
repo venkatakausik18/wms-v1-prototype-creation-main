@@ -32,7 +32,7 @@ const WarehouseZones = () => {
   const [warehouse, setWarehouse] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [zoneTypeFilter, setZoneTypeFilter] = useState("");
+  const [zoneTypeFilter, setZoneTypeFilter] = useState("all");
 
   useEffect(() => {
     if (!loading && !user) {
@@ -95,7 +95,7 @@ const WarehouseZones = () => {
       );
     }
 
-    if (zoneTypeFilter) {
+    if (zoneTypeFilter && zoneTypeFilter !== "all") {
       filtered = filtered.filter(zone => zone.zone_type === zoneTypeFilter);
     }
 
@@ -151,11 +151,12 @@ const WarehouseZones = () => {
                     <SelectValue placeholder="Zone Type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Types</SelectItem>
-                    <SelectItem value="ambient">Ambient</SelectItem>
-                    <SelectItem value="cold">Cold</SelectItem>
-                    <SelectItem value="frozen">Frozen</SelectItem>
-                    <SelectItem value="hazmat">Hazmat</SelectItem>
+                    <SelectItem value="all">All Types</SelectItem>
+                    <SelectItem value="receiving">Receiving</SelectItem>
+                    <SelectItem value="storage">Storage</SelectItem>
+                    <SelectItem value="picking">Picking</SelectItem>
+                    <SelectItem value="dispatch">Dispatch</SelectItem>
+                    <SelectItem value="quarantine">Quarantine</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

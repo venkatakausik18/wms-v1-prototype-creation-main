@@ -21,12 +21,12 @@ const StorageBinEdit = () => {
 
   const [formData, setFormData] = useState({
     bin_code: '',
-    bin_type: '',
+    bin_type: 'small' as 'small' | 'medium' | 'large' | 'bulk',
     capacity_weight: '',
     capacity_volume: '',
     current_weight: '',
     current_volume: '',
-    bin_status: 'available',
+    bin_status: 'available' as 'available' | 'occupied' | 'damaged' | 'maintenance',
     location_coordinates: '',
     is_active: true
   });
@@ -84,7 +84,7 @@ const StorageBinEdit = () => {
       if (data) {
         setFormData({
           bin_code: data.bin_code || '',
-          bin_type: data.bin_type || '',
+          bin_type: data.bin_type || 'small',
           capacity_weight: data.capacity_weight?.toString() || '',
           capacity_volume: data.capacity_volume?.toString() || '',
           current_weight: data.current_weight?.toString() || '',
@@ -146,7 +146,7 @@ const StorageBinEdit = () => {
     try {
       const saveData = {
         bin_code: formData.bin_code,
-        bin_type: formData.bin_type || 'rack',
+        bin_type: formData.bin_type,
         capacity_weight: formData.capacity_weight ? parseFloat(formData.capacity_weight) : null,
         capacity_volume: formData.capacity_volume ? parseFloat(formData.capacity_volume) : null,
         current_weight: formData.current_weight ? parseFloat(formData.current_weight) : 0,
@@ -231,15 +231,17 @@ const StorageBinEdit = () => {
                       <Label htmlFor="bin_type">Bin Type</Label>
                       <Select 
                         value={formData.bin_type} 
-                        onValueChange={(value) => setFormData(prev => ({ ...prev, bin_type: value }))}
+                        onValueChange={(value: 'small' | 'medium' | 'large' | 'bulk') => 
+                          setFormData(prev => ({ ...prev, bin_type: value }))
+                        }
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select type" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="rack">Rack</SelectItem>
-                          <SelectItem value="floor">Floor</SelectItem>
-                          <SelectItem value="pallet">Pallet</SelectItem>
+                          <SelectItem value="small">Small</SelectItem>
+                          <SelectItem value="medium">Medium</SelectItem>
+                          <SelectItem value="large">Large</SelectItem>
                           <SelectItem value="bulk">Bulk</SelectItem>
                         </SelectContent>
                       </Select>
@@ -295,7 +297,9 @@ const StorageBinEdit = () => {
                       <Label htmlFor="bin_status">Bin Status</Label>
                       <Select 
                         value={formData.bin_status} 
-                        onValueChange={(value) => setFormData(prev => ({ ...prev, bin_status: value }))}
+                        onValueChange={(value: 'available' | 'occupied' | 'damaged' | 'maintenance') => 
+                          setFormData(prev => ({ ...prev, bin_status: value }))
+                        }
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select status" />
@@ -303,7 +307,7 @@ const StorageBinEdit = () => {
                         <SelectContent>
                           <SelectItem value="available">Available</SelectItem>
                           <SelectItem value="occupied">Occupied</SelectItem>
-                          <SelectItem value="reserved">Reserved</SelectItem>
+                          <SelectItem value="damaged">Damaged</SelectItem>
                           <SelectItem value="maintenance">Maintenance</SelectItem>
                         </SelectContent>
                       </Select>

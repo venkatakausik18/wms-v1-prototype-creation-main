@@ -33,15 +33,16 @@ const WarehouseEdit = () => {
     email: '',
     manager_name: '',
     manager_contact: '',
-    warehouse_type: '',
-    is_active: true,
+    warehouse_type: 'main' as 'main' | 'transit' | 'virtual',
     total_area: '',
     temperature_controlled: false,
     security_features: '',
     operating_hours_start: '',
-    operating_hours_end: ''
+    operating_hours_end: '',
+    is_active: true
   });
 
+  const [company, setCompany] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -52,12 +53,28 @@ const WarehouseEdit = () => {
   }, [user, loading, navigate]);
 
   useEffect(() => {
-    if (!isNew) {
+    fetchCompany();
+    if (!isNew && warehouseId) {
       fetchWarehouse();
-    } else {
+    } else if (isNew) {
       generateWarehouseCode();
     }
   }, [warehouseId, isNew]);
+
+  const fetchCompany = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('companies')
+        .select('company_id, company_name, company_code')
+        .single();
+
+      if (error) throw error;
+      setCompany(data);
+    } catch (error) {
+      console.error('Error fetching company:', error);
+      toast.error('Failed to fetch company details');
+    }
+  };
 
   const fetchWarehouse = async () => {
     if (!warehouseId) return;
@@ -86,13 +103,13 @@ const WarehouseEdit = () => {
           email: data.email || '',
           manager_name: data.manager_name || '',
           manager_contact: data.manager_contact || '',
-          warehouse_type: data.warehouse_type || '',
-          is_active: data.is_active ?? true,
+          warehouse_type: data.warehouse_type || 'main',
           total_area: data.total_area?.toString() || '',
           temperature_controlled: data.temperature_controlled || false,
           security_features: data.security_features || '',
           operating_hours_start: data.operating_hours_start || '',
-          operating_hours_end: data.operating_hours_end || ''
+          operating_hours_end: data.operating_hours_end || '',
+          is_active: data.is_active ?? true
         });
       }
     } catch (error) {
@@ -104,15 +121,15 @@ const WarehouseEdit = () => {
   };
 
   const generateWarehouseCode = async () => {
+    if (!company) return;
+
     try {
-      // Get company code - for now using a placeholder
-      const companyCode = "COMP"; // This should come from company settings
+      const prefix = `${company.company_code}-WH-`;
       
-      // Get the next sequence number
       const { data, error } = await supabase
         .from('warehouses')
         .select('warehouse_code')
-        .like('warehouse_code', `${companyCode}-WH-%`)
+        .like('warehouse_code', `${prefix}%`)
         .order('warehouse_code', { ascending: false })
         .limit(1);
 
@@ -127,7 +144,7 @@ const WarehouseEdit = () => {
         }
       }
 
-      const newCode = `${companyCode}-WH-${nextNumber.toString().padStart(4, '0')}`;
+      const newCode = `${prefix}${nextNumber.toString().padStart(4, '0')}`;
       setFormData(prev => ({ ...prev, warehouse_code: newCode }));
     } catch (error) {
       console.error('Error generating warehouse code:', error);
@@ -147,24 +164,24 @@ const WarehouseEdit = () => {
       const saveData = {
         warehouse_code: formData.warehouse_code,
         warehouse_name: formData.warehouse_name,
-        address_line1: formData.address_line1 || null,
-        address_line2: formData.address_line2 || null,
-        city: formData.city || null,
-        state: formData.state || null,
-        pin_code: formData.pin_code || null,
-        country: formData.country || 'India',
-        phone: formData.phone || null,
-        email: formData.email || null,
-        manager_name: formData.manager_name || null,
-        manager_contact: formData.manager_contact || null,
-        warehouse_type: formData.warehouse_type || 'main',
-        is_active: formData.is_active,
+        address_line1: formData.address_line1,
+        address_line2: formData.address_line2,
+        city: formData.city,
+        state: formData.state,
+        pin_code: formData.pin_code,
+        country: formData.country,
+        phone: formData.phone,
+        email: formData.email,
+        manager_name: formData.manager_name,
+        manager_contact: formData.manager_contact,
+        warehouse_type: formData.warehouse_type,
         total_area: formData.total_area ? parseFloat(formData.total_area) : null,
         temperature_controlled: formData.temperature_controlled,
         security_features: formData.security_features || null,
         operating_hours_start: formData.operating_hours_start || null,
         operating_hours_end: formData.operating_hours_end || null,
-        company_id: 1 // This should come from user context
+        is_active: formData.is_active,
+        company_id: company.company_id
       };
 
       if (isNew) {
@@ -213,7 +230,7 @@ const WarehouseEdit = () => {
               <div>
                 <CardTitle>{isNew ? 'Add New Warehouse' : 'Edit Warehouse'}</CardTitle>
                 <CardDescription>
-                  {isNew ? 'Create a new warehouse facility' : 'Update warehouse information'}
+                  {company ? `${company.company_name} (${company.company_code})` : 'Loading...'}
                 </CardDescription>
               </div>
             </div>
@@ -226,10 +243,7 @@ const WarehouseEdit = () => {
             ) : (
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Basic Information */}
                   <div className="space-y-4">
-                    <h3 className="text-lg font-medium">Basic Information</h3>
-                    
                     <div>
                       <Label htmlFor="warehouse_code">Warehouse Code *</Label>
                       <Input
@@ -254,35 +268,79 @@ const WarehouseEdit = () => {
                       <Label htmlFor="warehouse_type">Warehouse Type</Label>
                       <Select 
                         value={formData.warehouse_type} 
-                        onValueChange={(value) => setFormData(prev => ({ ...prev, warehouse_type: value }))}
+                        onValueChange={(value: 'main' | 'transit' | 'virtual') => 
+                          setFormData(prev => ({ ...prev, warehouse_type: value }))
+                        }
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select type" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="main">Main</SelectItem>
-                          <SelectItem value="branch">Branch</SelectItem>
                           <SelectItem value="transit">Transit</SelectItem>
-                          <SelectItem value="retail">Retail</SelectItem>
+                          <SelectItem value="virtual">Virtual</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
 
                     <div>
-                      <Label htmlFor="total_area">Total Area (sq ft)</Label>
+                      <Label htmlFor="address_line1">Address Line 1</Label>
                       <Input
-                        id="total_area"
-                        type="number"
-                        value={formData.total_area}
-                        onChange={(e) => setFormData(prev => ({ ...prev, total_area: e.target.value }))}
+                        id="address_line1"
+                        value={formData.address_line1}
+                        onChange={(e) => setFormData(prev => ({ ...prev, address_line1: e.target.value }))}
                       />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="address_line2">Address Line 2</Label>
+                      <Input
+                        id="address_line2"
+                        value={formData.address_line2}
+                        onChange={(e) => setFormData(prev => ({ ...prev, address_line2: e.target.value }))}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="city">City</Label>
+                        <Input
+                          id="city"
+                          value={formData.city}
+                          onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="state">State</Label>
+                        <Input
+                          id="state"
+                          value={formData.state}
+                          onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="pin_code">Pin Code</Label>
+                        <Input
+                          id="pin_code"
+                          value={formData.pin_code}
+                          onChange={(e) => setFormData(prev => ({ ...prev, pin_code: e.target.value }))}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="country">Country</Label>
+                        <Input
+                          id="country"
+                          value={formData.country}
+                          onChange={(e) => setFormData(prev => ({ ...prev, country: e.target.value }))}
+                        />
+                      </div>
                     </div>
                   </div>
 
-                  {/* Contact Information */}
                   <div className="space-y-4">
-                    <h3 className="text-lg font-medium">Contact Information</h3>
-                    
                     <div>
                       <Label htmlFor="phone">Phone</Label>
                       <Input
@@ -319,127 +377,71 @@ const WarehouseEdit = () => {
                         onChange={(e) => setFormData(prev => ({ ...prev, manager_contact: e.target.value }))}
                       />
                     </div>
-                  </div>
-                </div>
 
-                {/* Address Information */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Address Information</h3>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="address_line1">Address Line 1</Label>
+                      <Label htmlFor="total_area">Total Area (sq ft)</Label>
                       <Input
-                        id="address_line1"
-                        value={formData.address_line1}
-                        onChange={(e) => setFormData(prev => ({ ...prev, address_line1: e.target.value }))}
+                        id="total_area"
+                        type="number"
+                        step="0.01"
+                        value={formData.total_area}
+                        onChange={(e) => setFormData(prev => ({ ...prev, total_area: e.target.value }))}
                       />
                     </div>
 
-                    <div>
-                      <Label htmlFor="address_line2">Address Line 2</Label>
-                      <Input
-                        id="address_line2"
-                        value={formData.address_line2}
-                        onChange={(e) => setFormData(prev => ({ ...prev, address_line2: e.target.value }))}
-                      />
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="operating_hours_start">Start Time</Label>
+                        <Input
+                          id="operating_hours_start"
+                          type="time"
+                          value={formData.operating_hours_start}
+                          onChange={(e) => setFormData(prev => ({ ...prev, operating_hours_start: e.target.value }))}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="operating_hours_end">End Time</Label>
+                        <Input
+                          id="operating_hours_end"
+                          type="time"
+                          value={formData.operating_hours_end}
+                          onChange={(e) => setFormData(prev => ({ ...prev, operating_hours_end: e.target.value }))}
+                        />
+                      </div>
                     </div>
 
-                    <div>
-                      <Label htmlFor="city">City</Label>
-                      <Input
-                        id="city"
-                        value={formData.city}
-                        onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="temperature_controlled"
+                        checked={formData.temperature_controlled}
+                        onCheckedChange={(checked) => 
+                          setFormData(prev => ({ ...prev, temperature_controlled: checked as boolean }))
+                        }
                       />
+                      <Label htmlFor="temperature_controlled">Temperature Controlled</Label>
                     </div>
 
-                    <div>
-                      <Label htmlFor="state">State</Label>
-                      <Input
-                        id="state"
-                        value={formData.state}
-                        onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="is_active"
+                        checked={formData.is_active}
+                        onCheckedChange={(checked) => 
+                          setFormData(prev => ({ ...prev, is_active: checked as boolean }))
+                        }
                       />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="pin_code">PIN Code</Label>
-                      <Input
-                        id="pin_code"
-                        value={formData.pin_code}
-                        onChange={(e) => setFormData(prev => ({ ...prev, pin_code: e.target.value }))}
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="country">Country</Label>
-                      <Input
-                        id="country"
-                        value={formData.country}
-                        onChange={(e) => setFormData(prev => ({ ...prev, country: e.target.value }))}
-                      />
+                      <Label htmlFor="is_active">Active</Label>
                     </div>
                   </div>
                 </div>
 
-                {/* Operational Details */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Operational Details</h3>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="operating_hours_start">Opening Time</Label>
-                      <Input
-                        id="operating_hours_start"
-                        type="time"
-                        value={formData.operating_hours_start}
-                        onChange={(e) => setFormData(prev => ({ ...prev, operating_hours_start: e.target.value }))}
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="operating_hours_end">Closing Time</Label>
-                      <Input
-                        id="operating_hours_end"
-                        type="time"
-                        value={formData.operating_hours_end}
-                        onChange={(e) => setFormData(prev => ({ ...prev, operating_hours_end: e.target.value }))}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="temperature_controlled"
-                      checked={formData.temperature_controlled}
-                      onCheckedChange={(checked) => 
-                        setFormData(prev => ({ ...prev, temperature_controlled: checked as boolean }))
-                      }
-                    />
-                    <Label htmlFor="temperature_controlled">Temperature Controlled</Label>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="security_features">Security Features</Label>
-                    <Textarea
-                      id="security_features"
-                      value={formData.security_features}
-                      onChange={(e) => setFormData(prev => ({ ...prev, security_features: e.target.value }))}
-                      placeholder="Describe security features..."
-                    />
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="is_active"
-                      checked={formData.is_active}
-                      onCheckedChange={(checked) => 
-                        setFormData(prev => ({ ...prev, is_active: checked as boolean }))
-                      }
-                    />
-                    <Label htmlFor="is_active">Active</Label>
-                  </div>
+                <div>
+                  <Label htmlFor="security_features">Security Features</Label>
+                  <Textarea
+                    id="security_features"
+                    value={formData.security_features}
+                    onChange={(e) => setFormData(prev => ({ ...prev, security_features: e.target.value }))}
+                    placeholder="Describe security features..."
+                  />
                 </div>
 
                 <div className="flex justify-end gap-4">
@@ -459,20 +461,6 @@ const WarehouseEdit = () => {
             )}
           </CardContent>
         </Card>
-
-        {!isNew && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Zone Management</CardTitle>
-              <CardDescription>Manage warehouse zones and storage areas</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button onClick={() => navigate(`/masters/warehouse/${warehouseId}/zones`)}>
-                Manage Zones
-              </Button>
-            </CardContent>
-          </Card>
-        )}
       </div>
     </Layout>
   );

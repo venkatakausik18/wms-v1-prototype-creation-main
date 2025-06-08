@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -98,7 +97,7 @@ const WarehouseEdit = () => {
           city: data.city || '',
           state: data.state || '',
           pin_code: data.pin_code || '',
-          country: data.country || 'India',
+          country: 'India', // Default to India since country field doesn't exist in schema
           phone: data.phone || '',
           email: data.email || '',
           manager_name: data.manager_name || '',
@@ -161,6 +160,7 @@ const WarehouseEdit = () => {
 
     setIsSaving(true);
     try {
+      // Remove country from saveData since it's not in the database schema
       const saveData = {
         warehouse_code: formData.warehouse_code,
         warehouse_name: formData.warehouse_name,
@@ -169,7 +169,6 @@ const WarehouseEdit = () => {
         city: formData.city,
         state: formData.state,
         pin_code: formData.pin_code,
-        country: formData.country,
         phone: formData.phone,
         email: formData.email,
         manager_name: formData.manager_name,
@@ -335,6 +334,8 @@ const WarehouseEdit = () => {
                           id="country"
                           value={formData.country}
                           onChange={(e) => setFormData(prev => ({ ...prev, country: e.target.value }))}
+                          disabled
+                          className="bg-gray-50"
                         />
                       </div>
                     </div>

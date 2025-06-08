@@ -22,6 +22,8 @@ import StorageBins from "./pages/StorageBins";
 import StorageBinEdit from "./pages/StorageBinEdit";
 import ProductList from "./pages/ProductList";
 import ProductEdit from "./pages/ProductEdit";
+import BrandList from "./pages/BrandList";
+import BrandEdit from "./pages/BrandEdit";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -57,6 +59,9 @@ const App = () => (
             <Route path="/masters/products/list" element={<ProductList />} />
             <Route path="/masters/products/add" element={<ProductEdit />} />
             <Route path="/masters/products/edit/:productId" element={<ProductEdit />} />
+            <Route path="/masters/brands/list" element={<BrandList />} />
+            <Route path="/masters/brands/add" element={<BrandEdit />} />
+            <Route path="/masters/brands/edit/:brandId" element={<BrandEdit />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

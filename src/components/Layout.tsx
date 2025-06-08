@@ -43,9 +43,9 @@ const navigationItems = [
     title: "Masters",
     icon: Archive,
     items: [
-      { title: "Warehouses", url: "/masters/warehouses" },
-      { title: "Products", url: "/masters/products" },
-      { title: "Brands", url: "/masters/brands" },
+      { title: "Warehouses", url: "/masters/warehouse/list" },
+      { title: "Products", url: "/masters/products/list" },
+      { title: "Brands", url: "/masters/brands/list" },
       { title: "Categories", url: "/masters/categories" },
       { title: "Customers", url: "/masters/customers" },
       { title: "Vendors", url: "/masters/vendors" },

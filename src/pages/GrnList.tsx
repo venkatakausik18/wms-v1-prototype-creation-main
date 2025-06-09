@@ -304,7 +304,7 @@ const GrnList = () => {
                       <TableCell>{grn.vendor_name}</TableCell>
                       <TableCell>{grn.warehouse_name}</TableCell>
                       <TableCell>₹{grn.total_amount?.toLocaleString()}</TableCell>
-                      <TableCell>{getStatusBadge(grn.grn_status as GrnStatus)}</TableCell>
+                      <TableCell>{getStatusBadge(grn.grn_status)}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Button

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -88,10 +89,10 @@ const PurchaseOrderList = () => {
         query = query.eq('warehouse_id', parseInt(selectedWarehouse));
       }
       if (selectedStatus) {
-        query = query.eq('po_status', selectedStatus);
+        query = query.eq('po_status', selectedStatus as any);
       }
       if (selectedApprovalStatus) {
-        query = query.eq('approval_status', selectedApprovalStatus);
+        query = query.eq('approval_status', selectedApprovalStatus as any);
       }
 
       // Count total records for pagination

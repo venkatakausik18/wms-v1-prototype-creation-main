@@ -201,7 +201,7 @@ const GrnEdit = () => {
       const { data, error } = await supabase
         .from('goods_receipt_notes')
         .select('*')
-        .eq('grn_id', grnId)
+        .eq('grn_id', parseInt(grnId))
         .single();
 
       if (error) throw error;
@@ -245,7 +245,7 @@ const GrnEdit = () => {
           *,
           products!inner(product_name, product_code, hsn_sac_code, is_batch_tracked)
         `)
-        .eq('po_id', formData.po_id)
+        .eq('po_id', parseInt(formData.po_id))
         .gt('pending_quantity', 0);
 
       if (error) throw error;
@@ -287,7 +287,7 @@ const GrnEdit = () => {
           bin_code,
           warehouse_zones!inner(zone_name)
         `)
-        .eq('warehouse_zones.warehouse_id', formData.warehouse_id)
+        .eq('warehouse_zones.warehouse_id', parseInt(formData.warehouse_id))
         .eq('is_active', true);
 
       if (error) throw error;
@@ -415,7 +415,7 @@ const GrnEdit = () => {
         grnResult = await supabase
           .from('goods_receipt_notes')
           .update({ ...grnData, updated_by: 1 })
-          .eq('grn_id', grnId)
+          .eq('grn_id', parseInt(grnId))
           .select()
           .single();
       } else {

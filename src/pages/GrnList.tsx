@@ -12,6 +12,8 @@ import { Plus, Search, Edit, Eye, FileText, Printer, CheckCircle } from "lucide-
 import Layout from "@/components/Layout";
 import { toast } from "sonner";
 
+type GrnStatus = "draft" | "completed" | "cancelled";
+
 interface GoodsReceiptNote {
   grn_id: number;
   grn_number: string;
@@ -20,7 +22,7 @@ interface GoodsReceiptNote {
   vendor_id: number;
   warehouse_id: number;
   total_amount: number;
-  grn_status: string;
+  grn_status: GrnStatus;
   po_number?: string;
   vendor_name?: string;
   warehouse_name?: string;
@@ -163,7 +165,7 @@ const GrnList = () => {
     }
   };
 
-  const getStatusBadge = (status: "draft" | "completed" | "cancelled") => {
+  const getStatusBadge = (status: GrnStatus) => {
     const colors = {
       draft: "bg-gray-100 text-gray-800",
       completed: "bg-green-100 text-green-800",
@@ -303,7 +305,7 @@ const GrnList = () => {
                       <TableCell>{grn.vendor_name}</TableCell>
                       <TableCell>{grn.warehouse_name}</TableCell>
                       <TableCell>₹{grn.total_amount?.toLocaleString()}</TableCell>
-                      <TableCell>{getStatusBadge(grn.grn_status as "draft" | "completed" | "cancelled")}</TableCell>
+                      <TableCell>{getStatusBadge(grn.grn_status)}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Button

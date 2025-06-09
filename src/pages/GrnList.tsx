@@ -165,7 +165,7 @@ const GrnList = () => {
     }
   };
 
-  const getStatusBadge = (status: GrnStatus) => {
+  const getStatusBadge = (status: string) => {
     switch (status) {
       case "draft":
         return <Badge variant="secondary">DRAFT</Badge>;

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -164,7 +163,7 @@ const GrnList = () => {
     }
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: "draft" | "completed" | "cancelled") => {
     const colors = {
       draft: "bg-gray-100 text-gray-800",
       completed: "bg-green-100 text-green-800",
@@ -172,7 +171,7 @@ const GrnList = () => {
     };
     
     return (
-      <Badge className={colors[status as keyof typeof colors] || "bg-gray-100 text-gray-800"}>
+      <Badge className={colors[status] || "bg-gray-100 text-gray-800"}>
         {status.toUpperCase()}
       </Badge>
     );
@@ -304,7 +303,7 @@ const GrnList = () => {
                       <TableCell>{grn.vendor_name}</TableCell>
                       <TableCell>{grn.warehouse_name}</TableCell>
                       <TableCell>₹{grn.total_amount?.toLocaleString()}</TableCell>
-                      <TableCell>{getStatusBadge(grn.grn_status)}</TableCell>
+                      <TableCell>{getStatusBadge(grn.grn_status as "draft" | "completed" | "cancelled")}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Button

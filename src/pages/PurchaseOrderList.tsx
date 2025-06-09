@@ -143,6 +143,7 @@ const PurchaseOrderList = () => {
         .order('vendor_name');
 
       if (error) throw error;
+      console.log('Fetched vendors:', data);
       setVendors(data || []);
     } catch (error) {
       console.error('Error fetching vendors:', error);
@@ -158,6 +159,7 @@ const PurchaseOrderList = () => {
         .order('warehouse_name');
 
       if (error) throw error;
+      console.log('Fetched warehouses:', data);
       setWarehouses(data || []);
     } catch (error) {
       console.error('Error fetching warehouses:', error);
@@ -257,7 +259,7 @@ const PurchaseOrderList = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Vendors</SelectItem>
-                  {vendors.map((vendor) => (
+                  {vendors.filter(vendor => vendor.vendor_id && vendor.vendor_name).map((vendor) => (
                     <SelectItem key={vendor.vendor_id} value={vendor.vendor_id.toString()}>
                       {vendor.vendor_name}
                     </SelectItem>
@@ -271,7 +273,7 @@ const PurchaseOrderList = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Warehouses</SelectItem>
-                  {warehouses.map((warehouse) => (
+                  {warehouses.filter(warehouse => warehouse.warehouse_id && warehouse.warehouse_name).map((warehouse) => (
                     <SelectItem key={warehouse.warehouse_id} value={warehouse.warehouse_id.toString()}>
                       {warehouse.warehouse_name}
                     </SelectItem>

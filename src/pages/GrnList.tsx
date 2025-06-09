@@ -22,7 +22,7 @@ interface GoodsReceiptNote {
   vendor_id: number;
   warehouse_id: number;
   total_amount: number;
-  grn_status: GrnStatus;
+  grn_status: string; // This comes as string from database
   po_number?: string;
   vendor_name?: string;
   warehouse_name?: string;
@@ -304,7 +304,7 @@ const GrnList = () => {
                       <TableCell>{grn.vendor_name}</TableCell>
                       <TableCell>{grn.warehouse_name}</TableCell>
                       <TableCell>₹{grn.total_amount?.toLocaleString()}</TableCell>
-                      <TableCell>{getStatusBadge(grn.grn_status)}</TableCell>
+                      <TableCell>{getStatusBadge(grn.grn_status as GrnStatus)}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Button

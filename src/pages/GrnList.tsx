@@ -166,17 +166,16 @@ const GrnList = () => {
   };
 
   const getStatusBadge = (status: GrnStatus) => {
-    const colors = {
-      draft: "bg-gray-100 text-gray-800",
-      completed: "bg-green-100 text-green-800",
-      cancelled: "bg-red-100 text-red-800"
-    };
-    
-    return (
-      <Badge className={colors[status] || "bg-gray-100 text-gray-800"}>
-        {status.toUpperCase()}
-      </Badge>
-    );
+    switch (status) {
+      case "draft":
+        return <Badge variant="secondary">DRAFT</Badge>;
+      case "completed":
+        return <Badge variant="default">COMPLETED</Badge>;
+      case "cancelled":
+        return <Badge variant="destructive">CANCELLED</Badge>;
+      default:
+        return <Badge variant="secondary">UNKNOWN</Badge>;
+    }
   };
 
   const handlePrint = (grnId: number) => {

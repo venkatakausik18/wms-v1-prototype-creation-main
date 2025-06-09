@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -45,10 +44,10 @@ const PurchaseOrderList = () => {
   
   // Filters
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedVendor, setSelectedVendor] = useState<string>("");
-  const [selectedWarehouse, setSelectedWarehouse] = useState<string>("");
-  const [selectedStatus, setSelectedStatus] = useState<string>("");
-  const [selectedApprovalStatus, setSelectedApprovalStatus] = useState<string>("");
+  const [selectedVendor, setSelectedVendor] = useState<string>("all");
+  const [selectedWarehouse, setSelectedWarehouse] = useState<string>("all");
+  const [selectedStatus, setSelectedStatus] = useState<string>("all");
+  const [selectedApprovalStatus, setSelectedApprovalStatus] = useState<string>("all");
   
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -82,16 +81,16 @@ const PurchaseOrderList = () => {
       if (searchTerm) {
         query = query.ilike('po_number', `%${searchTerm}%`);
       }
-      if (selectedVendor) {
+      if (selectedVendor && selectedVendor !== "all") {
         query = query.eq('vendor_id', parseInt(selectedVendor));
       }
-      if (selectedWarehouse) {
+      if (selectedWarehouse && selectedWarehouse !== "all") {
         query = query.eq('warehouse_id', parseInt(selectedWarehouse));
       }
-      if (selectedStatus) {
+      if (selectedStatus && selectedStatus !== "all") {
         query = query.eq('po_status', selectedStatus as any);
       }
-      if (selectedApprovalStatus) {
+      if (selectedApprovalStatus && selectedApprovalStatus !== "all") {
         query = query.eq('approval_status', selectedApprovalStatus as any);
       }
 
@@ -257,7 +256,7 @@ const PurchaseOrderList = () => {
                   <SelectValue placeholder="All Vendors" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Vendors</SelectItem>
+                  <SelectItem value="all">All Vendors</SelectItem>
                   {vendors.map((vendor) => (
                     <SelectItem key={vendor.vendor_id} value={vendor.vendor_id.toString()}>
                       {vendor.vendor_name}
@@ -271,7 +270,7 @@ const PurchaseOrderList = () => {
                   <SelectValue placeholder="All Warehouses" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Warehouses</SelectItem>
+                  <SelectItem value="all">All Warehouses</SelectItem>
                   {warehouses.map((warehouse) => (
                     <SelectItem key={warehouse.warehouse_id} value={warehouse.warehouse_id.toString()}>
                       {warehouse.warehouse_name}
@@ -285,7 +284,7 @@ const PurchaseOrderList = () => {
                   <SelectValue placeholder="All Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Status</SelectItem>
+                  <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="draft">Draft</SelectItem>
                   <SelectItem value="pending_approval">Pending Approval</SelectItem>
                   <SelectItem value="approved">Approved</SelectItem>
@@ -301,7 +300,7 @@ const PurchaseOrderList = () => {
                   <SelectValue placeholder="All Approval Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Approval Status</SelectItem>
+                  <SelectItem value="all">All Approval Status</SelectItem>
                   <SelectItem value="pending">Pending</SelectItem>
                   <SelectItem value="approved">Approved</SelectItem>
                   <SelectItem value="rejected">Rejected</SelectItem>

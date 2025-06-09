@@ -1,9 +1,9 @@
 
 import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
+import { Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import DashboardPage from "./pages/DashboardPage";
@@ -88,6 +88,8 @@ const App = () => (
             <Route path="/purchase/orders/add" element={<PurchaseOrderEdit />} />
             <Route path="/purchase/orders/edit/:poId" element={<PurchaseOrderEdit />} />
             <Route path="/purchase/orders/view/:poId" element={<PurchaseOrderEdit />} />
+            {/* GRN Routes */}
+            <Route path="/purchase/grn" element={<Navigate to="/purchase/grn/list" replace />} />
             <Route path="/purchase/grn/list" element={<GrnList />} />
             <Route path="/purchase/grn/add" element={<GrnEdit />} />
             <Route path="/purchase/grn/edit/:grnId" element={<GrnEdit />} />

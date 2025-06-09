@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -166,7 +165,7 @@ const PurchaseOrderList = () => {
     try {
       const { error } = await supabase
         .from('purchase_orders')
-        .update({ po_status: 'pending_approval' })
+        .update({ po_status: 'pending_approval' as const })
         .eq('po_id', poId);
 
       if (error) throw error;

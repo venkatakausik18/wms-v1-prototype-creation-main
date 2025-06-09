@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useForm, useFieldArray } from "react-hook-form";
@@ -144,7 +143,7 @@ const PurchaseOrderEdit = () => {
         supabase.from('vendors').select('vendor_id, vendor_name').eq('is_active', true).order('vendor_name'),
         supabase.from('warehouses').select('warehouse_id, warehouse_name').eq('is_active', true).order('warehouse_name'),
         supabase.from('products').select('product_id, product_code, product_name, product_description, hsn_sac_code, purchase_rate, primary_uom_id, tax_category').eq('is_active', true).order('product_name'),
-        supabase.from('unit_of_measures').select('uom_id, uom_name').eq('is_active', true).order('uom_name')
+        supabase.from('units_of_measure').select('uom_id, uom_name').eq('is_active', true).order('uom_name')
       ]);
 
       if (vendorsResult.error) throw vendorsResult.error;
@@ -338,12 +337,12 @@ const PurchaseOrderEdit = () => {
         special_instructions: data.special_instructions || null,
         terms_conditions: data.terms_conditions || null,
         internal_notes: data.internal_notes || null,
-        po_status: saveAsDraft ? 'draft' : 'pending_approval',
-        approval_status: 'pending',
+        po_status: saveAsDraft ? 'draft' as const : 'pending_approval' as const,
+        approval_status: 'pending' as const,
         created_by: 1 // This should come from auth context
       };
 
-      let poId: number;
+      let finalPoId: number;
 
       if (isEdit && !isDuplicate) {
         // Update existing PO
@@ -362,7 +361,7 @@ const PurchaseOrderEdit = () => {
 
         if (deleteError) throw deleteError;
 
-        poId = parseInt(poId!);
+        finalPoId = parseInt(poId!);
       } else {
         // Create new PO
         const { data: newPO, error: insertError } = await supabase
@@ -372,7 +371,7 @@ const PurchaseOrderEdit = () => {
           .single();
 
         if (insertError) throw insertError;
-        poId = newPO.po_id;
+        finalPoId = newPO.po_id;
       }
 
       // Insert items
@@ -384,7 +383,7 @@ const PurchaseOrderEdit = () => {
         const lineTotal = lineTaxable + lineTax;
 
         return {
-          po_id: poId,
+          po_id: finalPoId,
           product_id: item.product_id,
           variant_id: item.variant_id || null,
           product_code: item.product_code,
@@ -402,7 +401,7 @@ const PurchaseOrderEdit = () => {
           total_amount: lineTotal,
           received_quantity: 0,
           pending_quantity: item.quantity,
-          line_status: 'pending',
+          line_status: 'pending' as const,
           expected_delivery_date: item.expected_delivery_date ? format(item.expected_delivery_date, 'yyyy-MM-dd') : null,
           special_instructions: item.special_instructions || null
         };

@@ -33,6 +33,7 @@ import VendorList from "./pages/VendorList";
 import VendorEdit from "./pages/VendorEdit";
 import PurchaseOrderList from "./pages/PurchaseOrderList";
 import PurchaseOrderEdit from "./pages/PurchaseOrderEdit";
+import GrnList from "./pages/GrnList";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -86,6 +87,7 @@ const App = () => (
             <Route path="/purchase/orders/add" element={<PurchaseOrderEdit />} />
             <Route path="/purchase/orders/edit/:poId" element={<PurchaseOrderEdit />} />
             <Route path="/purchase/orders/view/:poId" element={<PurchaseOrderEdit />} />
+            <Route path="/purchase/grn/list" element={<GrnList />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

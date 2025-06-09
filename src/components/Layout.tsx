@@ -66,7 +66,7 @@ const NAV_ITEMS = [
       {
         title: "Purchase",
         items: [
-          { label: "Orders", description: "Purchase orders", icon: ShoppingCart, link: "/purchase/orders" },
+          { label: "Orders", description: "Purchase orders", icon: ShoppingCart, link: "/purchase/orders/list" },
           { label: "GRN", description: "Goods receipt notes", icon: Calendar, link: "/purchase/grn" },
           { label: "Returns", description: "Purchase returns", icon: Archive, link: "/purchase/returns" },
           { label: "Payments", description: "Vendor payments", icon: BarChart3, link: "/purchase/payments" },

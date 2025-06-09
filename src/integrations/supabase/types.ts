@@ -1121,6 +1121,27 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
           {
+            foreignKeyName: "goods_receipt_notes_po_id_fkey"
+            columns: ["po_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_orders"
+            referencedColumns: ["po_id"]
+          },
+          {
+            foreignKeyName: "goods_receipt_notes_received_by_fkey"
+            columns: ["received_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "goods_receipt_notes_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "goods_receipt_notes_vendor_id_fkey"
             columns: ["vendor_id"]
             isOneToOne: false
@@ -2151,6 +2172,285 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      purchase_order_details: {
+        Row: {
+          created_at: string
+          discount_amount: number | null
+          discount_percent: number | null
+          expected_delivery_date: string | null
+          hsn_code: string | null
+          line_status: Database["public"]["Enums"]["po_line_status"]
+          pending_quantity: number
+          po_detail_id: number
+          po_id: number
+          product_code: string | null
+          product_description: string | null
+          product_id: number
+          product_name: string | null
+          quantity: number
+          rate: number
+          received_quantity: number | null
+          special_instructions: string | null
+          tax_amount: number | null
+          tax_rate: number | null
+          taxable_amount: number
+          total_amount: number
+          uom_id: number
+          updated_at: string
+          variant_id: number | null
+        }
+        Insert: {
+          created_at?: string
+          discount_amount?: number | null
+          discount_percent?: number | null
+          expected_delivery_date?: string | null
+          hsn_code?: string | null
+          line_status?: Database["public"]["Enums"]["po_line_status"]
+          pending_quantity: number
+          po_detail_id?: number
+          po_id: number
+          product_code?: string | null
+          product_description?: string | null
+          product_id: number
+          product_name?: string | null
+          quantity: number
+          rate: number
+          received_quantity?: number | null
+          special_instructions?: string | null
+          tax_amount?: number | null
+          tax_rate?: number | null
+          taxable_amount: number
+          total_amount: number
+          uom_id: number
+          updated_at?: string
+          variant_id?: number | null
+        }
+        Update: {
+          created_at?: string
+          discount_amount?: number | null
+          discount_percent?: number | null
+          expected_delivery_date?: string | null
+          hsn_code?: string | null
+          line_status?: Database["public"]["Enums"]["po_line_status"]
+          pending_quantity?: number
+          po_detail_id?: number
+          po_id?: number
+          product_code?: string | null
+          product_description?: string | null
+          product_id?: number
+          product_name?: string | null
+          quantity?: number
+          rate?: number
+          received_quantity?: number | null
+          special_instructions?: string | null
+          tax_amount?: number | null
+          tax_rate?: number | null
+          taxable_amount?: number
+          total_amount?: number
+          uom_id?: number
+          updated_at?: string
+          variant_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_order_details_po_id_fkey"
+            columns: ["po_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_orders"
+            referencedColumns: ["po_id"]
+          },
+          {
+            foreignKeyName: "purchase_order_details_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "purchase_order_details_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "v_stock_position"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "purchase_order_details_uom_id_fkey"
+            columns: ["uom_id"]
+            isOneToOne: false
+            referencedRelation: "units_of_measure"
+            referencedColumns: ["uom_id"]
+          },
+          {
+            foreignKeyName: "purchase_order_details_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_variants"
+            referencedColumns: ["variant_id"]
+          },
+        ]
+      }
+      purchase_orders: {
+        Row: {
+          approval_remarks: string | null
+          approval_status: Database["public"]["Enums"]["approval_status"]
+          approved_at: string | null
+          approved_by: number | null
+          company_id: number
+          created_at: string
+          created_by: number
+          currency: string | null
+          delivery_terms: string | null
+          discount_amount: number | null
+          exchange_rate: number | null
+          expected_delivery_date: string | null
+          freight_charges: number | null
+          internal_notes: string | null
+          other_charges: number | null
+          payment_terms: string | null
+          po_date: string
+          po_id: number
+          po_number: string
+          po_status: Database["public"]["Enums"]["po_status"]
+          quote_number: string | null
+          reference_number: string | null
+          shipping_address: string | null
+          special_instructions: string | null
+          subtotal: number | null
+          tax_amount: number | null
+          terms_conditions: string | null
+          total_amount: number | null
+          updated_at: string
+          updated_by: number | null
+          vendor_id: number
+          warehouse_id: number
+        }
+        Insert: {
+          approval_remarks?: string | null
+          approval_status?: Database["public"]["Enums"]["approval_status"]
+          approved_at?: string | null
+          approved_by?: number | null
+          company_id: number
+          created_at?: string
+          created_by: number
+          currency?: string | null
+          delivery_terms?: string | null
+          discount_amount?: number | null
+          exchange_rate?: number | null
+          expected_delivery_date?: string | null
+          freight_charges?: number | null
+          internal_notes?: string | null
+          other_charges?: number | null
+          payment_terms?: string | null
+          po_date: string
+          po_id?: number
+          po_number: string
+          po_status?: Database["public"]["Enums"]["po_status"]
+          quote_number?: string | null
+          reference_number?: string | null
+          shipping_address?: string | null
+          special_instructions?: string | null
+          subtotal?: number | null
+          tax_amount?: number | null
+          terms_conditions?: string | null
+          total_amount?: number | null
+          updated_at?: string
+          updated_by?: number | null
+          vendor_id: number
+          warehouse_id: number
+        }
+        Update: {
+          approval_remarks?: string | null
+          approval_status?: Database["public"]["Enums"]["approval_status"]
+          approved_at?: string | null
+          approved_by?: number | null
+          company_id?: number
+          created_at?: string
+          created_by?: number
+          currency?: string | null
+          delivery_terms?: string | null
+          discount_amount?: number | null
+          exchange_rate?: number | null
+          expected_delivery_date?: string | null
+          freight_charges?: number | null
+          internal_notes?: string | null
+          other_charges?: number | null
+          payment_terms?: string | null
+          po_date?: string
+          po_id?: number
+          po_number?: string
+          po_status?: Database["public"]["Enums"]["po_status"]
+          quote_number?: string | null
+          reference_number?: string | null
+          shipping_address?: string | null
+          special_instructions?: string | null
+          subtotal?: number | null
+          tax_amount?: number | null
+          terms_conditions?: string | null
+          total_amount?: number | null
+          updated_at?: string
+          updated_by?: number | null
+          vendor_id?: number
+          warehouse_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_orders_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["vendor_id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "v_stock_ledger"
+            referencedColumns: ["warehouse_id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "v_stock_position"
+            referencedColumns: ["warehouse_id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["warehouse_id"]
           },
         ]
       }

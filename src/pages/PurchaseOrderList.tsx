@@ -96,7 +96,10 @@ const PurchaseOrderList = () => {
       }
 
       // Count total records for pagination
-      const { count } = await query.select('*', { count: 'exact', head: true });
+      const { count } = await supabase
+        .from('purchase_orders')
+        .select('*', { count: 'exact', head: true });
+      
       if (count) {
         setTotalPages(Math.ceil(count / itemsPerPage));
       }

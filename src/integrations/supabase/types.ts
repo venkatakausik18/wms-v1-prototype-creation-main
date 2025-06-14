@@ -2865,7 +2865,7 @@ export type Database = {
           created_by: number
           credit_note_reference: string | null
           customer_gst_number: string | null
-          customer_id: number
+          customer_id: string
           discount_amount: number | null
           due_date: string | null
           freight_charges: number | null
@@ -2907,7 +2907,7 @@ export type Database = {
           created_by: number
           credit_note_reference?: string | null
           customer_gst_number?: string | null
-          customer_id: number
+          customer_id: string
           discount_amount?: number | null
           due_date?: string | null
           freight_charges?: number | null
@@ -2949,7 +2949,7 @@ export type Database = {
           created_by?: number
           credit_note_reference?: string | null
           customer_gst_number?: string | null
-          customer_id?: number
+          customer_id?: string
           discount_amount?: number | null
           due_date?: string | null
           freight_charges?: number | null
@@ -2994,6 +2994,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "sales_invoices_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["customer_id"]
           },
           {
             foreignKeyName: "sales_invoices_salesperson_id_fkey"

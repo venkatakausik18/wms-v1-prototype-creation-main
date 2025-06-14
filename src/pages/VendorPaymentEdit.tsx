@@ -138,26 +138,26 @@ const VendorPaymentEdit = () => {
   useEffect(() => {
     if (existingPayment) {
       form.reset({
-        payment_number: existingPayment.payment_number,
-        payment_date: existingPayment.payment_date,
-        vendor_id: existingPayment.vendor_id.toString(),
-        payment_mode: existingPayment.payment_mode,
-        bank_account: existingPayment.bank_account || "",
-        reference_number: existingPayment.reference_number || "",
-        amount_paid: existingPayment.amount_paid.toString(),
-        currency: existingPayment.currency || "INR",
-        exchange_rate: existingPayment.exchange_rate.toString(),
-        discount_taken: existingPayment.discount_taken.toString(),
-        tds_deduction: existingPayment.tds_deduction.toString(),
-        net_amount: existingPayment.net_amount.toString(),
-        balance_outstanding: existingPayment.balance_outstanding.toString(),
+        payment_number: String(existingPayment.payment_number || ""),
+        payment_date: String(existingPayment.payment_date || ""),
+        vendor_id: String(existingPayment.vendor_id || ""),
+        payment_mode: String(existingPayment.payment_mode || ""),
+        bank_account: String(existingPayment.bank_account || ""),
+        reference_number: String(existingPayment.reference_number || ""),
+        amount_paid: String(existingPayment.amount_paid || "0"),
+        currency: String(existingPayment.currency || "INR"),
+        exchange_rate: String(existingPayment.exchange_rate || "1"),
+        discount_taken: String(existingPayment.discount_taken || "0"),
+        tds_deduction: String(existingPayment.tds_deduction || "0"),
+        net_amount: String(existingPayment.net_amount || "0"),
+        balance_outstanding: String(existingPayment.balance_outstanding || "0"),
       });
 
       setShowBankFields(existingPayment.payment_mode !== 'cash');
 
       if (existingPayment.invoice_allocation) {
         try {
-          const allocations = JSON.parse(existingPayment.invoice_allocation);
+          const allocations = JSON.parse(String(existingPayment.invoice_allocation));
           setInvoiceAllocations(allocations);
         } catch (error) {
           console.error('Error parsing invoice allocation:', error);

@@ -22,7 +22,6 @@ interface SalesReturn {
   customer_name: string;
   total_amount: number;
   refund_mode: string;
-  return_status: string;
 }
 
 interface Customer {
@@ -46,8 +45,8 @@ const SalesReturnList = () => {
         .from('sales_returns')
         .select(`
           *,
-          sales_invoices(invoice_number),
-          customers(customer_name)
+          sales_invoices!sales_returns_original_invoice_id_fkey(invoice_number),
+          customers!sales_returns_customer_id_fkey(customer_name)
         `)
         .order('return_date', { ascending: false });
 
@@ -84,8 +83,7 @@ const SalesReturnList = () => {
         customer_id: item.customer_id,
         customer_name: item.customers?.customer_name || 'Unknown Customer',
         total_amount: item.total_amount,
-        refund_mode: item.refund_mode,
-        return_status: item.return_status || 'draft'
+        refund_mode: item.refund_mode
       })) || [];
     },
   });
@@ -258,15 +256,13 @@ const SalesReturnList = () => {
                       <TableCell className="capitalize">{returnItem.refund_mode}</TableCell>
                       <TableCell>
                         <div className="flex gap-2">
-                          {returnItem.return_status !== 'completed' && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleEdit(returnItem.sales_return_id)}
-                            >
-                              Edit
-                            </Button>
-                          )}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEdit(returnItem.sales_return_id)}
+                          >
+                            Edit
+                          </Button>
                           <Button
                             variant="outline"
                             size="sm"

@@ -146,7 +146,7 @@ const PurchaseReturnEdit = () => {
           vendor_id,
           vendors(vendor_name)
         `)
-        .eq('po_status', 'completed')
+        .eq('po_status', 'fully_received')
         .order('po_date', { ascending: false });
       
       if (error) throw error;
@@ -166,7 +166,7 @@ const PurchaseReturnEdit = () => {
           *,
           purchase_return_details(*)
         `)
-        .eq('pr_id', prId)
+        .eq('pr_id', parseInt(prId))
         .single();
       
       if (error) throw error;
@@ -223,7 +223,7 @@ const PurchaseReturnEdit = () => {
           products(product_name, product_code, hsn_sac_code),
           units_of_measurement(uom_name)
         `)
-        .eq('po_id', documentId);
+        .eq('po_id', parseInt(documentId));
 
       if (error) throw error;
 
@@ -307,6 +307,7 @@ const PurchaseReturnEdit = () => {
         vendor_id: parseInt(data.vendor_id),
         warehouse_id: parseInt(data.warehouse_id),
         original_document_id: data.original_document_id ? parseInt(data.original_document_id) : null,
+        company_id: 1, // This should come from context/auth
         created_by: 1, // This should come from auth context
       };
 
@@ -315,7 +316,7 @@ const PurchaseReturnEdit = () => {
         const { error } = await supabase
           .from('purchase_returns')
           .update(returnData)
-          .eq('pr_id', prId);
+          .eq('pr_id', parseInt(prId));
         
         if (error) throw error;
 
@@ -323,7 +324,7 @@ const PurchaseReturnEdit = () => {
         await supabase
           .from('purchase_return_details')
           .delete()
-          .eq('pr_id', prId);
+          .eq('pr_id', parseInt(prId));
 
         // Insert updated details
         const detailsToInsert = returnDetails.map(detail => ({

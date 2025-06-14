@@ -18,7 +18,6 @@ interface PurchaseReturn {
   return_date: string;
   vendor_id: number;
   vendor_name: string;
-  total_amount: number;
   created_by: number;
   return_reason: string;
   return_type: string;
@@ -55,7 +54,7 @@ const PurchaseReturnList = () => {
       }
       
       if (selectedVendor) {
-        query = query.eq('vendor_id', selectedVendor);
+        query = query.eq('vendor_id', parseInt(selectedVendor));
       }
       
       if (startDate) {
@@ -79,7 +78,6 @@ const PurchaseReturnList = () => {
         return_date: item.return_date,
         vendor_id: item.vendor_id,
         vendor_name: item.vendors?.vendor_name || 'Unknown Vendor',
-        total_amount: item.total_amount || 0,
         created_by: item.created_by,
         return_reason: item.return_reason,
         return_type: item.return_type
@@ -225,7 +223,6 @@ const PurchaseReturnList = () => {
                     <TableHead>Return Date</TableHead>
                     <TableHead>Vendor</TableHead>
                     <TableHead>Return Type</TableHead>
-                    <TableHead>Total Amount</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -236,7 +233,6 @@ const PurchaseReturnList = () => {
                       <TableCell>{new Date(returnItem.return_date).toLocaleDateString()}</TableCell>
                       <TableCell>{returnItem.vendor_name}</TableCell>
                       <TableCell className="capitalize">{returnItem.return_type}</TableCell>
-                      <TableCell>₹{returnItem.total_amount.toFixed(2)}</TableCell>
                       <TableCell>
                         <div className="flex gap-2">
                           <Button

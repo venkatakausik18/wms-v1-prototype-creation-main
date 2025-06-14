@@ -25,7 +25,7 @@ interface FormData {
   receipt_number: string;
   receipt_date: string;
   receipt_time: string;
-  customer_id: number;
+  customer_id: string;
   payment_mode: string;
   bank_account: string;
   reference_number: string;
@@ -46,7 +46,7 @@ const CustomerReceiptEdit = () => {
     receipt_number: '',
     receipt_date: new Date().toISOString().split('T')[0],
     receipt_time: new Date().toTimeString().slice(0, 5),
-    customer_id: 0,
+    customer_id: '',
     payment_mode: 'cash',
     bank_account: '',
     reference_number: '',
@@ -195,12 +195,12 @@ const CustomerReceiptEdit = () => {
           amount_applied: invoice.amount_applied
         }));
 
-      // Insert customer receipt - fix: remove array wrapper and ensure correct types
+      // Insert customer receipt
       const { data: receiptData, error: receiptError } = await supabase
         .from('customer_receipts')
         .insert({
           company_id: 1, // TODO: Get from context
-          customer_id: formData.customer_id,
+          customer_id: parseInt(formData.customer_id),
           receipt_number: formData.receipt_number,
           receipt_date: formData.receipt_date,
           receipt_time: formData.receipt_time,
@@ -323,7 +323,7 @@ const CustomerReceiptEdit = () => {
               
               <div>
                 <Label htmlFor="customer_id">Customer</Label>
-                <Select value={formData.customer_id === 0 ? "" : formData.customer_id.toString()} onValueChange={(value) => handleInputChange('customer_id', parseInt(value))}>
+                <Select value={formData.customer_id || ""} onValueChange={(value) => handleInputChange('customer_id', value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select customer" />
                   </SelectTrigger>

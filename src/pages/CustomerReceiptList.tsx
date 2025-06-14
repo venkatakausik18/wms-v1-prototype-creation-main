@@ -82,7 +82,7 @@ const CustomerReceiptList = () => {
       const { data: customers, error: customersError } = await supabase
         .from('customers')
         .select('customer_id, customer_name')
-        .in('customer_id', customerIds);
+        .in('customer_id', customerIds.map(id => id.toString()));
 
       if (customersError) {
         console.error('Error fetching customers:', customersError);
@@ -90,14 +90,14 @@ const CustomerReceiptList = () => {
       }
 
       // Create a map for quick customer lookup
-      const customerMap = new Map(customers?.map(c => [c.customer_id, c.customer_name]) || []);
+      const customerMap = new Map(customers?.map(c => [c.customer_id.toString(), c.customer_name]) || []);
       
       return receipts?.map(receipt => ({
         receipt_id: receipt.receipt_id,
         receipt_number: receipt.receipt_number,
         receipt_date: receipt.receipt_date,
         customer_id: receipt.customer_id,
-        customer_name: customerMap.get(receipt.customer_id) || 'Unknown Customer',
+        customer_name: customerMap.get(receipt.customer_id.toString()) || 'Unknown Customer',
         total_amount_received: receipt.total_amount_received,
         payment_mode: receipt.payment_mode
       })) || [];
@@ -214,7 +214,12 @@ const CustomerReceiptList = () => {
                 onChange={(e) => setEndDate(e.target.value)}
               />
 
-              <Button variant="outline" onClick={clearFilters}>
+              <Button variant="outline" onClick={() => {
+                setSearchTerm("");
+                setSelectedCustomer("all");
+                setStartDate("");
+                setEndDate("");
+              }}>
                 Clear Filters
               </Button>
             </div>
@@ -223,7 +228,10 @@ const CustomerReceiptList = () => {
 
         {/* Action Buttons */}
         <div className="flex justify-end gap-2 mb-4">
-          <Button variant="outline" onClick={handleExport} className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => toast({
+            title: "Export functionality",
+            description: "Export feature will be implemented soon.",
+          })} className="flex items-center gap-2">
             <Download className="h-4 w-4" />
             Export
           </Button>
@@ -259,14 +267,17 @@ const CustomerReceiptList = () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleEdit(receipt.receipt_id)}
+                            onClick={() => navigate(`/sales/receipts/edit/${receipt.receipt_id}`)}
                           >
                             Edit
                           </Button>
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handlePrint(receipt.receipt_id)}
+                            onClick={() => toast({
+                              title: "Print functionality",
+                              description: "Print feature will be implemented soon.",
+                            })}
                             className="flex items-center gap-1"
                           >
                             <FileText className="h-3 w-3" />

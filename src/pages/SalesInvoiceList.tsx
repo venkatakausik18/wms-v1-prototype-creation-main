@@ -231,10 +231,11 @@ const SalesInvoiceList = () => {
                         </TableCell>
                         <TableCell>
                           {typeof invoice.customers === "object" &&
-                          invoice.customers !== null &&
-                          "customer_name" in invoice.customers
-                            ? (invoice.customers as { customer_name: string }).customer_name
-                            : ""}
+                            invoice.customers !== null &&
+                            "customer_name" in invoice.customers &&
+                            (invoice.customers as { customer_name: string }).customer_name
+                              ? (invoice.customers as { customer_name: string }).customer_name
+                              : ""}
                         </TableCell>
                         <TableCell>
                           ₹{Number(invoice.grand_total || 0).toFixed(2)}

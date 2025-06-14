@@ -40,6 +40,22 @@ interface FormData {
   remarks: string;
 }
 
+interface StorageBin {
+  bin_id: number;
+  bin_code: string;
+}
+
+interface Warehouse {
+  warehouse_id: number;
+  warehouse_name: string;
+}
+
+interface Product {
+  product_id: number;
+  product_name: string;
+  product_code: string;
+}
+
 const StockEntry = () => {
   const navigate = useNavigate();
   const { type } = useParams<{ type: "inward" | "outward" }>();
@@ -49,7 +65,7 @@ const StockEntry = () => {
 
   // Form state
   const [formData, setFormData] = useState<FormData>({
-    txn_type: type === "inward" ? "purchase_in" : "sale_out",
+    txn_type: (type === "inward" ? "purchase_in" : "sale_out") as TransactionType,
     txn_date: new Date().toISOString().split('T')[0],
     txn_time: new Date().toTimeString().split(' ')[0].slice(0, 5),
     warehouse_id: "",
@@ -62,7 +78,7 @@ const StockEntry = () => {
   // Fetch warehouses
   const { data: warehouses } = useQuery({
     queryKey: ['warehouses'],
-    queryFn: async () => {
+    queryFn: async (): Promise<Warehouse[]> => {
       const { data, error } = await supabase
         .from('warehouses')
         .select('warehouse_id, warehouse_name')
@@ -70,14 +86,14 @@ const StockEntry = () => {
         .order('warehouse_name');
       
       if (error) throw error;
-      return data;
+      return data || [];
     },
   });
 
   // Fetch products
   const { data: products } = useQuery({
     queryKey: ['products-for-stock'],
-    queryFn: async () => {
+    queryFn: async (): Promise<Product[]> => {
       const { data, error } = await supabase
         .from('products')
         .select('product_id, product_name, product_code')
@@ -85,25 +101,25 @@ const StockEntry = () => {
         .order('product_name');
       
       if (error) throw error;
-      return data;
+      return data || [];
     },
   });
 
-  // Fetch storage bins - simplified query to avoid deep type instantiation
+  // Fetch storage bins - explicitly typed to avoid deep type instantiation
   const { data: bins } = useQuery({
     queryKey: ['storage-bins', formData.warehouse_id],
-    queryFn: async () => {
+    queryFn: async (): Promise<StorageBin[]> => {
       if (!formData.warehouse_id) return [];
       
       const { data, error } = await supabase
         .from('storage_bins')
         .select('bin_id, bin_code')
-        .eq('warehouse_id', formData.warehouse_id)
+        .eq('warehouse_id', parseInt(formData.warehouse_id))
         .eq('is_active', true)
         .order('bin_code');
       
       if (error) throw error;
-      return data;
+      return data || [];
     },
     enabled: !!formData.warehouse_id,
   });

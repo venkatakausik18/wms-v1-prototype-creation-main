@@ -46,11 +46,11 @@ const SalesInvoiceList = () => {
       }
       
       if (customerFilter) {
-        query = query.eq('customer_id', customerFilter);
+        query = query.eq('customer_id', parseInt(customerFilter));
       }
       
       if (paymentStatusFilter) {
-        query = query.eq('payment_status', paymentStatusFilter);
+        query = query.eq('payment_status', paymentStatusFilter as 'unpaid' | 'partial' | 'paid');
       }
       
       if (dateFrom) {

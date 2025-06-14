@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -150,7 +151,7 @@ const SalesInvoiceList = () => {
                   <SelectValue placeholder="All customers" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All customers</SelectItem>
+                  <SelectItem value="all">All customers</SelectItem>
                   {customers?.map((customer) => (
                     <SelectItem key={customer.customer_id} value={customer.customer_id.toString()}>
                       {customer.customer_name}
@@ -164,7 +165,7 @@ const SalesInvoiceList = () => {
                   <SelectValue placeholder="Payment status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All statuses</SelectItem>
+                  <SelectItem value="all">All statuses</SelectItem>
                   <SelectItem value="unpaid">Unpaid</SelectItem>
                   <SelectItem value="partial">Partial</SelectItem>
                   <SelectItem value="paid">Paid</SelectItem>
@@ -257,7 +258,11 @@ const SalesInvoiceList = () => {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => navigate(`/sales/receipts/${invoice.customer_id}`)}
+                                onClick={() => {
+                                  if (invoice.customers && typeof invoice.customers === "object" && "customer_id" in invoice.customers) {
+                                    navigate(`/sales/receipts/${(invoice.customers as { customer_id: string }).customer_id}`);
+                                  }
+                                }}
                               >
                                 <Eye className="h-4 w-4" />
                               </Button>

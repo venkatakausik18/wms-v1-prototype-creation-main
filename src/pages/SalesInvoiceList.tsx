@@ -1,4 +1,5 @@
 
+
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -45,11 +46,11 @@ const SalesInvoiceList = () => {
         query = query.ilike('invoice_number', `%${searchTerm}%`);
       }
       
-      if (customerFilter) {
+      if (customerFilter && customerFilter !== "all") {
         query = query.eq('customer_id', parseInt(customerFilter));
       }
       
-      if (paymentStatusFilter) {
+      if (paymentStatusFilter && paymentStatusFilter !== "all") {
         query = query.eq('payment_status', paymentStatusFilter as 'unpaid' | 'partial' | 'paid');
       }
       
@@ -223,11 +224,12 @@ const SalesInvoiceList = () => {
                     </TableRow>
                   ) : (
                     invoices?.map((invoice) => {
-                      const customerName = invoice.customers && 
+                      // Safe type guard for customers
+                      const customer = invoice.customers && 
                         typeof invoice.customers === "object" &&
                         "customer_name" in invoice.customers 
-                          ? (invoice.customers as { customer_name: string }).customer_name
-                          : "";
+                          ? (invoice.customers as { customer_id: string; customer_name: string })
+                          : null;
                           
                       return (
                         <TableRow key={invoice.sales_id}>
@@ -238,7 +240,7 @@ const SalesInvoiceList = () => {
                             {new Date(invoice.invoice_date).toLocaleDateString()}
                           </TableCell>
                           <TableCell>
-                            {customerName}
+                            {customer?.customer_name || 'Unknown Customer'}
                           </TableCell>
                           <TableCell>
                             ₹{Number(invoice.grand_total || 0).toFixed(2)}
@@ -259,8 +261,8 @@ const SalesInvoiceList = () => {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => {
-                                  if (invoice.customers && typeof invoice.customers === "object" && "customer_id" in invoice.customers) {
-                                    navigate(`/sales/receipts/${(invoice.customers as { customer_id: string }).customer_id}`);
+                                  if (customer?.customer_id) {
+                                    navigate(`/sales/receipts/${customer.customer_id}`);
                                   }
                                 }}
                               >
@@ -317,3 +319,4 @@ const SalesInvoiceList = () => {
 };
 
 export default SalesInvoiceList;
+

@@ -105,23 +105,24 @@ const StockEntry = () => {
     },
   });
 
-  // Fetch storage bins - explicitly typed to avoid deep type instantiation
-  const { data: bins } = useQuery({
+  // Fetch storage bins - simplified to avoid type issues
+  const { data: bins = [] } = useQuery<StorageBin[]>({
     queryKey: ['storage-bins', formData.warehouse_id],
-    queryFn: async (): Promise<StorageBin[]> => {
+    queryFn: async () => {
       if (!formData.warehouse_id) return [];
       
+      const warehouseId = parseInt(formData.warehouse_id);
       const { data, error } = await supabase
         .from('storage_bins')
         .select('bin_id, bin_code')
-        .eq('warehouse_id', parseInt(formData.warehouse_id))
+        .eq('warehouse_id', warehouseId)
         .eq('is_active', true)
         .order('bin_code');
       
       if (error) throw error;
-      return data || [];
+      return (data || []) as StorageBin[];
     },
-    enabled: !!formData.warehouse_id,
+    enabled: Boolean(formData.warehouse_id),
   });
 
   const addDetailRow = () => {
@@ -184,11 +185,11 @@ const StockEntry = () => {
       // Generate transaction number
       const txnNumber = `TXN-${type?.toUpperCase()}-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(Date.now()).slice(-4)}`;
 
-      // Insert main transaction - fixed: remove array brackets and ensure proper typing
+      // Insert main transaction
       const { data: txnData, error: txnError } = await supabase
         .from('inventory_transactions')
         .insert({
-          company_id: 1, // TODO: Get from auth context
+          company_id: 1,
           warehouse_id: parseInt(formData.warehouse_id),
           txn_number: txnNumber,
           txn_type: formData.txn_type,
@@ -199,7 +200,7 @@ const StockEntry = () => {
           total_quantity: totalQuantity,
           total_value: totalValue,
           remarks: formData.remarks,
-          created_by: 1 // TODO: Get from auth context
+          created_by: 1
         })
         .select()
         .single();
@@ -223,7 +224,6 @@ const StockEntry = () => {
         reason_code: detail.reason_code
       }));
 
-      // Insert details - fixed: use proper array insert for multiple records
       const { error: detailsError } = await supabase
         .from('inventory_transaction_details')
         .insert(detailsToInsert);
@@ -431,7 +431,7 @@ const StockEntry = () => {
                               <SelectValue placeholder="Select bin" />
                             </SelectTrigger>
                             <SelectContent>
-                              {bins?.map((bin) => (
+                              {bins.map((bin) => (
                                 <SelectItem key={bin.bin_id} value={bin.bin_id.toString()}>
                                   {bin.bin_code}
                                 </SelectItem>

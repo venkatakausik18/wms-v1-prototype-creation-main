@@ -1,5 +1,4 @@
 
-
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -47,7 +46,7 @@ const SalesInvoiceList = () => {
       }
       
       if (customerFilter && customerFilter !== "all") {
-        query = query.eq('customer_id', parseInt(customerFilter));
+        query = query.eq('customer_id', customerFilter);
       }
       
       if (paymentStatusFilter && paymentStatusFilter !== "all") {
@@ -227,7 +226,8 @@ const SalesInvoiceList = () => {
                       // Safe type guard for customers with proper null checking
                       const customer = invoice.customers && 
                         typeof invoice.customers === "object" &&
-                        "customer_name" in invoice.customers 
+                        "customer_name" in invoice.customers &&
+                        "customer_id" in invoice.customers
                           ? (invoice.customers as { customer_id: string; customer_name: string })
                           : null;
                           

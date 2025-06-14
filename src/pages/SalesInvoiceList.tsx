@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -46,7 +45,7 @@ const SalesInvoiceList = () => {
       }
       
       if (customerFilter) {
-        query = query.eq('customer_id', customerFilter);
+        query = query.eq('customer_id', parseInt(customerFilter));
       }
       
       if (paymentStatusFilter) {
@@ -231,7 +230,9 @@ const SalesInvoiceList = () => {
                           {new Date(invoice.invoice_date).toLocaleDateString()}
                         </TableCell>
                         <TableCell>
-                          {invoice.customers?.customer_name}
+                          {invoice.customers && invoice.customers.customer_name
+                            ? invoice.customers.customer_name
+                            : ""}
                         </TableCell>
                         <TableCell>
                           ₹{Number(invoice.grand_total || 0).toFixed(2)}

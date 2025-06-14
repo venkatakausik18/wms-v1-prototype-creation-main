@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -310,8 +309,13 @@ const SalesInvoiceEdit = () => {
         payment_mode: data.payment_mode as 'credit' | 'cash' | 'bank' | 'cheque' | 'online',
         advance_received: parseFloat(data.advance_received),
         balance_amount: calculations.grandTotal - parseFloat(data.advance_received),
-        payment_status: parseFloat(data.advance_received) === 0 ? 'unpaid' : 
-                       parseFloat(data.advance_received) >= calculations.grandTotal ? 'paid' : 'partial',
+        payment_status: (
+          parseFloat(data.advance_received) === 0
+            ? 'unpaid'
+            : parseFloat(data.advance_received) >= calculations.grandTotal
+              ? 'paid'
+              : 'partial'
+        ) as 'unpaid' | 'partial' | 'paid',
         terms_conditions: data.terms_conditions,
         internal_notes: data.internal_notes,
         vehicle_number: data.vehicle_number,

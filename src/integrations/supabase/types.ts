@@ -1964,6 +1964,7 @@ export type Database = {
         Row: {
           age_group: Database["public"]["Enums"]["age_group_type"] | null
           barcode: string | null
+          base_uom_id: number
           brand_id: number | null
           care_instructions: string | null
           category_id: number
@@ -1987,7 +1988,8 @@ export type Database = {
           minimum_stock_level: number | null
           mrp: number | null
           opening_stock: number | null
-          primary_uom_id: number
+          primary_to_secondary_factor: number | null
+          primary_uom_id: number | null
           product_code: string
           product_description: string | null
           product_id: number
@@ -2003,8 +2005,10 @@ export type Database = {
           retail_rate: number | null
           sales_account: string | null
           season: Database["public"]["Enums"]["season_type"] | null
+          secondary_to_base_factor: number | null
           secondary_uom_id: number | null
           shelf_life_days: number | null
+          size: string | null
           specifications: Json | null
           storage_conditions: string | null
           style_number: string | null
@@ -2018,6 +2022,7 @@ export type Database = {
         Insert: {
           age_group?: Database["public"]["Enums"]["age_group_type"] | null
           barcode?: string | null
+          base_uom_id: number
           brand_id?: number | null
           care_instructions?: string | null
           category_id: number
@@ -2041,7 +2046,8 @@ export type Database = {
           minimum_stock_level?: number | null
           mrp?: number | null
           opening_stock?: number | null
-          primary_uom_id: number
+          primary_to_secondary_factor?: number | null
+          primary_uom_id?: number | null
           product_code: string
           product_description?: string | null
           product_id?: number
@@ -2057,8 +2063,10 @@ export type Database = {
           retail_rate?: number | null
           sales_account?: string | null
           season?: Database["public"]["Enums"]["season_type"] | null
+          secondary_to_base_factor?: number | null
           secondary_uom_id?: number | null
           shelf_life_days?: number | null
+          size?: string | null
           specifications?: Json | null
           storage_conditions?: string | null
           style_number?: string | null
@@ -2072,6 +2080,7 @@ export type Database = {
         Update: {
           age_group?: Database["public"]["Enums"]["age_group_type"] | null
           barcode?: string | null
+          base_uom_id?: number
           brand_id?: number | null
           care_instructions?: string | null
           category_id?: number
@@ -2095,7 +2104,8 @@ export type Database = {
           minimum_stock_level?: number | null
           mrp?: number | null
           opening_stock?: number | null
-          primary_uom_id?: number
+          primary_to_secondary_factor?: number | null
+          primary_uom_id?: number | null
           product_code?: string
           product_description?: string | null
           product_id?: number
@@ -2111,8 +2121,10 @@ export type Database = {
           retail_rate?: number | null
           sales_account?: string | null
           season?: Database["public"]["Enums"]["season_type"] | null
+          secondary_to_base_factor?: number | null
           secondary_uom_id?: number | null
           shelf_life_days?: number | null
+          size?: string | null
           specifications?: Json | null
           storage_conditions?: string | null
           style_number?: string | null
@@ -2124,6 +2136,13 @@ export type Database = {
           wholesale_rate?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "products_base_uom_id_fkey"
+            columns: ["base_uom_id"]
+            isOneToOne: false
+            referencedRelation: "units_of_measure"
+            referencedColumns: ["uom_id"]
+          },
           {
             foreignKeyName: "products_brand_id_fkey"
             columns: ["brand_id"]
@@ -3739,6 +3758,62 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "companies"
             referencedColumns: ["company_id"]
+          },
+        ]
+      }
+      uom_conversions: {
+        Row: {
+          conversion_factor: number
+          conversion_id: number
+          created_at: string | null
+          from_uom_id: number
+          product_id: number
+          to_uom_id: number
+        }
+        Insert: {
+          conversion_factor: number
+          conversion_id?: number
+          created_at?: string | null
+          from_uom_id: number
+          product_id: number
+          to_uom_id: number
+        }
+        Update: {
+          conversion_factor?: number
+          conversion_id?: number
+          created_at?: string | null
+          from_uom_id?: number
+          product_id?: number
+          to_uom_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "uom_conversions_from_uom_id_fkey"
+            columns: ["from_uom_id"]
+            isOneToOne: false
+            referencedRelation: "units_of_measure"
+            referencedColumns: ["uom_id"]
+          },
+          {
+            foreignKeyName: "uom_conversions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "uom_conversions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "v_stock_position"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "uom_conversions_to_uom_id_fkey"
+            columns: ["to_uom_id"]
+            isOneToOne: false
+            referencedRelation: "units_of_measure"
+            referencedColumns: ["uom_id"]
           },
         ]
       }

@@ -12,58 +12,28 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Plus, Search, Eye, Edit, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
-interface Customer {
-  customer_id: number;
-  customer_code: string;
-  customer_name: string;
-  customer_type: 'individual' | 'company';
-  primary_phone: string;
-  email: string;
-  credit_limit: number;
-  opening_balance: number;
-  opening_balance_type: string;
-  is_active: boolean;
-  outstanding_amount?: number;
-}
+import { Customer } from "@/types/customer";
 
 const CustomerList = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
-  const [customerTypeFilter, setCustomerTypeFilter] = useState("all");
   const [activeFilter, setActiveFilter] = useState("all");
 
   // Fetch customers with outstanding amounts
   const { data: customers, isLoading, error } = useQuery({
-    queryKey: ['customers', searchTerm, customerTypeFilter, activeFilter],
-    queryFn: async () => {
-      console.log('Fetching customers with filters:', { searchTerm, customerTypeFilter, activeFilter });
+    queryKey: ['customers', searchTerm, activeFilter],
+    queryFn: async (): Promise<Customer[]> => {
+      console.log('Fetching customers with filters:', { searchTerm, activeFilter });
       
       let query = supabase
         .from('customers')
-        .select(`
-          customer_id,
-          customer_code,
-          customer_name,
-          company_name,
-          customer_type,
-          primary_phone,
-          email,
-          credit_limit,
-          opening_balance,
-          opening_balance_type,
-          is_active
-        `)
-        .eq('company_id', 1); // You might want to get this from context/auth
+        .select('*')
+        .eq('company_id', 1);
 
       // Apply filters
       if (searchTerm) {
-        query = query.or(`customer_name.ilike.%${searchTerm}%,company_name.ilike.%${searchTerm}%`);
-      }
-
-      if (customerTypeFilter !== "all") {
-        query = query.eq('customer_type', customerTypeFilter as 'individual' | 'company');
+        query = query.or(`customer_name.ilike.%${searchTerm}%,customer_code.ilike.%${searchTerm}%`);
       }
 
       if (activeFilter !== "all") {
@@ -79,40 +49,10 @@ const CustomerList = () => {
         throw error;
       }
 
-      // Calculate outstanding amounts for each customer using the database function
-      const customersWithOutstanding = await Promise.all(
-        (data || []).map(async (customer) => {
-          const { data: outstandingData, error: outstandingError } = await supabase
-            .rpc('calculate_customer_outstanding', {
-              p_customer_id: customer.customer_id
-            });
-
-          if (outstandingError) {
-            console.error('Error calculating outstanding for customer:', customer.customer_id, outstandingError);
-          }
-
-          return {
-            ...customer,
-            outstanding_amount: outstandingData || 0
-          };
-        })
-      );
-
-      console.log('Fetched customers:', customersWithOutstanding);
-      return customersWithOutstanding;
+      console.log('Fetched customers:', data);
+      return data || [];
     },
   });
-
-  const getOutstandingStatus = (customer: Customer) => {
-    const outstanding = customer.outstanding_amount || 0;
-    if (outstanding > customer.credit_limit) {
-      return { status: 'over-limit', label: 'Over Limit', color: 'destructive' };
-    }
-    if (outstanding > 0) {
-      return { status: 'outstanding', label: 'Outstanding', color: 'secondary' };
-    }
-    return { status: 'clear', label: 'Clear', color: 'default' };
-  };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -158,23 +98,13 @@ const CustomerList = () => {
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input
-                    placeholder="Search by customer name or company name..."
+                    placeholder="Search by customer name or code..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10"
                   />
                 </div>
               </div>
-              <Select value={customerTypeFilter} onValueChange={setCustomerTypeFilter}>
-                <SelectTrigger className="w-full sm:w-48">
-                  <SelectValue placeholder="Customer Type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="individual">Individual</SelectItem>
-                  <SelectItem value="company">Company</SelectItem>
-                </SelectContent>
-              </Select>
               <Select value={activeFilter} onValueChange={setActiveFilter}>
                 <SelectTrigger className="w-full sm:w-32">
                   <SelectValue placeholder="Status" />
@@ -197,78 +127,60 @@ const CustomerList = () => {
                   <TableRow>
                     <TableHead>Code</TableHead>
                     <TableHead>Name</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Phone</TableHead>
-                    <TableHead>Email</TableHead>
+                    <TableHead>Contact Person</TableHead>
+                    <TableHead>Mobile Phone</TableHead>
+                    <TableHead>City</TableHead>
                     <TableHead>Credit Limit</TableHead>
-                    <TableHead>Outstanding</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {customers?.map((customer) => {
-                    const outstandingStatus = getOutstandingStatus(customer);
-                    return (
-                      <TableRow key={customer.customer_id}>
-                        <TableCell className="font-medium">
-                          {customer.customer_code}
-                        </TableCell>
-                        <TableCell>{customer.customer_name}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline">
-                            {customer.customer_type}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{customer.primary_phone || '-'}</TableCell>
-                        <TableCell>{customer.email || '-'}</TableCell>
-                        <TableCell>{formatCurrency(customer.credit_limit || 0)}</TableCell>
-                        <TableCell>
-                          <span className={outstandingStatus.status === 'over-limit' ? 'text-destructive font-semibold' : ''}>
-                            {formatCurrency(customer.outstanding_amount || 0)}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
-                            <Badge variant={customer.is_active ? "default" : "secondary"}>
-                              {customer.is_active ? 'Active' : 'Inactive'}
-                            </Badge>
-                            <Badge variant={outstandingStatus.color as any}>
-                              {outstandingStatus.label}
-                            </Badge>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => navigate(`/masters/customers/view/${customer.customer_id}`)}
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => navigate(`/masters/customers/edit/${customer.customer_id}`)}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => navigate(`/reports/sales/customers/${customer.customer_id}`)}
-                            >
-                              <FileText className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
+                  {customers?.map((customer) => (
+                    <TableRow key={customer.customer_id}>
+                      <TableCell className="font-medium">
+                        {customer.customer_code}
+                      </TableCell>
+                      <TableCell>{customer.customer_name}</TableCell>
+                      <TableCell>{customer.contact_person}</TableCell>
+                      <TableCell>{customer.mobile_phone}</TableCell>
+                      <TableCell>{customer.town_city}</TableCell>
+                      <TableCell>{formatCurrency(customer.max_credit_limit)}</TableCell>
+                      <TableCell>
+                        <Badge variant={customer.is_active ? "default" : "secondary"}>
+                          {customer.is_active ? 'Active' : 'Inactive'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => navigate(`/masters/customers/view/${customer.customer_id}`)}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => navigate(`/masters/customers/edit/${customer.customer_id}`)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => navigate(`/reports/sales/customers/${customer.customer_id}`)}
+                          >
+                            <FileText className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
                   {customers?.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={9} className="text-center text-gray-500 py-8">
+                      <TableCell colSpan={8} className="text-center text-gray-500 py-8">
                         No customers found
                       </TableCell>
                     </TableRow>

@@ -1,57 +1,20 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, User, Building, MapPin } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-
-interface CustomerFormData {
-  customer_code: string;
-  customer_type: 'individual' | 'company';
-  customer_name: string;
-  company_name: string;
-  contact_person: string;
-  primary_phone: string;
-  secondary_phone: string;
-  email: string;
-  website: string;
-  date_of_birth: string;
-  date_of_incorporation: string;
-  business_type: string;
-  gst_number: string;
-  pan_number: string;
-  state_code: string;
-  credit_rating: string;
-  payment_terms: string;
-  credit_limit: number;
-  credit_days: number;
-  interest_rate: number;
-  discount_percent: number;
-  opening_balance: number;
-  opening_balance_type: 'debit' | 'credit';
-  salesperson_id: number | null;
-  territory: string;
-  customer_group: string;
-  price_list: string;
-  preferred_communication: 'email' | 'sms' | 'whatsapp' | 'phone';
-  language_preference: string;
-  bank_name: string;
-  bank_account_number: string;
-  bank_ifsc: string;
-  tds_applicable: boolean;
-  tds_category: string;
-  special_instructions: string;
-  is_active: boolean;
-}
+import { Customer, CustomerFormData } from "@/types/customer";
+import CustomerBasicInfo from "@/components/customer/CustomerBasicInfo";
+import CustomerAddress from "@/components/customer/CustomerAddress";
 
 const CustomerEdit = () => {
   const { customerId } = useParams();
@@ -63,58 +26,100 @@ const CustomerEdit = () => {
   const { user } = useAuth();
 
   const [formData, setFormData] = useState<CustomerFormData>({
+    // Basic Identifiers
     customer_code: '',
-    customer_type: 'individual',
     customer_name: '',
-    company_name: '',
     contact_person: '',
-    primary_phone: '',
-    secondary_phone: '',
-    email: '',
-    website: '',
-    date_of_birth: '',
-    date_of_incorporation: '',
-    business_type: '',
-    gst_number: '',
+    mobile_phone: '',
+    telephone_no: '',
+    whatsapp_number: '',
+
+    // Address Section
+    address_line1: '',
+    address_line2: '',
+    town_city: '',
+    district: '',
+    state: '',
+    pincode: '',
+    country: 'India',
+
+    // Identification/Registration
+    gstin: '',
     pan_number: '',
-    state_code: '',
-    credit_rating: 'good',
-    payment_terms: '',
-    credit_limit: 0,
-    credit_days: 0,
-    interest_rate: 0,
-    discount_percent: 0,
-    opening_balance: 0,
-    opening_balance_type: 'debit',
-    salesperson_id: null,
-    territory: '',
-    customer_group: '',
-    price_list: '',
-    preferred_communication: 'email',
-    language_preference: 'en',
-    bank_name: '',
-    bank_account_number: '',
-    bank_ifsc: '',
+    aadhar_number: '',
+    uin_number: '',
+    udyog_adhar: '',
+    fssai_number: '',
+
+    // Licensing & Transport
+    drug_license_no: '',
+    dl_upto: '',
+    transport_details: '',
+    transport_gstin: '',
+    other_country: false,
+    currency: 'INR',
+
+    // Banking & Payment Terms
+    payment_terms: 'NET 30',
+    bank_account: '',
+    ifsc_code: '',
+    max_credit_limit: 0,
+    credit_site_days: 0,
+    locking_days: 0,
+    int_percentage: 0,
+    freight_charge: 0,
+    no_of_bills: 0,
+    discount_amount: 0,
+    discount_within_days: 0,
+    default_return_days: 0,
+    
+    // Opening Balances & Sundry Debitor Flag
+    opening_balance_dr: 0,
+    opening_balance_cr: 0,
+    sundry_debitor: false,
+
+    // Additional Flags & Options
     tds_applicable: false,
-    tds_category: '',
-    special_instructions: '',
+    allow_credit: true,
+    show_due_bills: false,
+    institute_sub_dealer: false,
+    allow_discount_on_bill: false,
+    discontinue_sleep: false,
+    out_of_state: false,
+    govt_no_tcs: false,
+    auto_interest: false,
+    hard_lock: false,
+    order_challan: false,
+
+    // Area/Line/Camp Grid (Locate Tab)
+    line_area_camp: '',
+    dl_no1: '',
+    dl_no2: '',
+    dl_no3: '',
+    tin_number: '',
+    srin_number: '',
+    locate_cr_site_days: 0,
+    locate_locking_days: 0,
+    locate_credit_limit: 0,
+    locate_discount: 0,
+    
+    // Metadata
     is_active: true,
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [company, setCompany] = useState<any>(null);
 
   // Fetch customer data for editing
   const { data: customer, isLoading } = useQuery({
     queryKey: ['customer', customerId],
-    queryFn: async () => {
+    queryFn: async (): Promise<Customer | null> => {
       if (!customerId) return null;
       
       console.log('Fetching customer:', customerId);
       const { data, error } = await supabase
         .from('customers')
         .select('*')
-        .eq('customer_id', parseInt(customerId))
+        .eq('customer_id', customerId)
         .single();
 
       if (error) {
@@ -128,82 +133,76 @@ const CustomerEdit = () => {
     enabled: !!customerId,
   });
 
-  // Fetch salespeople for dropdown - using user_id field that exists in users table
-  const { data: salespeople } = useQuery({
-    queryKey: ['salespeople'],
-    queryFn: async () => {
-      console.log('Fetching salespeople');
-      const { data, error } = await supabase
-        .from('users')
-        .select('user_id, email')
-        .eq('company_id', 1) // You might want to get this from context/auth
-        .eq('is_active', true)
-        .order('email');
-
-      if (error) {
-        console.error('Error fetching salespeople:', error);
-        throw error;
-      }
-
-      return data || [];
-    },
-  });
-
   useEffect(() => {
     if (customer) {
       setFormData({
         customer_code: customer.customer_code || '',
-        customer_type: customer.customer_type || 'individual',
         customer_name: customer.customer_name || '',
-        company_name: customer.company_name || '',
         contact_person: customer.contact_person || '',
-        primary_phone: customer.primary_phone || '',
-        secondary_phone: customer.secondary_phone || '',
-        email: customer.email || '',
-        website: customer.website || '',
-        date_of_birth: customer.date_of_birth || '',
-        date_of_incorporation: customer.date_of_incorporation || '',
-        business_type: customer.business_type || '',
-        gst_number: customer.gst_number || '',
+        mobile_phone: customer.mobile_phone || '',
+        telephone_no: customer.telephone_no || '',
+        whatsapp_number: customer.whatsapp_number || '',
+        address_line1: customer.address_line1 || '',
+        address_line2: customer.address_line2 || '',
+        town_city: customer.town_city || '',
+        district: customer.district || '',
+        state: customer.state || '',
+        pincode: customer.pincode || '',
+        country: customer.country || 'India',
+        gstin: customer.gstin || '',
         pan_number: customer.pan_number || '',
-        state_code: customer.state_code || '',
-        credit_rating: customer.credit_rating || 'good',
-        payment_terms: customer.payment_terms || '',
-        credit_limit: customer.credit_limit || 0,
-        credit_days: customer.credit_days || 0,
-        interest_rate: customer.interest_rate || 0,
-        discount_percent: customer.discount_percent || 0,
-        opening_balance: customer.opening_balance || 0,
-        opening_balance_type: customer.opening_balance_type || 'debit',
-        salesperson_id: customer.salesperson_id,
-        territory: customer.territory || '',
-        customer_group: customer.customer_group || '',
-        price_list: customer.price_list || '',
-        preferred_communication: customer.preferred_communication || 'email',
-        language_preference: customer.language_preference || 'en',
-        bank_name: customer.bank_name || '',
-        bank_account_number: customer.bank_account_number || '',
-        bank_ifsc: customer.bank_ifsc || '',
-        tds_applicable: customer.tds_applicable ?? false,
-        tds_category: customer.tds_category || '',
-        special_instructions: customer.special_instructions || '',
-        is_active: customer.is_active ?? true,
+        aadhar_number: customer.aadhar_number || '',
+        uin_number: customer.uin_number || '',
+        udyog_adhar: customer.udyog_adhar || '',
+        fssai_number: customer.fssai_number || '',
+        drug_license_no: customer.drug_license_no || '',
+        dl_upto: customer.dl_upto || '',
+        transport_details: customer.transport_details || '',
+        transport_gstin: customer.transport_gstin || '',
+        other_country: customer.other_country || false,
+        currency: customer.currency || 'INR',
+        payment_terms: customer.payment_terms || 'NET 30',
+        bank_account: customer.bank_account || '',
+        ifsc_code: customer.ifsc_code || '',
+        max_credit_limit: customer.max_credit_limit || 0,
+        credit_site_days: customer.credit_site_days || 0,
+        locking_days: customer.locking_days || 0,
+        int_percentage: customer.int_percentage || 0,
+        freight_charge: customer.freight_charge || 0,
+        no_of_bills: customer.no_of_bills || 0,
+        discount_amount: customer.discount_amount || 0,
+        discount_within_days: customer.discount_within_days || 0,
+        default_return_days: customer.default_return_days || 0,
+        opening_balance_dr: customer.opening_balance_dr || 0,
+        opening_balance_cr: customer.opening_balance_cr || 0,
+        sundry_debitor: customer.sundry_debitor || false,
+        tds_applicable: customer.tds_applicable || false,
+        allow_credit: customer.allow_credit !== false,
+        show_due_bills: customer.show_due_bills || false,
+        institute_sub_dealer: customer.institute_sub_dealer || false,
+        allow_discount_on_bill: customer.allow_discount_on_bill || false,
+        discontinue_sleep: customer.discontinue_sleep || false,
+        out_of_state: customer.out_of_state || false,
+        govt_no_tcs: customer.govt_no_tcs || false,
+        auto_interest: customer.auto_interest || false,
+        hard_lock: customer.hard_lock || false,
+        order_challan: customer.order_challan || false,
+        line_area_camp: customer.line_area_camp || '',
+        dl_no1: customer.dl_no1 || '',
+        dl_no2: customer.dl_no2 || '',
+        dl_no3: customer.dl_no3 || '',
+        tin_number: customer.tin_number || '',
+        srin_number: customer.srin_number || '',
+        locate_cr_site_days: customer.locate_cr_site_days || 0,
+        locate_locking_days: customer.locate_locking_days || 0,
+        locate_credit_limit: customer.locate_credit_limit || 0,
+        locate_discount: customer.locate_discount || 0,
+        is_active: customer.is_active !== false,
       });
     }
   }, [customer]);
 
-  useEffect(() => {
-    const fetchCompany = async () => {
-      const { data, error } = await supabase
-        .from('companies')
-        .select('company_id, company_name, company_code')
-        .single();
-      if (!error) setCompany(data);
-    };
-    fetchCompany();
-  }, []);
-
-  const handleInputChange = (field: keyof CustomerFormData, value: string | boolean | number | null) => {
+  const handleInputChange = (field: keyof CustomerFormData, value: string | boolean | number) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -229,10 +228,19 @@ const CustomerEdit = () => {
       return false;
     }
 
-    if (formData.customer_type === 'company' && !formData.company_name.trim()) {
+    if (!formData.contact_person.trim()) {
       toast({
         title: "Validation Error",
-        description: "Company Name is required for company customers",
+        description: "Contact Person is required",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (!formData.mobile_phone.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Mobile Phone is required",
         variant: "destructive",
       });
       return false;
@@ -258,42 +266,68 @@ const CustomerEdit = () => {
 
     try {
       const saveData = {
-        company_id: 1, // You might want to get this from context/auth
+        company_id: 1,
         customer_code: formData.customer_code.trim(),
-        customer_type: formData.customer_type,
         customer_name: formData.customer_name.trim(),
-        company_name: formData.company_name.trim() || null,
-        contact_person: formData.contact_person.trim() || null,
-        primary_phone: formData.primary_phone.trim() || null,
-        secondary_phone: formData.secondary_phone.trim() || null,
-        email: formData.email.trim() || null,
-        website: formData.website.trim() || null,
-        date_of_birth: formData.date_of_birth || null,
-        date_of_incorporation: formData.date_of_incorporation || null,
-        business_type: formData.business_type.trim() || null,
-        gst_number: formData.gst_number.trim() || null,
+        contact_person: formData.contact_person.trim(),
+        mobile_phone: formData.mobile_phone.trim(),
+        telephone_no: formData.telephone_no.trim() || null,
+        whatsapp_number: formData.whatsapp_number.trim() || null,
+        address_line1: formData.address_line1.trim(),
+        address_line2: formData.address_line2.trim() || null,
+        town_city: formData.town_city.trim(),
+        district: formData.district.trim(),
+        state: formData.state.trim(),
+        pincode: formData.pincode.trim(),
+        country: formData.country.trim(),
+        gstin: formData.gstin.trim() || null,
         pan_number: formData.pan_number.trim() || null,
-        state_code: formData.state_code.trim() || null,
-        credit_rating: formData.credit_rating,
-        payment_terms: formData.payment_terms.trim() || null,
-        credit_limit: formData.credit_limit,
-        credit_days: formData.credit_days,
-        interest_rate: formData.interest_rate,
-        discount_percent: formData.discount_percent,
-        opening_balance: formData.opening_balance,
-        opening_balance_type: formData.opening_balance_type,
-        salesperson_id: formData.salesperson_id,
-        territory: formData.territory.trim() || null,
-        customer_group: formData.customer_group.trim() || null,
-        price_list: formData.price_list.trim() || null,
-        preferred_communication: formData.preferred_communication,
-        language_preference: formData.language_preference,
-        bank_name: formData.bank_name.trim() || null,
-        bank_account_number: formData.bank_account_number.trim() || null,
-        bank_ifsc: formData.bank_ifsc.trim() || null,
+        aadhar_number: formData.aadhar_number.trim() || null,
+        uin_number: formData.uin_number.trim() || null,
+        udyog_adhar: formData.udyog_adhar.trim() || null,
+        fssai_number: formData.fssai_number.trim() || null,
+        drug_license_no: formData.drug_license_no.trim() || null,
+        dl_upto: formData.dl_upto || null,
+        transport_details: formData.transport_details.trim() || null,
+        transport_gstin: formData.transport_gstin.trim() || null,
+        other_country: formData.other_country,
+        currency: formData.currency,
+        payment_terms: formData.payment_terms,
+        bank_account: formData.bank_account.trim() || null,
+        ifsc_code: formData.ifsc_code.trim() || null,
+        max_credit_limit: formData.max_credit_limit,
+        credit_site_days: formData.credit_site_days,
+        locking_days: formData.locking_days,
+        int_percentage: formData.int_percentage,
+        freight_charge: formData.freight_charge,
+        no_of_bills: formData.no_of_bills,
+        discount_amount: formData.discount_amount,
+        discount_within_days: formData.discount_within_days,
+        default_return_days: formData.default_return_days,
+        opening_balance_dr: formData.opening_balance_dr,
+        opening_balance_cr: formData.opening_balance_cr,
+        sundry_debitor: formData.sundry_debitor,
         tds_applicable: formData.tds_applicable,
-        tds_category: formData.tds_category.trim() || null,
-        special_instructions: formData.special_instructions.trim() || null,
+        allow_credit: formData.allow_credit,
+        show_due_bills: formData.show_due_bills,
+        institute_sub_dealer: formData.institute_sub_dealer,
+        allow_discount_on_bill: formData.allow_discount_on_bill,
+        discontinue_sleep: formData.discontinue_sleep,
+        out_of_state: formData.out_of_state,
+        govt_no_tcs: formData.govt_no_tcs,
+        auto_interest: formData.auto_interest,
+        hard_lock: formData.hard_lock,
+        order_challan: formData.order_challan,
+        line_area_camp: formData.line_area_camp.trim() || null,
+        dl_no1: formData.dl_no1.trim() || null,
+        dl_no2: formData.dl_no2.trim() || null,
+        dl_no3: formData.dl_no3.trim() || null,
+        tin_number: formData.tin_number.trim() || null,
+        srin_number: formData.srin_number.trim() || null,
+        locate_cr_site_days: formData.locate_cr_site_days || null,
+        locate_locking_days: formData.locate_locking_days || null,
+        locate_credit_limit: formData.locate_credit_limit || null,
+        locate_discount: formData.locate_discount || null,
         is_active: formData.is_active,
         created_by: parseInt(user.id),
       };
@@ -305,7 +339,7 @@ const CustomerEdit = () => {
         result = await supabase
           .from('customers')
           .update(saveData)
-          .eq('customer_id', parseInt(customerId));
+          .eq('customer_id', customerId);
       } else {
         result = await supabase
           .from('customers')
@@ -354,479 +388,37 @@ const CustomerEdit = () => {
               <div>
                 <CardTitle>{isEditMode ? 'Edit Customer' : isViewMode ? 'View Customer' : 'Add Customer'}</CardTitle>
                 <CardDescription>
-                  {company ? `${company.company_name} (${company.company_code})` : 'Loading...'}
+                  {isEditMode ? 'Update customer information' : isViewMode ? 'View customer details' : 'Create a new customer'}
                 </CardDescription>
               </div>
             </div>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Basic Information */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="customer_code">Customer Code *</Label>
-                  <Input
-                    id="customer_code"
-                    value={formData.customer_code}
-                    onChange={(e) => handleInputChange('customer_code', e.target.value)}
-                    placeholder="Enter customer code"
-                    disabled={isViewMode}
-                    required
+              <Tabs defaultValue="basic" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="basic">Basic Information</TabsTrigger>
+                  <TabsTrigger value="address">Address</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="basic" className="space-y-6">
+                  <CustomerBasicInfo
+                    formData={formData}
+                    handleInputChange={handleInputChange}
+                    isViewMode={isViewMode}
                   />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="customer_type">Customer Type *</Label>
-                  <Select
-                    value={formData.customer_type}
-                    onValueChange={(value: 'individual' | 'company') => handleInputChange('customer_type', value)}
-                    disabled={isViewMode}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select customer type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="individual">Individual</SelectItem>
-                      <SelectItem value="company">Company</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="customer_name">Customer Name *</Label>
-                  <Input
-                    id="customer_name"
-                    value={formData.customer_name}
-                    onChange={(e) => handleInputChange('customer_name', e.target.value)}
-                    placeholder="Enter customer name"
-                    disabled={isViewMode}
-                    required
+                </TabsContent>
+                
+                <TabsContent value="address" className="space-y-6">
+                  <CustomerAddress
+                    formData={formData}
+                    handleInputChange={handleInputChange}
+                    isViewMode={isViewMode}
                   />
-                </div>
+                </TabsContent>
+              </Tabs>
 
-                {formData.customer_type === 'company' && (
-                  <div className="space-y-2">
-                    <Label htmlFor="company_name">Company Name *</Label>
-                    <Input
-                      id="company_name"
-                      value={formData.company_name}
-                      onChange={(e) => handleInputChange('company_name', e.target.value)}
-                      placeholder="Enter company name"
-                      disabled={isViewMode}
-                      required
-                    />
-                  </div>
-                )}
-
-                <div className="space-y-2">
-                  <Label htmlFor="contact_person">Contact Person</Label>
-                  <Input
-                    id="contact_person"
-                    value={formData.contact_person}
-                    onChange={(e) => handleInputChange('contact_person', e.target.value)}
-                    placeholder="Enter contact person"
-                    disabled={isViewMode}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="primary_phone">Primary Phone</Label>
-                  <Input
-                    id="primary_phone"
-                    value={formData.primary_phone}
-                    onChange={(e) => handleInputChange('primary_phone', e.target.value)}
-                    placeholder="Enter primary phone"
-                    disabled={isViewMode}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="secondary_phone">Secondary Phone</Label>
-                  <Input
-                    id="secondary_phone"
-                    value={formData.secondary_phone}
-                    onChange={(e) => handleInputChange('secondary_phone', e.target.value)}
-                    placeholder="Enter secondary phone"
-                    disabled={isViewMode}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    placeholder="Enter email"
-                    disabled={isViewMode}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="website">Website</Label>
-                  <Input
-                    id="website"
-                    value={formData.website}
-                    onChange={(e) => handleInputChange('website', e.target.value)}
-                    placeholder="Enter website"
-                    disabled={isViewMode}
-                  />
-                </div>
-
-                {formData.customer_type === 'individual' ? (
-                  <div className="space-y-2">
-                    <Label htmlFor="date_of_birth">Date of Birth</Label>
-                    <Input
-                      id="date_of_birth"
-                      type="date"
-                      value={formData.date_of_birth}
-                      onChange={(e) => handleInputChange('date_of_birth', e.target.value)}
-                      disabled={isViewMode}
-                    />
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <Label htmlFor="date_of_incorporation">Date of Incorporation</Label>
-                    <Input
-                      id="date_of_incorporation"
-                      type="date"
-                      value={formData.date_of_incorporation}
-                      onChange={(e) => handleInputChange('date_of_incorporation', e.target.value)}
-                      disabled={isViewMode}
-                    />
-                  </div>
-                )}
-              </div>
-
-              {/* Tax & Legal Information */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="gst_number">GST Number</Label>
-                  <Input
-                    id="gst_number"
-                    value={formData.gst_number}
-                    onChange={(e) => handleInputChange('gst_number', e.target.value)}
-                    placeholder="Enter GST number"
-                    disabled={isViewMode}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="pan_number">PAN Number</Label>
-                  <Input
-                    id="pan_number"
-                    value={formData.pan_number}
-                    onChange={(e) => handleInputChange('pan_number', e.target.value)}
-                    placeholder="Enter PAN number"
-                    disabled={isViewMode}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="state_code">State Code</Label>
-                  <Input
-                    id="state_code"
-                    value={formData.state_code}
-                    onChange={(e) => handleInputChange('state_code', e.target.value)}
-                    placeholder="Enter state code"
-                    disabled={isViewMode}
-                  />
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="tds_applicable"
-                    checked={formData.tds_applicable}
-                    onCheckedChange={(checked) => handleInputChange('tds_applicable', checked)}
-                    disabled={isViewMode}
-                  />
-                  <Label htmlFor="tds_applicable">TDS Applicable</Label>
-                </div>
-
-                {formData.tds_applicable && (
-                  <div className="space-y-2">
-                    <Label htmlFor="tds_category">TDS Category</Label>
-                    <Input
-                      id="tds_category"
-                      value={formData.tds_category}
-                      onChange={(e) => handleInputChange('tds_category', e.target.value)}
-                      placeholder="Enter TDS category"
-                      disabled={isViewMode}
-                    />
-                  </div>
-                )}
-              </div>
-
-              {/* Credit & Financial Information */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="credit_limit">Credit Limit</Label>
-                  <Input
-                    id="credit_limit"
-                    type="number"
-                    value={formData.credit_limit}
-                    onChange={(e) => handleInputChange('credit_limit', parseFloat(e.target.value) || 0)}
-                    placeholder="0.00"
-                    disabled={isViewMode}
-                    min="0"
-                    step="0.01"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="credit_days">Credit Days</Label>
-                  <Input
-                    id="credit_days"
-                    type="number"
-                    value={formData.credit_days}
-                    onChange={(e) => handleInputChange('credit_days', parseInt(e.target.value) || 0)}
-                    placeholder="0"
-                    disabled={isViewMode}
-                    min="0"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="interest_rate">Interest Rate (%)</Label>
-                  <Input
-                    id="interest_rate"
-                    type="number"
-                    value={formData.interest_rate}
-                    onChange={(e) => handleInputChange('interest_rate', parseFloat(e.target.value) || 0)}
-                    placeholder="0.00"
-                    disabled={isViewMode}
-                    min="0"
-                    step="0.01"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="discount_percent">Discount (%)</Label>
-                  <Input
-                    id="discount_percent"
-                    type="number"
-                    value={formData.discount_percent}
-                    onChange={(e) => handleInputChange('discount_percent', parseFloat(e.target.value) || 0)}
-                    placeholder="0.00"
-                    disabled={isViewMode}
-                    min="0"
-                    step="0.01"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="opening_balance">Opening Balance</Label>
-                  <Input
-                    id="opening_balance"
-                    type="number"
-                    value={formData.opening_balance}
-                    onChange={(e) => handleInputChange('opening_balance', parseFloat(e.target.value) || 0)}
-                    placeholder="0.00"
-                    disabled={isViewMode}
-                    step="0.01"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="opening_balance_type">Balance Type</Label>
-                  <Select
-                    value={formData.opening_balance_type}
-                    onValueChange={(value: 'debit' | 'credit') => handleInputChange('opening_balance_type', value)}
-                    disabled={isViewMode}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select balance type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="debit">Debit</SelectItem>
-                      <SelectItem value="credit">Credit</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="credit_rating">Credit Rating</Label>
-                  <Select
-                    value={formData.credit_rating}
-                    onValueChange={(value) => handleInputChange('credit_rating', value)}
-                    disabled={isViewMode}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select credit rating" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="excellent">Excellent</SelectItem>
-                      <SelectItem value="good">Good</SelectItem>
-                      <SelectItem value="fair">Fair</SelectItem>
-                      <SelectItem value="poor">Poor</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="payment_terms">Payment Terms</Label>
-                <Input
-                  id="payment_terms"
-                  value={formData.payment_terms}
-                  onChange={(e) => handleInputChange('payment_terms', e.target.value)}
-                  placeholder="Enter payment terms"
-                  disabled={isViewMode}
-                />
-              </div>
-
-              {/* Business Information */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="salesperson_id">Salesperson</Label>
-                  <Select
-                    value={formData.salesperson_id?.toString() || "none"}
-                    onValueChange={(value) => handleInputChange('salesperson_id', value === "none" ? null : parseInt(value))}
-                    disabled={isViewMode}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select salesperson" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">No Salesperson</SelectItem>
-                      {salespeople?.map((person) => (
-                        <SelectItem key={person.user_id} value={person.user_id.toString()}>
-                          {person.email}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="territory">Territory</Label>
-                  <Input
-                    id="territory"
-                    value={formData.territory}
-                    onChange={(e) => handleInputChange('territory', e.target.value)}
-                    placeholder="Enter territory"
-                    disabled={isViewMode}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="customer_group">Customer Group</Label>
-                  <Input
-                    id="customer_group"
-                    value={formData.customer_group}
-                    onChange={(e) => handleInputChange('customer_group', e.target.value)}
-                    placeholder="Enter customer group"
-                    disabled={isViewMode}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="price_list">Price List</Label>
-                  <Input
-                    id="price_list"
-                    value={formData.price_list}
-                    onChange={(e) => handleInputChange('price_list', e.target.value)}
-                    placeholder="Enter price list"
-                    disabled={isViewMode}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="preferred_communication">Preferred Communication</Label>
-                  <Select
-                    value={formData.preferred_communication}
-                    onValueChange={(value: 'email' | 'sms' | 'whatsapp' | 'phone') => handleInputChange('preferred_communication', value)}
-                    disabled={isViewMode}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select communication method" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="email">Email</SelectItem>
-                      <SelectItem value="sms">SMS</SelectItem>
-                      <SelectItem value="whatsapp">WhatsApp</SelectItem>
-                      <SelectItem value="phone">Phone</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="language_preference">Language Preference</Label>
-                  <Select
-                    value={formData.language_preference}
-                    onValueChange={(value) => handleInputChange('language_preference', value)}
-                    disabled={isViewMode}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select language" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="en">English</SelectItem>
-                      <SelectItem value="hi">Hindi</SelectItem>
-                      <SelectItem value="ta">Tamil</SelectItem>
-                      <SelectItem value="te">Telugu</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {/* Banking Information */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="bank_name">Bank Name</Label>
-                  <Input
-                    id="bank_name"
-                    value={formData.bank_name}
-                    onChange={(e) => handleInputChange('bank_name', e.target.value)}
-                    placeholder="Enter bank name"
-                    disabled={isViewMode}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="bank_account_number">Account Number</Label>
-                  <Input
-                    id="bank_account_number"
-                    value={formData.bank_account_number}
-                    onChange={(e) => handleInputChange('bank_account_number', e.target.value)}
-                    placeholder="Enter account number"
-                    disabled={isViewMode}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="bank_ifsc">IFSC Code</Label>
-                  <Input
-                    id="bank_ifsc"
-                    value={formData.bank_ifsc}
-                    onChange={(e) => handleInputChange('bank_ifsc', e.target.value)}
-                    placeholder="Enter IFSC code"
-                    disabled={isViewMode}
-                  />
-                </div>
-              </div>
-
-              {/* Additional Information */}
-              <div className="space-y-2">
-                <Label htmlFor="special_instructions">Special Instructions</Label>
-                <Textarea
-                  id="special_instructions"
-                  value={formData.special_instructions}
-                  onChange={(e) => handleInputChange('special_instructions', e.target.value)}
-                  placeholder="Enter any special instructions"
-                  disabled={isViewMode}
-                  rows={4}
-                />
-              </div>
-
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 pt-6">
                 <Switch
                   id="is_active"
                   checked={formData.is_active}
@@ -836,20 +428,16 @@ const CustomerEdit = () => {
                 <Label htmlFor="is_active">Active</Label>
               </div>
 
-              <div className="flex gap-4 pt-6">
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? 'Saving...' : isEditMode ? 'Update Customer' : 'Create Customer'}
-                </Button>
-                <Button type="button" variant="outline" onClick={() => navigate('/masters/customers/list')}>
-                  Cancel
-                </Button>
-                {customerId && !isViewMode && (
-                  <Button type="button" variant="ghost" onClick={() => navigate(`/masters/customers/${customerId}/addresses`)}>
-                    <MapPin className="h-4 w-4 mr-2" />
-                    Manage Addresses
+              {!isViewMode && (
+                <div className="flex gap-4 pt-6">
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? 'Saving...' : isEditMode ? 'Update Customer' : 'Create Customer'}
                   </Button>
-                )}
-              </div>
+                  <Button type="button" variant="outline" onClick={() => navigate('/masters/customers/list')}>
+                    Cancel
+                  </Button>
+                </div>
+              )}
             </form>
           </CardContent>
         </Card>

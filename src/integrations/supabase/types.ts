@@ -512,22 +512,7 @@ export type Database = {
           pin_code?: string
           state?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "customer_addresses_customer_id_fkey"
-            columns: ["customer_id"]
-            isOneToOne: false
-            referencedRelation: "customers"
-            referencedColumns: ["customer_id"]
-          },
-          {
-            foreignKeyName: "customer_addresses_customer_id_fkey"
-            columns: ["customer_id"]
-            isOneToOne: false
-            referencedRelation: "v_customer_revenue"
-            referencedColumns: ["customer_id"]
-          },
-        ]
+        Relationships: []
       }
       customer_receipts: {
         Row: {
@@ -612,20 +597,6 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: "customer_receipts_customer_id_fkey"
-            columns: ["customer_id"]
-            isOneToOne: false
-            referencedRelation: "customers"
-            referencedColumns: ["customer_id"]
-          },
-          {
-            foreignKeyName: "customer_receipts_customer_id_fkey"
-            columns: ["customer_id"]
-            isOneToOne: false
-            referencedRelation: "v_customer_revenue"
-            referencedColumns: ["customer_id"]
-          },
-          {
             foreignKeyName: "customer_receipts_updated_by_fkey"
             columns: ["updated_by"]
             isOneToOne: false
@@ -636,179 +607,216 @@ export type Database = {
       }
       customers: {
         Row: {
-          bank_account_number: string | null
-          bank_ifsc: string | null
-          bank_name: string | null
-          business_type: string | null
+          aadhar_number: string | null
+          address_line1: string
+          address_line2: string | null
+          allow_credit: boolean
+          allow_discount_on_bill: boolean
+          auto_interest: boolean
+          bank_account: string | null
           company_id: number
-          company_name: string | null
-          contact_person: string | null
+          contact_person: string
+          country: string
           created_at: string
           created_by: number | null
-          credit_days: number | null
-          credit_limit: number | null
-          credit_rating: string | null
+          credit_site_days: number
+          currency: string
           customer_code: string
-          customer_group: string | null
-          customer_id: number
+          customer_id: string
           customer_name: string
-          customer_type: Database["public"]["Enums"]["customer_type"]
-          date_of_birth: string | null
-          date_of_incorporation: string | null
-          discount_percent: number | null
-          email: string | null
-          gst_number: string | null
-          interest_rate: number | null
-          is_active: boolean | null
-          language_preference: string | null
-          opening_balance: number | null
-          opening_balance_type:
-            | Database["public"]["Enums"]["balance_type"]
-            | null
+          default_return_days: number
+          discontinue_sleep: boolean
+          discount_amount: number
+          discount_within_days: number
+          district: string
+          dl_no1: string | null
+          dl_no2: string | null
+          dl_no3: string | null
+          dl_upto: string | null
+          drug_license_no: string | null
+          freight_charge: number
+          fssai_number: string | null
+          govt_no_tcs: boolean
+          gstin: string | null
+          hard_lock: boolean
+          ifsc_code: string | null
+          institute_sub_dealer: boolean
+          int_percentage: number
+          is_active: boolean
+          line_area_camp: string | null
+          locate_cr_site_days: number | null
+          locate_credit_limit: number | null
+          locate_discount: number | null
+          locate_locking_days: number | null
+          locking_days: number
+          max_credit_limit: number
+          mobile_phone: string
+          no_of_bills: number
+          opening_balance_cr: number
+          opening_balance_dr: number
+          order_challan: boolean
+          other_country: boolean
+          out_of_state: boolean
           pan_number: string | null
-          payment_terms: string | null
-          preferred_communication:
-            | Database["public"]["Enums"]["communication_method"]
-            | null
-          price_list: string | null
-          primary_phone: string | null
-          salesperson_id: number | null
-          secondary_phone: string | null
-          special_instructions: string | null
-          state_code: string | null
-          tds_applicable: boolean | null
-          tds_category: string | null
-          territory: string | null
+          payment_terms: string
+          pincode: string
+          show_due_bills: boolean
+          srin_number: string | null
+          state: string
+          sundry_debitor: boolean
+          tds_applicable: boolean
+          telephone_no: string | null
+          tin_number: string | null
+          town_city: string
+          transport_details: string | null
+          transport_gstin: string | null
+          udyog_adhar: string | null
+          uin_number: string | null
           updated_at: string
           updated_by: number | null
-          website: string | null
+          whatsapp_number: string | null
         }
         Insert: {
-          bank_account_number?: string | null
-          bank_ifsc?: string | null
-          bank_name?: string | null
-          business_type?: string | null
-          company_id: number
-          company_name?: string | null
-          contact_person?: string | null
+          aadhar_number?: string | null
+          address_line1: string
+          address_line2?: string | null
+          allow_credit?: boolean
+          allow_discount_on_bill?: boolean
+          auto_interest?: boolean
+          bank_account?: string | null
+          company_id?: number
+          contact_person: string
+          country?: string
           created_at?: string
           created_by?: number | null
-          credit_days?: number | null
-          credit_limit?: number | null
-          credit_rating?: string | null
+          credit_site_days?: number
+          currency?: string
           customer_code: string
-          customer_group?: string | null
-          customer_id?: number
+          customer_id?: string
           customer_name: string
-          customer_type?: Database["public"]["Enums"]["customer_type"]
-          date_of_birth?: string | null
-          date_of_incorporation?: string | null
-          discount_percent?: number | null
-          email?: string | null
-          gst_number?: string | null
-          interest_rate?: number | null
-          is_active?: boolean | null
-          language_preference?: string | null
-          opening_balance?: number | null
-          opening_balance_type?:
-            | Database["public"]["Enums"]["balance_type"]
-            | null
+          default_return_days?: number
+          discontinue_sleep?: boolean
+          discount_amount?: number
+          discount_within_days?: number
+          district: string
+          dl_no1?: string | null
+          dl_no2?: string | null
+          dl_no3?: string | null
+          dl_upto?: string | null
+          drug_license_no?: string | null
+          freight_charge?: number
+          fssai_number?: string | null
+          govt_no_tcs?: boolean
+          gstin?: string | null
+          hard_lock?: boolean
+          ifsc_code?: string | null
+          institute_sub_dealer?: boolean
+          int_percentage?: number
+          is_active?: boolean
+          line_area_camp?: string | null
+          locate_cr_site_days?: number | null
+          locate_credit_limit?: number | null
+          locate_discount?: number | null
+          locate_locking_days?: number | null
+          locking_days?: number
+          max_credit_limit?: number
+          mobile_phone: string
+          no_of_bills?: number
+          opening_balance_cr?: number
+          opening_balance_dr?: number
+          order_challan?: boolean
+          other_country?: boolean
+          out_of_state?: boolean
           pan_number?: string | null
-          payment_terms?: string | null
-          preferred_communication?:
-            | Database["public"]["Enums"]["communication_method"]
-            | null
-          price_list?: string | null
-          primary_phone?: string | null
-          salesperson_id?: number | null
-          secondary_phone?: string | null
-          special_instructions?: string | null
-          state_code?: string | null
-          tds_applicable?: boolean | null
-          tds_category?: string | null
-          territory?: string | null
+          payment_terms?: string
+          pincode: string
+          show_due_bills?: boolean
+          srin_number?: string | null
+          state: string
+          sundry_debitor?: boolean
+          tds_applicable?: boolean
+          telephone_no?: string | null
+          tin_number?: string | null
+          town_city: string
+          transport_details?: string | null
+          transport_gstin?: string | null
+          udyog_adhar?: string | null
+          uin_number?: string | null
           updated_at?: string
           updated_by?: number | null
-          website?: string | null
+          whatsapp_number?: string | null
         }
         Update: {
-          bank_account_number?: string | null
-          bank_ifsc?: string | null
-          bank_name?: string | null
-          business_type?: string | null
+          aadhar_number?: string | null
+          address_line1?: string
+          address_line2?: string | null
+          allow_credit?: boolean
+          allow_discount_on_bill?: boolean
+          auto_interest?: boolean
+          bank_account?: string | null
           company_id?: number
-          company_name?: string | null
-          contact_person?: string | null
+          contact_person?: string
+          country?: string
           created_at?: string
           created_by?: number | null
-          credit_days?: number | null
-          credit_limit?: number | null
-          credit_rating?: string | null
+          credit_site_days?: number
+          currency?: string
           customer_code?: string
-          customer_group?: string | null
-          customer_id?: number
+          customer_id?: string
           customer_name?: string
-          customer_type?: Database["public"]["Enums"]["customer_type"]
-          date_of_birth?: string | null
-          date_of_incorporation?: string | null
-          discount_percent?: number | null
-          email?: string | null
-          gst_number?: string | null
-          interest_rate?: number | null
-          is_active?: boolean | null
-          language_preference?: string | null
-          opening_balance?: number | null
-          opening_balance_type?:
-            | Database["public"]["Enums"]["balance_type"]
-            | null
+          default_return_days?: number
+          discontinue_sleep?: boolean
+          discount_amount?: number
+          discount_within_days?: number
+          district?: string
+          dl_no1?: string | null
+          dl_no2?: string | null
+          dl_no3?: string | null
+          dl_upto?: string | null
+          drug_license_no?: string | null
+          freight_charge?: number
+          fssai_number?: string | null
+          govt_no_tcs?: boolean
+          gstin?: string | null
+          hard_lock?: boolean
+          ifsc_code?: string | null
+          institute_sub_dealer?: boolean
+          int_percentage?: number
+          is_active?: boolean
+          line_area_camp?: string | null
+          locate_cr_site_days?: number | null
+          locate_credit_limit?: number | null
+          locate_discount?: number | null
+          locate_locking_days?: number | null
+          locking_days?: number
+          max_credit_limit?: number
+          mobile_phone?: string
+          no_of_bills?: number
+          opening_balance_cr?: number
+          opening_balance_dr?: number
+          order_challan?: boolean
+          other_country?: boolean
+          out_of_state?: boolean
           pan_number?: string | null
-          payment_terms?: string | null
-          preferred_communication?:
-            | Database["public"]["Enums"]["communication_method"]
-            | null
-          price_list?: string | null
-          primary_phone?: string | null
-          salesperson_id?: number | null
-          secondary_phone?: string | null
-          special_instructions?: string | null
-          state_code?: string | null
-          tds_applicable?: boolean | null
-          tds_category?: string | null
-          territory?: string | null
+          payment_terms?: string
+          pincode?: string
+          show_due_bills?: boolean
+          srin_number?: string | null
+          state?: string
+          sundry_debitor?: boolean
+          tds_applicable?: boolean
+          telephone_no?: string | null
+          tin_number?: string | null
+          town_city?: string
+          transport_details?: string | null
+          transport_gstin?: string | null
+          udyog_adhar?: string | null
+          uin_number?: string | null
           updated_at?: string
           updated_by?: number | null
-          website?: string | null
+          whatsapp_number?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "customers_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "companies"
-            referencedColumns: ["company_id"]
-          },
-          {
-            foreignKeyName: "customers_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "customers_salesperson_id_fkey"
-            columns: ["salesperson_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "customers_updated_by_fkey"
-            columns: ["updated_by"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["user_id"]
-          },
-        ]
+        Relationships: []
       }
       data_encryption_keys: {
         Row: {
@@ -2980,20 +2988,6 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
           {
-            foreignKeyName: "sales_invoices_customer_id_fkey"
-            columns: ["customer_id"]
-            isOneToOne: false
-            referencedRelation: "customers"
-            referencedColumns: ["customer_id"]
-          },
-          {
-            foreignKeyName: "sales_invoices_customer_id_fkey"
-            columns: ["customer_id"]
-            isOneToOne: false
-            referencedRelation: "v_customer_revenue"
-            referencedColumns: ["customer_id"]
-          },
-          {
             foreignKeyName: "sales_invoices_salesperson_id_fkey"
             columns: ["salesperson_id"]
             isOneToOne: false
@@ -3234,20 +3228,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "sales_returns_customer_id_fkey"
-            columns: ["customer_id"]
-            isOneToOne: false
-            referencedRelation: "customers"
-            referencedColumns: ["customer_id"]
-          },
-          {
-            foreignKeyName: "sales_returns_customer_id_fkey"
-            columns: ["customer_id"]
-            isOneToOne: false
-            referencedRelation: "v_customer_revenue"
-            referencedColumns: ["customer_id"]
           },
           {
             foreignKeyName: "sales_returns_original_invoice_id_fkey"
@@ -4427,15 +4407,6 @@ export type Database = {
       }
     }
     Views: {
-      v_customer_revenue: {
-        Row: {
-          customer_id: number | null
-          customer_name: string | null
-          number_of_invoices: number | null
-          total_revenue: number | null
-        }
-        Relationships: []
-      }
       v_daily_sales_summary: {
         Row: {
           date: string | null
@@ -4512,7 +4483,7 @@ export type Database = {
     }
     Functions: {
       calculate_customer_outstanding: {
-        Args: { p_customer_id: number }
+        Args: { p_customer_id: number } | { p_customer_id: string }
         Returns: number
       }
       get_user_id_from_auth: {

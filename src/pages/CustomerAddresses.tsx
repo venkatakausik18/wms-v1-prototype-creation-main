@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -90,7 +89,7 @@ const CustomerAddresses = () => {
       const { data, error } = await supabase
         .from('customers')
         .select('customer_id, customer_code, customer_name')
-        .eq('customer_id', parseInt(customerId))
+        .eq('customer_id', customerId)
         .single();
 
       if (error) throw error;
@@ -108,7 +107,7 @@ const CustomerAddresses = () => {
       const { data, error } = await supabase
         .from('customer_addresses')
         .select('*')
-        .eq('customer_id', parseInt(customerId))
+        .eq('customer_id', customerId)
         .order('is_default', { ascending: false })
         .order('address_title');
 
@@ -218,7 +217,7 @@ const CustomerAddresses = () => {
 
     try {
       const saveData = {
-        customer_id: parseInt(customerId),
+        customer_id: customerId, // Now using UUID directly instead of parseInt
         address_type: formData.address_type,
         address_title: formData.address_title.trim() || null,
         address_line1: formData.address_line1.trim(),
@@ -239,7 +238,7 @@ const CustomerAddresses = () => {
         await supabase
           .from('customer_addresses')
           .update({ is_default: false })
-          .eq('customer_id', parseInt(customerId))
+          .eq('customer_id', customerId)
           .neq('address_id', editingAddress?.address_id || 0);
       }
 

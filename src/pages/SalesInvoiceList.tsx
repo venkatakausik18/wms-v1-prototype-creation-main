@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -222,54 +221,58 @@ const SalesInvoiceList = () => {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    invoices?.map((invoice) => (
-                      <TableRow key={invoice.sales_id}>
-                        <TableCell className="font-medium">
-                          {invoice.invoice_number}
-                        </TableCell>
-                        <TableCell>
-                          {new Date(invoice.invoice_date).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell>
-                          {invoice.customers && 
-                           typeof invoice.customers === "object" &&
-                           "customer_name" in invoice.customers
-                            ? invoice.customers.customer_name
-                            : ""}
-                        </TableCell>
-                        <TableCell>
-                          ₹{Number(invoice.grand_total || 0).toFixed(2)}
-                        </TableCell>
-                        <TableCell>
-                          {getPaymentStatusBadge(invoice.payment_status)}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleEdit(invoice.sales_id, invoice.payment_status)}
-                            >
-                              <FileText className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => navigate(`/sales/receipts/${invoice.customer_id}`)}
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => console.log('Print invoice:', invoice.sales_id)}
-                            >
-                              <Mail className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
+                    invoices?.map((invoice) => {
+                      const customerName = invoice.customers && 
+                        typeof invoice.customers === "object" &&
+                        "customer_name" in invoice.customers 
+                          ? (invoice.customers as { customer_name: string }).customer_name
+                          : "";
+                          
+                      return (
+                        <TableRow key={invoice.sales_id}>
+                          <TableCell className="font-medium">
+                            {invoice.invoice_number}
+                          </TableCell>
+                          <TableCell>
+                            {new Date(invoice.invoice_date).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell>
+                            {customerName}
+                          </TableCell>
+                          <TableCell>
+                            ₹{Number(invoice.grand_total || 0).toFixed(2)}
+                          </TableCell>
+                          <TableCell>
+                            {getPaymentStatusBadge(invoice.payment_status)}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleEdit(invoice.sales_id, invoice.payment_status)}
+                              >
+                                <FileText className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => navigate(`/sales/receipts/${invoice.customer_id}`)}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => console.log('Print invoice:', invoice.sales_id)}
+                              >
+                                <Mail className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
                   )}
                 </TableBody>
               </Table>

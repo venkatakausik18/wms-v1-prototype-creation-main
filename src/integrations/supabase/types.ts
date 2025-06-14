@@ -467,7 +467,7 @@ export type Database = {
           city: string
           country: string | null
           created_at: string
-          customer_id: number
+          customer_id: string
           email: string | null
           gps_coordinates: string | null
           is_active: boolean | null
@@ -485,7 +485,7 @@ export type Database = {
           city: string
           country?: string | null
           created_at?: string
-          customer_id: number
+          customer_id: string
           email?: string | null
           gps_coordinates?: string | null
           is_active?: boolean | null
@@ -503,7 +503,7 @@ export type Database = {
           city?: string
           country?: string | null
           created_at?: string
-          customer_id?: number
+          customer_id?: string
           email?: string | null
           gps_coordinates?: string | null
           is_active?: boolean | null
@@ -512,7 +512,15 @@ export type Database = {
           pin_code?: string
           state?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "customer_addresses_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["customer_id"]
+          },
+        ]
       }
       customer_receipts: {
         Row: {

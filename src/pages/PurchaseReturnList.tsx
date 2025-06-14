@@ -32,7 +32,7 @@ const PurchaseReturnList = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedVendor, setSelectedVendor] = useState<string>("");
+  const [selectedVendor, setSelectedVendor] = useState<string>("all");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
@@ -53,7 +53,7 @@ const PurchaseReturnList = () => {
         query = query.ilike('return_number', `%${searchTerm}%`);
       }
       
-      if (selectedVendor) {
+      if (selectedVendor && selectedVendor !== "all") {
         query = query.eq('vendor_id', parseInt(selectedVendor));
       }
       
@@ -120,7 +120,7 @@ const PurchaseReturnList = () => {
 
   const clearFilters = () => {
     setSearchTerm("");
-    setSelectedVendor("");
+    setSelectedVendor("all");
     setStartDate("");
     setEndDate("");
   };
@@ -172,7 +172,7 @@ const PurchaseReturnList = () => {
                   <SelectValue placeholder="Select vendor" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Vendors</SelectItem>
+                  <SelectItem value="all">All Vendors</SelectItem>
                   {vendors?.map((vendor) => (
                     <SelectItem key={vendor.vendor_id} value={vendor.vendor_id.toString()}>
                       {vendor.vendor_name}
@@ -259,7 +259,7 @@ const PurchaseReturnList = () => {
               </Table>
             ) : (
               <div className="p-6 text-center text-gray-500">
-                No purchase returns found. {searchTerm || selectedVendor || startDate || endDate ? 'Try adjusting your filters.' : ''}
+                No purchase returns found. {searchTerm || selectedVendor !== "all" || startDate || endDate ? 'Try adjusting your filters.' : ''}
               </div>
             )}
           </CardContent>

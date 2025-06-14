@@ -45,8 +45,8 @@ const SalesReturnList = () => {
         .from('sales_returns')
         .select(`
           *,
-          sales_invoices!sales_returns_original_invoice_id_fkey(invoice_number),
-          customers!sales_returns_customer_id_fkey(customer_name)
+          sales_invoices!fk_sales_returns_original_invoice_id(invoice_number),
+          customers!fk_sales_returns_customer_id(customer_name)
         `)
         .order('return_date', { ascending: false });
 

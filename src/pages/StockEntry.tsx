@@ -12,6 +12,9 @@ import { Plus, Trash2, Save } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import Layout from "@/components/Layout";
+import type { Database } from "@/integrations/supabase/types";
+
+type TransactionType = Database["public"]["Enums"]["txn_type"];
 
 interface StockEntryDetail {
   id: string;
@@ -28,6 +31,15 @@ interface StockEntryDetail {
   reason_code: string;
 }
 
+interface FormData {
+  txn_type: TransactionType;
+  txn_date: string;
+  txn_time: string;
+  warehouse_id: string;
+  reference_document: string;
+  remarks: string;
+}
+
 const StockEntry = () => {
   const navigate = useNavigate();
   const { type } = useParams<{ type: "inward" | "outward" }>();
@@ -36,7 +48,7 @@ const StockEntry = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form state
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     txn_type: type === "inward" ? "purchase_in" : "sale_out",
     txn_date: new Date().toISOString().split('T')[0],
     txn_time: new Date().toTimeString().split(' ')[0].slice(0, 5),
@@ -77,7 +89,7 @@ const StockEntry = () => {
     },
   });
 
-  // Fetch storage bins
+  // Fetch storage bins - simplified query to avoid deep type instantiation
   const { data: bins } = useQuery({
     queryKey: ['storage-bins', formData.warehouse_id],
     queryFn: async () => {
@@ -85,11 +97,7 @@ const StockEntry = () => {
       
       const { data, error } = await supabase
         .from('storage_bins')
-        .select(`
-          bin_id,
-          bin_code,
-          zone_name:warehouse_zones(zone_name)
-        `)
+        .select('bin_id, bin_code')
         .eq('warehouse_id', formData.warehouse_id)
         .eq('is_active', true)
         .order('bin_code');
@@ -106,7 +114,7 @@ const StockEntry = () => {
       product_id: 0,
       product_name: "",
       variant_id: undefined,
-      uom_id: 0,
+      uom_id: 1,
       quantity: 0,
       unit_cost: 0,
       total_cost: 0,
@@ -160,10 +168,10 @@ const StockEntry = () => {
       // Generate transaction number
       const txnNumber = `TXN-${type?.toUpperCase()}-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(Date.now()).slice(-4)}`;
 
-      // Insert main transaction
+      // Insert main transaction - fixed: remove array brackets and ensure proper typing
       const { data: txnData, error: txnError } = await supabase
         .from('inventory_transactions')
-        .insert([{
+        .insert({
           company_id: 1, // TODO: Get from auth context
           warehouse_id: parseInt(formData.warehouse_id),
           txn_number: txnNumber,
@@ -176,7 +184,7 @@ const StockEntry = () => {
           total_value: totalValue,
           remarks: formData.remarks,
           created_by: 1 // TODO: Get from auth context
-        }])
+        })
         .select()
         .single();
 
@@ -199,6 +207,7 @@ const StockEntry = () => {
         reason_code: detail.reason_code
       }));
 
+      // Insert details - fixed: use proper array insert for multiple records
       const { error: detailsError } = await supabase
         .from('inventory_transaction_details')
         .insert(detailsToInsert);
@@ -213,7 +222,7 @@ const StockEntry = () => {
         description: `Stock ${type} entry created successfully.`,
       });
       queryClient.invalidateQueries({ queryKey: ['inventory-transactions'] });
-      navigate('/inventory/transactions');
+      navigate('/inventory');
     },
     onError: (error) => {
       toast({

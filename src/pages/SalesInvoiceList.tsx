@@ -224,7 +224,7 @@ const SalesInvoiceList = () => {
                     </TableRow>
                   ) : (
                     invoices?.map((invoice) => {
-                      // Safe type guard for customers
+                      // Safe type guard for customers with proper null checking
                       const customer = invoice.customers && 
                         typeof invoice.customers === "object" &&
                         "customer_name" in invoice.customers 
@@ -319,4 +319,3 @@ const SalesInvoiceList = () => {
 };
 
 export default SalesInvoiceList;
-

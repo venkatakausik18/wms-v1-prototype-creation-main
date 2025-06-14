@@ -35,6 +35,8 @@ import PurchaseOrderList from "./pages/PurchaseOrderList";
 import PurchaseOrderEdit from "./pages/PurchaseOrderEdit";
 import GrnList from "./pages/GrnList";
 import GrnEdit from "./pages/GrnEdit";
+import PurchaseReturnList from "./pages/PurchaseReturnList";
+import PurchaseReturnEdit from "./pages/PurchaseReturnEdit";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -94,6 +96,12 @@ const App = () => (
             <Route path="/purchase/grn/add" element={<GrnEdit />} />
             <Route path="/purchase/grn/edit/:grnId" element={<GrnEdit />} />
             <Route path="/purchase/grn/view/:grnId" element={<GrnEdit />} />
+            {/* Purchase Return Routes */}
+            <Route path="/purchase/returns" element={<Navigate to="/purchase/returns/list" replace />} />
+            <Route path="/purchase/returns/list" element={<PurchaseReturnList />} />
+            <Route path="/purchase/returns/add" element={<PurchaseReturnEdit />} />
+            <Route path="/purchase/returns/edit/:prId" element={<PurchaseReturnEdit />} />
+            <Route path="/purchase/returns/view/:prId" element={<PurchaseReturnEdit />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

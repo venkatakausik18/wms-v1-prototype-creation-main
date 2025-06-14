@@ -233,8 +233,8 @@ const SalesInvoiceList = () => {
                           {typeof invoice.customers === "object" &&
                             invoice.customers !== null &&
                             "customer_name" in invoice.customers &&
-                            (invoice.customers as { customer_name: string }).customer_name
-                              ? (invoice.customers as { customer_name: string }).customer_name
+                            invoice.customers?.customer_name
+                              ? invoice.customers.customer_name
                               : ""}
                         </TableCell>
                         <TableCell>

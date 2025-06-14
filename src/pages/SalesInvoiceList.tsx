@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -230,12 +231,11 @@ const SalesInvoiceList = () => {
                           {new Date(invoice.invoice_date).toLocaleDateString()}
                         </TableCell>
                         <TableCell>
-                          {typeof invoice.customers === "object" &&
-                            invoice.customers !== null &&
-                            "customer_name" in invoice.customers &&
-                            invoice.customers?.customer_name
-                              ? invoice.customers.customer_name
-                              : ""}
+                          {invoice.customers && 
+                           typeof invoice.customers === "object" &&
+                           "customer_name" in invoice.customers
+                            ? invoice.customers.customer_name
+                            : ""}
                         </TableCell>
                         <TableCell>
                           ₹{Number(invoice.grand_total || 0).toFixed(2)}

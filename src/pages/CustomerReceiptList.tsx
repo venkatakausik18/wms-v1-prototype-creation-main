@@ -39,11 +39,17 @@ const CustomerReceiptList = () => {
   const { data: customerReceipts, isLoading, error, refetch } = useQuery({
     queryKey: ['customer-receipts', searchTerm, selectedCustomer, startDate, endDate],
     queryFn: async () => {
+      console.log('Fetching customer receipts with filters:', { searchTerm, selectedCustomer, startDate, endDate });
+      
       let query = supabase
         .from('customer_receipts')
         .select(`
-          *,
-          customers(customer_name)
+          receipt_id,
+          receipt_number,
+          receipt_date,
+          customer_id,
+          total_amount_received,
+          payment_mode
         `)
         .order('receipt_date', { ascending: false });
 
@@ -64,21 +70,36 @@ const CustomerReceiptList = () => {
         query = query.lte('receipt_date', endDate);
       }
 
-      const { data, error } = await query;
+      const { data: receipts, error: receiptsError } = await query;
       
-      if (error) {
-        console.error('Error fetching customer receipts:', error);
-        throw error;
+      if (receiptsError) {
+        console.error('Error fetching customer receipts:', receiptsError);
+        throw receiptsError;
       }
+
+      // Get customer names separately to avoid relationship issues
+      const customerIds = [...new Set(receipts?.map(r => r.customer_id) || [])];
+      const { data: customers, error: customersError } = await supabase
+        .from('customers')
+        .select('customer_id, customer_name')
+        .in('customer_id', customerIds);
+
+      if (customersError) {
+        console.error('Error fetching customers:', customersError);
+        throw customersError;
+      }
+
+      // Create a map for quick customer lookup
+      const customerMap = new Map(customers?.map(c => [c.customer_id, c.customer_name]) || []);
       
-      return data?.map(item => ({
-        receipt_id: item.receipt_id,
-        receipt_number: item.receipt_number,
-        receipt_date: item.receipt_date,
-        customer_id: item.customer_id,
-        customer_name: item.customers?.customer_name || 'Unknown Customer',
-        total_amount_received: item.total_amount_received,
-        payment_mode: item.payment_mode
+      return receipts?.map(receipt => ({
+        receipt_id: receipt.receipt_id,
+        receipt_number: receipt.receipt_number,
+        receipt_date: receipt.receipt_date,
+        customer_id: receipt.customer_id,
+        customer_name: customerMap.get(receipt.customer_id) || 'Unknown Customer',
+        total_amount_received: receipt.total_amount_received,
+        payment_mode: receipt.payment_mode
       })) || [];
     },
   });

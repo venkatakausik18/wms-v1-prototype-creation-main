@@ -323,7 +323,7 @@ const CustomerReceiptEdit = () => {
               
               <div>
                 <Label htmlFor="customer_id">Customer</Label>
-                <Select value={formData.customer_id.toString()} onValueChange={(value) => handleInputChange('customer_id', parseInt(value))}>
+                <Select value={formData.customer_id === 0 ? "" : formData.customer_id.toString()} onValueChange={(value) => handleInputChange('customer_id', parseInt(value))}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select customer" />
                   </SelectTrigger>

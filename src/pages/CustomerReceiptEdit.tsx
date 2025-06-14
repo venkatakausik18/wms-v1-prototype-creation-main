@@ -25,7 +25,7 @@ interface FormData {
   receipt_number: string;
   receipt_date: string;
   receipt_time: string;
-  customer_id: string;
+  customer_id: number;
   payment_mode: string;
   bank_account: string;
   reference_number: string;
@@ -46,7 +46,7 @@ const CustomerReceiptEdit = () => {
     receipt_number: '',
     receipt_date: new Date().toISOString().split('T')[0],
     receipt_time: new Date().toTimeString().slice(0, 5),
-    customer_id: '',
+    customer_id: 0,
     payment_mode: 'cash',
     bank_account: '',
     reference_number: '',
@@ -195,10 +195,10 @@ const CustomerReceiptEdit = () => {
           amount_applied: invoice.amount_applied
         }));
 
-      // Insert customer receipt
+      // Insert customer receipt - fix: remove array wrapper and ensure correct types
       const { data: receiptData, error: receiptError } = await supabase
         .from('customer_receipts')
-        .insert([{
+        .insert({
           company_id: 1, // TODO: Get from context
           customer_id: formData.customer_id,
           receipt_number: formData.receipt_number,
@@ -215,7 +215,7 @@ const CustomerReceiptEdit = () => {
           advance_adjustment: formData.advance_adjustment,
           balance_after_receipt: getBalanceAfterReceipt(),
           created_by: 1 // TODO: Get from auth context
-        }])
+        })
         .select()
         .single();
 
@@ -241,7 +241,7 @@ const CustomerReceiptEdit = () => {
       }
 
       // Insert financial transaction
-      await supabase.from('financial_transactions').insert([{
+      await supabase.from('financial_transactions').insert({
         company_id: 1, // TODO: Get from context
         module: 'receipt',
         module_reference_id: receiptData.receipt_id,
@@ -249,7 +249,7 @@ const CustomerReceiptEdit = () => {
         transaction_time: formData.receipt_time,
         gl_entry_created: false,
         created_by: 1 // TODO: Get from auth context
-      }]);
+      });
 
       toast({
         title: "Success",
@@ -323,7 +323,7 @@ const CustomerReceiptEdit = () => {
               
               <div>
                 <Label htmlFor="customer_id">Customer</Label>
-                <Select value={formData.customer_id} onValueChange={(value) => handleInputChange('customer_id', value)}>
+                <Select value={formData.customer_id.toString()} onValueChange={(value) => handleInputChange('customer_id', parseInt(value))}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select customer" />
                   </SelectTrigger>

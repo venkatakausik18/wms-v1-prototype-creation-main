@@ -16,7 +16,7 @@ interface CustomerReceipt {
   receipt_id: number;
   receipt_number: string;
   receipt_date: string;
-  customer_id: string;
+  customer_id: number;
   customer_name: string;
   total_amount_received: number;
   payment_mode: string;
@@ -43,7 +43,7 @@ const CustomerReceiptList = () => {
         .from('customer_receipts')
         .select(`
           *,
-          customers!customer_receipts_customer_id_fkey(customer_name)
+          customers(customer_name)
         `)
         .order('receipt_date', { ascending: false });
 
@@ -53,7 +53,7 @@ const CustomerReceiptList = () => {
       }
       
       if (selectedCustomer && selectedCustomer !== "all") {
-        query = query.eq('customer_id', selectedCustomer);
+        query = query.eq('customer_id', parseInt(selectedCustomer));
       }
       
       if (startDate) {

@@ -37,6 +37,8 @@ import GrnList from "./pages/GrnList";
 import GrnEdit from "./pages/GrnEdit";
 import PurchaseReturnList from "./pages/PurchaseReturnList";
 import PurchaseReturnEdit from "./pages/PurchaseReturnEdit";
+import VendorPaymentList from "./pages/VendorPaymentList";
+import VendorPaymentEdit from "./pages/VendorPaymentEdit";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -102,6 +104,12 @@ const App = () => (
             <Route path="/purchase/returns/add" element={<PurchaseReturnEdit />} />
             <Route path="/purchase/returns/edit/:prId" element={<PurchaseReturnEdit />} />
             <Route path="/purchase/returns/view/:prId" element={<PurchaseReturnEdit />} />
+            {/* Vendor Payment Routes */}
+            <Route path="/purchase/payments" element={<Navigate to="/purchase/payments/list" replace />} />
+            <Route path="/purchase/payments/list" element={<VendorPaymentList />} />
+            <Route path="/purchase/payments/add" element={<VendorPaymentEdit />} />
+            <Route path="/purchase/payments/edit/:paymentId" element={<VendorPaymentEdit />} />
+            <Route path="/purchase/payments/view/:paymentId" element={<VendorPaymentEdit />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

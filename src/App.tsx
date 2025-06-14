@@ -45,6 +45,10 @@ import SalesReturnList from "./pages/SalesReturnList";
 import SalesReturnEdit from "./pages/SalesReturnEdit";
 import CustomerReceiptList from "./pages/CustomerReceiptList";
 import CustomerReceiptEdit from "./pages/CustomerReceiptEdit";
+import InventoryPage from "./pages/InventoryPage";
+import StockEntry from "./pages/StockEntry";
+import StockTransfer from "./pages/StockTransfer";
+import PhysicalCount from "./pages/PhysicalCount";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -134,6 +138,11 @@ const App = () => (
             <Route path="/sales/receipts/add" element={<CustomerReceiptEdit />} />
             <Route path="/sales/receipts/edit/:receiptId" element={<CustomerReceiptEdit />} />
             <Route path="/sales/receipts/view/:receiptId" element={<CustomerReceiptEdit />} />
+            {/* Inventory Routes */}
+            <Route path="/inventory" element={<InventoryPage />} />
+            <Route path="/inventory/stock-entry/:type" element={<StockEntry />} />
+            <Route path="/inventory/transfer" element={<StockTransfer />} />
+            <Route path="/inventory/physical-count" element={<PhysicalCount />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

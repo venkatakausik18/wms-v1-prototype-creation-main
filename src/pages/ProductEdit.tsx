@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -284,6 +285,7 @@ const ProductEdit = () => {
         category_id: parseInt(formData.category_id),
         product_type: validateEnumValue(formData.product_type, ['finished', 'raw_material', 'service', 'consumable']) as 'finished' | 'raw_material' | 'service' | 'consumable' || 'finished',
         primary_uom_id: parseInt(formData.primary_uom_id),
+        base_uom_id: parseInt(formData.primary_uom_id), // Set base_uom_id to the same as primary_uom_id
         secondary_uom_id: formData.secondary_uom_id ? parseInt(formData.secondary_uom_id) : null,
         barcode: formData.barcode || null,
         qr_code: formData.qr_code || null,

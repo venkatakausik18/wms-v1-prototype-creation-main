@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -90,7 +91,7 @@ const GrnList = () => {
         query = query.eq('warehouse_id', parseInt(selectedWarehouse));
       }
       if (selectedStatus && selectedStatus !== "all") {
-        query = query.eq('grn_status', selectedStatus);
+        query = query.eq('grn_status', selectedStatus as GrnStatus);
       }
 
       // Count total records for pagination

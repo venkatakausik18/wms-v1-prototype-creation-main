@@ -35,7 +35,8 @@ const SalesInvoiceList = () => {
           grand_total,
           payment_status,
           created_by,
-          customers!inner(customer_id, customer_name)
+          customer_id,
+          customers!sales_invoices_customer_id_fkey(customer_id, customer_name)
         `)
         .order('invoice_date', { ascending: false });
 
@@ -250,7 +251,7 @@ const SalesInvoiceList = () => {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => navigate(`/sales/receipts/${invoice.customers?.customer_id}`)}
+                              onClick={() => navigate(`/sales/receipts/${invoice.customer_id}`)}
                             >
                               <Eye className="h-4 w-4" />
                             </Button>

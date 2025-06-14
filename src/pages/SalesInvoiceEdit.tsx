@@ -288,7 +288,7 @@ const SalesInvoiceEdit = () => {
         invoice_number: data.invoice_number,
         invoice_date: data.invoice_date,
         invoice_time: data.invoice_time,
-        customer_id: data.customer_id,
+        customer_id: data.customer_id, // Keep as string, will be converted by Supabase
         customer_gst_number: data.customer_gst_number,
         place_of_supply: data.place_of_supply,
         billing_address: data.billing_address,
@@ -372,7 +372,7 @@ const SalesInvoiceEdit = () => {
         // Create new invoice
         const { data: newInvoice, error } = await supabase
           .from('sales_invoices')
-          .insert([invoiceData])
+          .insert(invoiceData)
           .select()
           .single();
         

@@ -3117,6 +3117,27 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_sales_return_details_product_id"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "fk_sales_return_details_product_id"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "v_stock_position"
+            referencedColumns: ["product_id"]
+          },
+          {
+            foreignKeyName: "fk_sales_return_details_sales_return_id"
+            columns: ["sales_return_id"]
+            isOneToOne: false
+            referencedRelation: "sales_returns"
+            referencedColumns: ["sales_return_id"]
+          },
+          {
             foreignKeyName: "sales_return_details_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
@@ -3159,7 +3180,7 @@ export type Database = {
           company_id: number
           created_at: string
           created_by: number
-          customer_id: number
+          customer_id: string
           discount_amount: number | null
           original_invoice_id: number
           refund_mode: Database["public"]["Enums"]["refund_mode"]
@@ -3184,7 +3205,7 @@ export type Database = {
           company_id: number
           created_at?: string
           created_by: number
-          customer_id: number
+          customer_id: string
           discount_amount?: number | null
           original_invoice_id: number
           refund_mode?: Database["public"]["Enums"]["refund_mode"]
@@ -3209,7 +3230,7 @@ export type Database = {
           company_id?: number
           created_at?: string
           created_by?: number
-          customer_id?: number
+          customer_id?: string
           discount_amount?: number | null
           original_invoice_id?: number
           refund_mode?: Database["public"]["Enums"]["refund_mode"]
@@ -3230,6 +3251,20 @@ export type Database = {
           warehouse_id?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_sales_returns_customer_id"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["customer_id"]
+          },
+          {
+            foreignKeyName: "fk_sales_returns_original_invoice_id"
+            columns: ["original_invoice_id"]
+            isOneToOne: false
+            referencedRelation: "sales_invoices"
+            referencedColumns: ["sales_id"]
+          },
           {
             foreignKeyName: "sales_returns_company_id_fkey"
             columns: ["company_id"]

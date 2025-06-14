@@ -41,6 +41,8 @@ import VendorPaymentList from "./pages/VendorPaymentList";
 import VendorPaymentEdit from "./pages/VendorPaymentEdit";
 import SalesInvoiceList from "./pages/SalesInvoiceList";
 import SalesInvoiceEdit from "./pages/SalesInvoiceEdit";
+import SalesReturnList from "./pages/SalesReturnList";
+import SalesReturnEdit from "./pages/SalesReturnEdit";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -118,6 +120,12 @@ const App = () => (
             <Route path="/sales/invoices/add" element={<SalesInvoiceEdit />} />
             <Route path="/sales/invoices/edit/:salesId" element={<SalesInvoiceEdit />} />
             <Route path="/sales/invoices/view/:salesId" element={<SalesInvoiceEdit />} />
+            {/* Sales Return Routes */}
+            <Route path="/sales/returns" element={<Navigate to="/sales/returns/list" replace />} />
+            <Route path="/sales/returns/list" element={<SalesReturnList />} />
+            <Route path="/sales/returns/add" element={<SalesReturnEdit />} />
+            <Route path="/sales/returns/edit/:returnId" element={<SalesReturnEdit />} />
+            <Route path="/sales/returns/view/:returnId" element={<SalesReturnEdit />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

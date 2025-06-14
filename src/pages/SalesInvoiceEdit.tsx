@@ -307,7 +307,7 @@ const SalesInvoiceEdit = () => {
         round_off_amount: calculations.roundOff,
         grand_total: calculations.grandTotal,
         payment_terms: data.payment_terms,
-        payment_mode: data.payment_mode,
+        payment_mode: data.payment_mode as 'credit' | 'cash' | 'bank' | 'cheque' | 'online',
         advance_received: parseFloat(data.advance_received),
         balance_amount: calculations.grandTotal - parseFloat(data.advance_received),
         payment_status: parseFloat(data.advance_received) === 0 ? 'unpaid' : 
@@ -517,7 +517,7 @@ const SalesInvoiceEdit = () => {
                         </FormControl>
                         <SelectContent>
                           {customers?.map((customer) => (
-                            <SelectItem key={customer.customer_id} value={customer.customer_id}>
+                            <SelectItem key={customer.customer_id} value={customer.customer_id.toString()}>
                               {customer.customer_name}
                             </SelectItem>
                           ))}
@@ -712,9 +712,9 @@ const SalesInvoiceEdit = () => {
                         <SelectContent>
                           <SelectItem value="credit">Credit</SelectItem>
                           <SelectItem value="cash">Cash</SelectItem>
-                          <SelectItem value="card">Card</SelectItem>
-                          <SelectItem value="upi">UPI</SelectItem>
-                          <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                          <SelectItem value="bank">Bank Transfer</SelectItem>
+                          <SelectItem value="cheque">Cheque</SelectItem>
+                          <SelectItem value="online">Online</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />

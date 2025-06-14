@@ -36,7 +36,7 @@ const SalesInvoiceList = () => {
           payment_status,
           created_by,
           customer_id,
-          customers!sales_invoices_customer_id_fkey(customer_id, customer_name)
+          customers!inner(customer_id, customer_name)
         `)
         .order('invoice_date', { ascending: false });
 
@@ -46,7 +46,7 @@ const SalesInvoiceList = () => {
       }
       
       if (customerFilter) {
-        query = query.eq('customer_id', parseInt(customerFilter));
+        query = query.eq('customer_id', customerFilter);
       }
       
       if (paymentStatusFilter) {
@@ -153,7 +153,7 @@ const SalesInvoiceList = () => {
                 <SelectContent>
                   <SelectItem value="">All customers</SelectItem>
                   {customers?.map((customer) => (
-                    <SelectItem key={customer.customer_id} value={customer.customer_id}>
+                    <SelectItem key={customer.customer_id} value={customer.customer_id.toString()}>
                       {customer.customer_name}
                     </SelectItem>
                   ))}

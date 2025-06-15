@@ -4,15 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { TransferItemRow } from "./TransferItemRow";
-import type { TransferDetail } from "./types";
-import type { StorageBinData } from "../types";
+import type { LocalTransferDetail, LocalStorageBinData } from "./types-local";
 
 interface TransferItemsSectionProps {
-  details: TransferDetail[];
-  storageBins: StorageBinData[];
+  details: LocalTransferDetail[];
+  storageBins: LocalStorageBinData[];
   fromWarehouseId: string;
   toWarehouseId: string;
-  onUpdateDetails: (newDetails: TransferDetail[]) => void;
+  onUpdateDetails: (newDetails: LocalTransferDetail[]) => void;
   onAddItem: () => void;
 }
 
@@ -24,7 +23,7 @@ export const TransferItemsSection: React.FC<TransferItemsSectionProps> = ({
   onUpdateDetails,
   onAddItem
 }) => {
-  const updateDetail = (index: number, updates: Partial<TransferDetail>) => {
+  const updateDetail = (index: number, updates: Partial<LocalTransferDetail>) => {
     const newDetails = details.map((detail, i) => 
       i === index ? { ...detail, ...updates } : detail
     );

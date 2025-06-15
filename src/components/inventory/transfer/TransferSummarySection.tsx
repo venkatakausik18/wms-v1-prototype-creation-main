@@ -4,10 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { formatCurrency, formatNumber } from "@/utils/currency";
-import type { TransferDetail } from "./types";
+import type { LocalTransferDetail } from "./types-local";
 
 interface TransferSummarySectionProps {
-  details: TransferDetail[];
+  details: LocalTransferDetail[];
   onSave: () => void;
   onSubmitForApproval: () => void;
   onShip: () => void;

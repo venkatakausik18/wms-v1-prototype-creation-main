@@ -6,13 +6,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import type { TransferFormData, TransportMethod } from "./types";
-import type { WarehouseData } from "../types";
+import type { TransportMethod } from "./types";
+import type { LocalTransferFormData, LocalWarehouseData } from "./types-local";
 
 interface TransferHeaderProps {
-  formData: TransferFormData;
-  warehouses: WarehouseData[];
-  onUpdate: (updates: Partial<TransferFormData>) => void;
+  formData: LocalTransferFormData;
+  warehouses: LocalWarehouseData[];
+  onUpdate: (updates: Partial<LocalTransferFormData>) => void;
 }
 
 export const TransferHeader: React.FC<TransferHeaderProps> = ({

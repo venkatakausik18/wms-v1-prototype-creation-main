@@ -53,7 +53,7 @@ interface LocalTransferDetail {
 // Local flat warehouse and storage bin types
 interface LocalWarehouseData {
   warehouse_id: number;
-  warehouse_code?: string;
+  warehouse_code: string;
   warehouse_name: string;
 }
 
@@ -116,7 +116,7 @@ export const useStockTransferForm = (id?: string): UseStockTransferFormReturn =>
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  const fetchWarehouses = async () => {
+  const fetchWarehouses = async (): Promise<void> => {
     try {
       const { data, error } = await supabase
         .from('warehouses')
@@ -132,7 +132,7 @@ export const useStockTransferForm = (id?: string): UseStockTransferFormReturn =>
     }
   };
 
-  const fetchStorageBins = async (warehouseId: string) => {
+  const fetchStorageBins = async (warehouseId: string): Promise<void> => {
     if (!warehouseId) return;
     try {
       const { data, error } = await supabase
@@ -149,7 +149,7 @@ export const useStockTransferForm = (id?: string): UseStockTransferFormReturn =>
     }
   };
 
-  const generateTransferNumber = () => {
+  const generateTransferNumber = (): void => {
     const prefix = 'TR';
     const timestamp = Date.now();
     setFormData(prev => ({
@@ -158,30 +158,27 @@ export const useStockTransferForm = (id?: string): UseStockTransferFormReturn =>
     }));
   };
 
-  const fetchStockTransfer = async () => {
+  const fetchStockTransfer = async (): Promise<void> => {
     // Implementation for editing existing transfers
   };
 
-  const updateFormData = (updates: Partial<LocalTransferFormData>) => {
+  const updateFormData = (updates: Partial<LocalTransferFormData>): void => {
     setFormData(prev => ({
       ...prev,
       ...updates,
     }));
 
     if (updates.from_warehouse_id || updates.to_warehouse_id) {
-      fetchStorageBins(
-        updates.from_warehouse_id
-          ? updates.from_warehouse_id
-          : formData.from_warehouse_id
-      );
+      const warehouseId = updates.from_warehouse_id || formData.from_warehouse_id;
+      fetchStorageBins(warehouseId);
     }
   };
 
-  const updateDetails = (newDetails: LocalTransferDetail[]) => {
+  const updateDetails = (newDetails: LocalTransferDetail[]): void => {
     setDetails(newDetails);
   };
 
-  const addNewItem = () => {
+  const addNewItem = (): void => {
     const newItem: LocalTransferDetail = {
       requested_quantity: 0,
       shipped_quantity: 0,
@@ -197,23 +194,23 @@ export const useStockTransferForm = (id?: string): UseStockTransferFormReturn =>
     setDetails(prev => [...prev, newItem]);
   };
 
-  const removeItem = (index: number) => {
+  const removeItem = (index: number): void => {
     if (details.length > 1) {
       setDetails(prev => prev.filter((_, i) => i !== index));
     }
   };
 
-  const handleSave = async () => {
+  const handleSave = async (): Promise<void> => {
     console.log('Saving transfer as draft...');
     toast.success('Transfer saved as draft');
   };
 
-  const handleSubmitForApproval = async () => {
+  const handleSubmitForApproval = async (): Promise<void> => {
     console.log('Submitting transfer for approval...');
     toast.success('Transfer submitted for approval');
   };
 
-  const handleShip = async () => {
+  const handleShip = async (): Promise<void> => {
     console.log('Shipping transfer...');
     toast.success('Transfer shipped');
   };

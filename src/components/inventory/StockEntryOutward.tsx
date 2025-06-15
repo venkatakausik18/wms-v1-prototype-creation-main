@@ -18,7 +18,7 @@ import { formatCurrency, formatNumber } from "@/utils/currency";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { getActiveReservations, createReservation } from "@/services/stockReservation";
 import { getAvailableSerialNumbers, updateSerialNumberStatus } from "@/services/serialNumberTracking";
-import { generatePickList, type PickListDetail } from "@/services/pickListService";
+import { createPickList, type PickListDetail } from "@/services/pickListService";
 import { createQCHold, getActiveQCHolds } from "@/services/qualityControlService";
 import { createDamageAssessment } from "@/services/damageAssessmentService";
 
@@ -229,7 +229,7 @@ const StockEntryOutward = () => {
     setDetails(newDetails);
   };
 
-  const generatePickList = async () => {
+  const handleGeneratePickList = async () => {
     if (!formData.warehouse_id) {
       toast.error('Please select a warehouse first');
       return;
@@ -252,7 +252,7 @@ const StockEntryOutward = () => {
       }));
 
     try {
-      const pickList = await generatePickList(parseInt(formData.warehouse_id), pickItems);
+      const pickList = await createPickList(parseInt(formData.warehouse_id), pickItems);
       if (pickList) {
         setPickListData(pickItems);
         toast.success('Pick list generated successfully');
@@ -382,7 +382,7 @@ const StockEntryOutward = () => {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={generatePickList}>
+          <Button variant="outline" onClick={handleGeneratePickList}>
             <List className="h-4 w-4 mr-2" />
             Generate Pick List
           </Button>

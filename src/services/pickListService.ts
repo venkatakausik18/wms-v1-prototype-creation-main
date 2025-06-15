@@ -35,7 +35,7 @@ export interface PickListDetail {
   uom?: any;
 }
 
-export const generatePickList = async (
+export const createPickList = async (
   warehouseId: number,
   items: PickListDetail[]
 ): Promise<PickList | null> => {
@@ -79,7 +79,7 @@ export const generatePickList = async (
 
     if (detailsError) throw detailsError;
 
-    return pickList;
+    return pickList as PickList;
   } catch (error) {
     console.error('Error generating pick list:', error);
     return null;
@@ -101,12 +101,12 @@ export const getPickListDetails = async (pickListId: number): Promise<PickListDe
 
     if (error) throw error;
 
-    return data?.map(item => ({
+    return (data?.map(item => ({
       ...item,
       product: item.products,
       variant: item.product_variants,
       uom: item.units_of_measure
-    })) || [];
+    })) || []) as PickListDetail[];
   } catch (error) {
     console.error('Error fetching pick list details:', error);
     return [];

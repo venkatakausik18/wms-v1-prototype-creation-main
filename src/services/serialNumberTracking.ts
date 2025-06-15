@@ -42,7 +42,7 @@ export const getAvailableSerialNumbers = async (
 
     const { data, error } = await query;
     if (error) throw error;
-    return data || [];
+    return (data || []) as SerialNumber[];
   } catch (error) {
     console.error('Error fetching serial numbers:', error);
     return [];
@@ -71,13 +71,13 @@ export const updateSerialNumberStatus = async (
   }
 };
 
-export const createSerialNumbers = async (serialNumbers: Partial<SerialNumber>[]): Promise<boolean> => {
+export const createSerialNumbers = async (serialNumbers: Omit<SerialNumber, 'serial_id'>[]): Promise<boolean> => {
   try {
     const { error } = await supabase
       .from('product_serial_numbers')
       .insert(serialNumbers.map(sn => ({
         ...sn,
-        company_id: 1 // Default company
+        company_id: sn.company_id || 1
       })));
 
     return !error;

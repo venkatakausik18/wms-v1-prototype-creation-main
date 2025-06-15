@@ -35,7 +35,7 @@ export const createDamageAssessment = async (
       .single();
 
     if (error) throw error;
-    return data;
+    return data as DamageAssessment;
   } catch (error) {
     console.error('Error creating damage assessment:', error);
     return null;
@@ -67,7 +67,7 @@ export const getDamageAssessments = async (
     const { data, error } = await query.order('assessment_date', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    return (data || []) as DamageAssessment[];
   } catch (error) {
     console.error('Error fetching damage assessments:', error);
     return [];

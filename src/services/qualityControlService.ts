@@ -30,7 +30,7 @@ export const createQCHold = async (hold: Omit<QualityControlHold, 'qc_hold_id'>)
       .single();
 
     if (error) throw error;
-    return data;
+    return data as QualityControlHold;
   } catch (error) {
     console.error('Error creating QC hold:', error);
     return null;
@@ -74,7 +74,7 @@ export const getActiveQCHolds = async (
       .eq('status', 'on_hold');
 
     if (error) throw error;
-    return data || [];
+    return (data || []) as QualityControlHold[];
   } catch (error) {
     console.error('Error fetching QC holds:', error);
     return [];

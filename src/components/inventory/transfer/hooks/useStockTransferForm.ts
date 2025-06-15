@@ -66,11 +66,19 @@ export const useStockTransferForm = (id?: string): UseStockTransferFormReturn =>
 
   const fetchWarehouses = async (): Promise<void> => {
     try {
+      // Explicitly type the response to avoid deep type instantiation
       const { data, error } = await supabase
         .from('warehouses')
         .select('warehouse_id, warehouse_code, warehouse_name')
         .eq('is_active', true)
-        .order('warehouse_name');
+        .order('warehouse_name') as {
+          data: Array<{
+            warehouse_id: number;
+            warehouse_code: string | null;
+            warehouse_name: string;
+          }> | null;
+          error: any;
+        };
 
       if (error) throw error;
       
@@ -91,12 +99,19 @@ export const useStockTransferForm = (id?: string): UseStockTransferFormReturn =>
   const fetchStorageBins = async (warehouseId: string): Promise<void> => {
     if (!warehouseId) return;
     try {
+      // Explicitly type the response to avoid deep type instantiation
       const { data, error } = await supabase
         .from('storage_bins')
         .select('bin_id, bin_code')
         .eq('warehouse_id', parseInt(warehouseId))
         .eq('is_active', true)
-        .order('bin_code');
+        .order('bin_code') as {
+          data: Array<{
+            bin_id: number;
+            bin_code: string;
+          }> | null;
+          error: any;
+        };
 
       if (error) throw error;
       

@@ -23,7 +23,7 @@ export const usePhysicalCountData = (warehouseId: string): UsePhysicalCountDataR
         .order('warehouse_name');
       
       if (error) throw error;
-      return (data || []) as Warehouse[];
+      return data || [];
     },
   });
 
@@ -37,7 +37,7 @@ export const usePhysicalCountData = (warehouseId: string): UsePhysicalCountDataR
         .order('product_name');
       
       if (error) throw error;
-      return (data || []) as Product[];
+      return data || [];
     },
   });
 
@@ -54,15 +54,15 @@ export const usePhysicalCountData = (warehouseId: string): UsePhysicalCountDataR
         .order('bin_code');
       
       if (error) throw error;
-      return (data || []) as StorageBin[];
+      return data || [];
     },
     enabled: !!warehouseId,
   });
 
   return {
-    warehouses: warehouses.data,
-    products: products.data,
-    bins: bins.data,
+    warehouses: warehouses.data as Warehouse[] | undefined,
+    products: products.data as Product[] | undefined,
+    bins: bins.data as StorageBin[] | undefined,
     isLoadingWarehouses: warehouses.isLoading,
     isLoadingProducts: products.isLoading,
     isLoadingBins: bins.isLoading,

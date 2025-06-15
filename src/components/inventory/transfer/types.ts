@@ -80,6 +80,9 @@ export interface TransferFormData {
   carrier_name: string;
   tracking_number: string;
   expected_delivery_date: string;
+  temperature_monitored: boolean;
+  temperature_range_min: string;
+  temperature_range_max: string;
   special_instructions: string;
   internal_notes: string;
 }

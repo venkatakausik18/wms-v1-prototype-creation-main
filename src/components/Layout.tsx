@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { 
   Sidebar, 
@@ -95,7 +96,7 @@ const NAV_ITEMS = [
       {
         title: "Inventory",
         items: [
-          { label: "Stock Entry", description: "Add stock entries", icon: Boxes, link: "/inventory/stock-entry" },
+          { label: "Stock Entry", description: "Add stock entries", icon: Boxes, link: "/inventory" },
           { label: "Transfer", description: "Stock transfer", icon: Archive, link: "/inventory/transfer" },
           { label: "Physical Count", description: "Physical stock count", icon: Archive, link: "/inventory/physical-count" },
           { label: "Adjustment", description: "Stock adjustment", icon: Settings, link: "/inventory/adjustment" },

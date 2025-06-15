@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
+// Explicit type definitions
 interface FormData {
   txn_number: string;
   txn_type: 'sale_out' | 'transfer_out' | 'adjustment_out';
@@ -36,22 +37,44 @@ interface StockDetail {
   };
 }
 
-interface SimpleWarehouse {
+// Simplified data types with explicit annotations
+type WarehouseData = {
   warehouse_id: number;
   warehouse_code: string;
   warehouse_name: string;
-}
+};
 
-interface SimpleStorageBin {
+type StorageBinData = {
   bin_id: number;
   bin_code: string;
+};
+
+// Hook state types
+interface HookState {
+  loading: boolean;
+  warehouses: WarehouseData[];
+  storageBins: StorageBinData[];
+  formData: FormData;
+  details: StockDetail[];
 }
 
-export const useStockEntryForm = (id?: string) => {
+// Hook actions types
+interface HookActions {
+  updateFormData: (updates: Partial<FormData>) => void;
+  updateDetails: (newDetails: StockDetail[]) => void;
+  addNewItem: () => void;
+  removeItem: (index: number) => void;
+  handleSave: () => Promise<void>;
+  generatePickList: () => Promise<void>;
+}
+
+export const useStockEntryForm = (id?: string): HookState & HookActions => {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [warehouses, setWarehouses] = useState<SimpleWarehouse[]>([]);
-  const [storageBins, setStorageBins] = useState<SimpleStorageBin[]>([]);
+  
+  // State with explicit types
+  const [loading, setLoading] = useState<boolean>(false);
+  const [warehouses, setWarehouses] = useState<WarehouseData[]>([]);
+  const [storageBins, setStorageBins] = useState<StorageBinData[]>([]);
 
   const [formData, setFormData] = useState<FormData>({
     txn_number: '',
@@ -80,7 +103,7 @@ export const useStockEntryForm = (id?: string) => {
     }
   }, [id]);
 
-  const fetchWarehouses = async () => {
+  const fetchWarehouses = async (): Promise<void> => {
     try {
       const { data, error } = await supabase
         .from('warehouses')
@@ -89,14 +112,17 @@ export const useStockEntryForm = (id?: string) => {
         .order('warehouse_name');
 
       if (error) throw error;
-      setWarehouses(data || []);
+      
+      // Cast to our domain type immediately
+      const warehouseData = (data || []) as WarehouseData[];
+      setWarehouses(warehouseData);
     } catch (error) {
       console.error('Error fetching warehouses:', error);
       toast.error('Failed to fetch warehouses');
     }
   };
 
-  const fetchStorageBins = async (warehouseId: string) => {
+  const fetchStorageBins = async (warehouseId: string): Promise<void> => {
     if (!warehouseId) return;
     
     try {
@@ -108,13 +134,16 @@ export const useStockEntryForm = (id?: string) => {
         .order('bin_code');
 
       if (error) throw error;
-      setStorageBins(data || []);
+      
+      // Cast to our domain type immediately
+      const binData = (data || []) as StorageBinData[];
+      setStorageBins(binData);
     } catch (error) {
       console.error('Error fetching storage bins:', error);
     }
   };
 
-  const generateTransactionNumber = () => {
+  const generateTransactionNumber = (): void => {
     const prefix = 'OUT';
     const timestamp = Date.now();
     setFormData(prev => ({
@@ -123,22 +152,22 @@ export const useStockEntryForm = (id?: string) => {
     }));
   };
 
-  const fetchStockEntry = async () => {
+  const fetchStockEntry = async (): Promise<void> => {
     // Implementation for editing existing entries
   };
 
-  const updateFormData = (updates: Partial<FormData>) => {
+  const updateFormData = (updates: Partial<FormData>): void => {
     setFormData(prev => ({ ...prev, ...updates }));
     if (updates.warehouse_id) {
       fetchStorageBins(updates.warehouse_id);
     }
   };
 
-  const updateDetails = (newDetails: StockDetail[]) => {
+  const updateDetails = (newDetails: StockDetail[]): void => {
     setDetails(newDetails);
   };
 
-  const addNewItem = () => {
+  const addNewItem = (): void => {
     setDetails(prev => [...prev, {
       quantity: 0,
       unit_cost: 0,
@@ -148,13 +177,13 @@ export const useStockEntryForm = (id?: string) => {
     }]);
   };
 
-  const removeItem = (index: number) => {
+  const removeItem = (index: number): void => {
     if (details.length > 1) {
       setDetails(prev => prev.filter((_, i) => i !== index));
     }
   };
 
-  const generatePickList = async () => {
+  const generatePickList = async (): Promise<void> => {
     if (!formData.warehouse_id) {
       toast.error('Please select a warehouse first');
       return;
@@ -162,7 +191,7 @@ export const useStockEntryForm = (id?: string) => {
     toast.success('Pick list generation feature coming soon');
   };
 
-  const handleSave = async () => {
+  const handleSave = async (): Promise<void> => {
     if (!formData.warehouse_id) {
       toast.error('Please select a warehouse');
       return;
@@ -176,29 +205,31 @@ export const useStockEntryForm = (id?: string) => {
     setLoading(true);
 
     try {
-      // Create inventory transaction
+      // Create inventory transaction with explicit types
+      const transactionData = {
+        company_id: 1,
+        warehouse_id: parseInt(formData.warehouse_id),
+        txn_number: formData.txn_number,
+        txn_type: formData.txn_type,
+        txn_date: formData.txn_date,
+        txn_time: formData.txn_time,
+        reference_document: formData.reference_document,
+        remarks: formData.remarks,
+        total_items: details.filter(d => d.product_id).length,
+        total_quantity: details.reduce((sum, d) => sum + d.quantity, 0),
+        total_value: details.reduce((sum, d) => sum + d.total_cost, 0),
+        created_by: 1
+      };
+
       const { data: transaction, error: txnError } = await supabase
         .from('inventory_transactions')
-        .insert({
-          company_id: 1,
-          warehouse_id: parseInt(formData.warehouse_id),
-          txn_number: formData.txn_number,
-          txn_type: formData.txn_type,
-          txn_date: formData.txn_date,
-          txn_time: formData.txn_time,
-          reference_document: formData.reference_document,
-          remarks: formData.remarks,
-          total_items: details.filter(d => d.product_id).length,
-          total_quantity: details.reduce((sum, d) => sum + d.quantity, 0),
-          total_value: details.reduce((sum, d) => sum + d.total_cost, 0),
-          created_by: 1
-        })
+        .insert(transactionData)
         .select()
         .single();
 
       if (txnError) throw txnError;
 
-      // Create transaction details
+      // Create transaction details with explicit mapping
       const transactionDetails = details
         .filter(d => d.product_id && d.quantity > 0)
         .map(d => ({
@@ -232,11 +263,13 @@ export const useStockEntryForm = (id?: string) => {
   };
 
   return {
-    formData,
-    details,
+    // State
     loading,
     warehouses,
     storageBins,
+    formData,
+    details,
+    // Actions
     updateFormData,
     updateDetails,
     addNewItem,

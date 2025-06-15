@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -32,7 +31,6 @@ export const useStockTransferForm = (id?: string) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [warehouses, setWarehouses] = useState<LocalWarehouseData[]>([]);
   const [storageBins, setStorageBins] = useState<LocalStorageBinData[]>([]);
-
   const [formData, setFormData] = useState<LocalTransferFormData>({
     transfer_number: '',
     transfer_date: new Date().toISOString().split('T')[0],
@@ -65,6 +63,7 @@ export const useStockTransferForm = (id?: string) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
+  // Explicit function typing prevents excessive inference
   const fetchWarehouses = async (): Promise<void> => {
     try {
       const { data, error } = await supabase
@@ -75,12 +74,12 @@ export const useStockTransferForm = (id?: string) => {
 
       if (error) throw error;
 
-      // Map to LocalWarehouseData[]
-      const mapped = (data ?? []).map((row: any) => ({
+      // Use correct local type; force 'any' to avoid propagating deep types
+      const mapped: LocalWarehouseData[] = (data ?? []).map((row: any) => ({
         warehouse_id: row.warehouse_id,
         warehouse_code: row.warehouse_code,
         warehouse_name: row.warehouse_name,
-      })) as LocalWarehouseData[];
+      }));
 
       setWarehouses(mapped);
     } catch (error) {
@@ -102,11 +101,11 @@ export const useStockTransferForm = (id?: string) => {
 
       if (error) throw error;
 
-      // Map to LocalStorageBinData[]
-      const mapped = (data ?? []).map((row: any) => ({
+      // Force rows to any to avoid deep type instantiation
+      const mapped: LocalStorageBinData[] = (data ?? []).map((row: any) => ({
         bin_id: row.bin_id,
         bin_code: row.bin_code,
-      })) as LocalStorageBinData[];
+      }));
 
       setStorageBins(mapped);
     } catch (error) {

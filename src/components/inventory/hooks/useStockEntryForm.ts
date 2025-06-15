@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -43,13 +42,8 @@ export const useStockEntryForm = (id?: string): UseStockEntryFormReturn => {
     remarks: ''
   });
 
-  const [details, setDetails] = useState<StockDetail[]>([{
-    quantity: 0,
-    unit_cost: 0,
-    total_cost: 0,
-    previous_stock: 0,
-    new_stock: 0
-  }]);
+  // Start with empty array to avoid deep type inference
+  const [details, setDetails] = useState<StockDetail[]>([]);
 
   useEffect(() => {
     fetchWarehouses();
@@ -57,6 +51,8 @@ export const useStockEntryForm = (id?: string): UseStockEntryFormReturn => {
       fetchStockEntry();
     } else {
       generateTransactionNumber();
+      // Add initial item after component mounts
+      addNewItem();
     }
   }, [id]);
 

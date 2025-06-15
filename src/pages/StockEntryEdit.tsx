@@ -11,8 +11,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, Trash2, Save } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Save, AlertTriangle } from "lucide-react";
 import ProductSelector from "@/components/inventory/ProductSelector";
+import { getStockPosition, validateStockTransaction } from "@/services/stockValidation";
+import { formatCurrency, formatNumber } from "@/utils/currency";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 type InwardTransactionType = 'purchase_in' | 'purchase_return_in' | 'transfer_in' | 'adjustment_in';
 
@@ -33,6 +37,11 @@ interface StockEntryLine {
   previous_stock: number;
   new_stock: number;
   reason_code?: string;
+  stockValidation?: {
+    isValid: boolean;
+    message?: string;
+    currentStock: number;
+  };
 }
 
 interface Warehouse {
@@ -221,7 +230,12 @@ const StockEntryEdit = () => {
         bin_code: (detail.storage_bins as any)?.bin_code,
         previous_stock: detail.previous_stock || 0,
         new_stock: detail.new_stock || 0,
-        reason_code: detail.reason_code || ''
+        reason_code: detail.reason_code || '',
+        stockValidation: {
+          isValid: true,
+          message: '',
+          currentStock: 0
+        }
       })) || [];
 
       setLines(transformedLines);
@@ -255,23 +269,69 @@ const StockEntryEdit = () => {
     setLines(lines.filter(line => line.id !== id));
   };
 
-  const updateLine = (id: string, field: keyof StockEntryLine, value: any) => {
-    setLines(lines.map(line => {
+  const updateLine = async (id: string, field: keyof StockEntryLine, value: any) => {
+    const updatedLines = lines.map(line => {
       if (line.id === id) {
         const updatedLine = { ...line, [field]: value };
         
         if (field === 'quantity' || field === 'unit_cost') {
           updatedLine.total_cost = updatedLine.quantity * updatedLine.unit_cost;
-          updatedLine.new_stock = updatedLine.previous_stock + updatedLine.quantity;
         }
         
         return updatedLine;
       }
       return line;
-    }));
+    });
+    setLines(updatedLines);
+
+    // If quantity changed, validate stock and update previous stock
+    if (field === 'quantity' && formData.warehouse_id) {
+      const line = updatedLines.find(l => l.id === id);
+      if (line && line.product_id) {
+        await updateStockInfo(line);
+      }
+    }
   };
 
-  const handleProductSelect = (lineId: string, product: any, variant?: any) => {
+  const updateStockInfo = async (line: StockEntryLine) => {
+    try {
+      const stockPosition = await getStockPosition(
+        line.product_id,
+        parseInt(formData.warehouse_id),
+        line.variant_id,
+        line.bin_id
+      );
+
+      const validation = await validateStockTransaction(
+        line.product_id,
+        parseInt(formData.warehouse_id),
+        line.quantity,
+        formData.txn_type,
+        line.variant_id,
+        line.bin_id
+      );
+
+      setLines(prevLines => prevLines.map(l => {
+        if (l.id === line.id) {
+          return {
+            ...l,
+            previous_stock: stockPosition?.current_stock || 0,
+            new_stock: (stockPosition?.current_stock || 0) + line.quantity,
+            stockValidation: {
+              isValid: validation.isValid,
+              message: validation.message,
+              currentStock: validation.currentStock
+            }
+          };
+        }
+        return l;
+      }));
+    } catch (error) {
+      console.error('Error updating stock info:', error);
+    }
+  };
+
+  const handleProductSelect = async (lineId: string, product: any, variant?: any) => {
     const updatedLines = lines.map(line => {
       if (line.id === lineId) {
         return {
@@ -288,6 +348,12 @@ const StockEntryEdit = () => {
       return line;
     });
     setLines(updatedLines);
+
+    // Update stock information for the selected product
+    const updatedLine = updatedLines.find(l => l.id === lineId);
+    if (updatedLine && formData.warehouse_id) {
+      await updateStockInfo(updatedLine);
+    }
   };
 
   const calculateTotals = () => {
@@ -538,6 +604,7 @@ const StockEntryEdit = () => {
                           <TableHead>Bin Location</TableHead>
                           <TableHead>Previous Stock</TableHead>
                           <TableHead>New Stock</TableHead>
+                          <TableHead>Status</TableHead>
                           <TableHead>Remarks</TableHead>
                           <TableHead>Actions</TableHead>
                         </TableRow>
@@ -567,6 +634,8 @@ const StockEntryEdit = () => {
                                 value={line.quantity}
                                 onChange={(e) => updateLine(line.id, 'quantity', parseFloat(e.target.value) || 0)}
                                 className="w-24"
+                                step="0.001"
+                                min="0"
                               />
                             </TableCell>
                             <TableCell>
@@ -575,15 +644,14 @@ const StockEntryEdit = () => {
                                 step="0.01"
                                 value={line.unit_cost}
                                 onChange={(e) => updateLine(line.id, 'unit_cost', parseFloat(e.target.value) || 0)}
-                                className="w-24"
+                                className="w-28"
+                                min="0"
                               />
                             </TableCell>
                             <TableCell>
-                              <Input
-                                value={line.total_cost.toFixed(2)}
-                                readOnly
-                                className="w-24 bg-muted"
-                              />
+                              <div className="w-32 px-3 py-2 bg-muted rounded text-sm font-medium">
+                                {formatCurrency(line.total_cost)}
+                              </div>
                             </TableCell>
                             <TableCell>
                               <Select value={line.bin_id?.toString() || ''} onValueChange={(value) => {
@@ -604,19 +672,24 @@ const StockEntryEdit = () => {
                               </Select>
                             </TableCell>
                             <TableCell>
-                              <Input
-                                type="number"
-                                value={line.previous_stock}
-                                onChange={(e) => updateLine(line.id, 'previous_stock', parseFloat(e.target.value) || 0)}
-                                className="w-24"
-                              />
+                              <div className="w-24 text-sm font-medium">
+                                {formatNumber(line.previous_stock, 3)}
+                              </div>
                             </TableCell>
                             <TableCell>
-                              <Input
-                                value={line.new_stock}
-                                readOnly
-                                className="w-24 bg-muted"
-                              />
+                              <div className="w-24 text-sm font-medium">
+                                {formatNumber(line.new_stock, 3)}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              {line.stockValidation && (
+                                <Badge 
+                                  variant={line.stockValidation.isValid ? "default" : "destructive"}
+                                  className="text-xs"
+                                >
+                                  {line.stockValidation.isValid ? "Valid" : "Invalid"}
+                                </Badge>
+                              )}
                             </TableCell>
                             <TableCell>
                               <Input
@@ -639,7 +712,7 @@ const StockEntryEdit = () => {
                         ))}
                         {lines.length === 0 && (
                           <TableRow>
-                            <TableCell colSpan={9} className="text-center py-8">
+                            <TableCell colSpan={10} className="text-center py-8">
                               No items added. Click "Add Item" to start.
                             </TableCell>
                           </TableRow>
@@ -647,6 +720,16 @@ const StockEntryEdit = () => {
                       </TableBody>
                     </Table>
                   </div>
+
+                  {/* Stock Validation Alerts */}
+                  {lines.some(line => line.stockValidation && !line.stockValidation.isValid) && (
+                    <Alert className="mt-4">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertDescription>
+                        Some items have stock validation issues. Please review before saving.
+                      </AlertDescription>
+                    </Alert>
+                  )}
                 </div>
 
                 {/* Summary */}
@@ -657,11 +740,11 @@ const StockEntryEdit = () => {
                   </div>
                   <div>
                     <Label>Total Quantity</Label>
-                    <div className="text-lg font-semibold">{totalQuantity}</div>
+                    <div className="text-lg font-semibold">{formatNumber(totalQuantity, 3)}</div>
                   </div>
                   <div>
                     <Label>Total Value</Label>
-                    <div className="text-lg font-semibold">₹{totalValue.toFixed(2)}</div>
+                    <div className="text-lg font-semibold">{formatCurrency(totalValue)}</div>
                   </div>
                   <div className="md:col-span-1">
                     <Label htmlFor="remarks">Remarks</Label>

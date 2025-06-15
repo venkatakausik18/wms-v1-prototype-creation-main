@@ -21,14 +21,16 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { Search, Check } from "lucide-react";
+import { Search, Check, Scan } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface Product {
   product_id: number;
   product_code: string;
   product_name: string;
   base_uom_id: number;
+  barcode?: string;
   variants?: ProductVariant[];
   uom?: { uom_id: number; uom_name: string };
 }
@@ -37,6 +39,7 @@ interface ProductVariant {
   variant_id: number;
   variant_code: string;
   variant_name: string;
+  barcode?: string;
 }
 
 interface ProductSelectorProps {
@@ -50,8 +53,10 @@ const ProductSelector = ({ onSelect, selectedProduct, selectedVariant }: Product
   const [products, setProducts] = useState<Product[]>([]);
   const [variants, setVariants] = useState<ProductVariant[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [barcodeSearch, setBarcodeSearch] = useState("");
   const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showBarcodeInput, setShowBarcodeInput] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -77,6 +82,7 @@ const ProductSelector = ({ onSelect, selectedProduct, selectedVariant }: Product
           product_code,
           product_name,
           base_uom_id,
+          barcode,
           units_of_measure!base_uom_id(uom_id, uom_name)
         `)
         .eq('is_active', true)
@@ -92,6 +98,7 @@ const ProductSelector = ({ onSelect, selectedProduct, selectedVariant }: Product
       setProducts(transformedData);
     } catch (error) {
       console.error('Error fetching products:', error);
+      toast.error('Failed to fetch products');
     } finally {
       setIsLoading(false);
     }
@@ -101,7 +108,7 @@ const ProductSelector = ({ onSelect, selectedProduct, selectedVariant }: Product
     try {
       const { data, error } = await supabase
         .from('product_variants')
-        .select('variant_id, variant_code, variant_name')
+        .select('variant_id, variant_code, variant_name, barcode')
         .eq('product_id', productId)
         .eq('is_active', true)
         .order('variant_name');
@@ -114,17 +121,104 @@ const ProductSelector = ({ onSelect, selectedProduct, selectedVariant }: Product
     }
   };
 
+  const searchByBarcode = async (barcode: string) => {
+    if (!barcode.trim()) return;
+
+    setIsLoading(true);
+    try {
+      // Search products by barcode
+      const { data: productData, error: productError } = await supabase
+        .from('products')
+        .select(`
+          product_id,
+          product_code,
+          product_name,
+          base_uom_id,
+          barcode,
+          units_of_measure!base_uom_id(uom_id, uom_name)
+        `)
+        .eq('barcode', barcode)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (productError && productError.code !== 'PGRST116') throw productError;
+
+      if (productData) {
+        const product = {
+          ...productData,
+          uom: (productData.units_of_measure as any)
+        };
+        onSelect(product);
+        setOpen(false);
+        setBarcodeSearch("");
+        toast.success('Product found by barcode');
+        return;
+      }
+
+      // Search variants by barcode
+      const { data: variantData, error: variantError } = await supabase
+        .from('product_variants')
+        .select(`
+          variant_id,
+          variant_code,
+          variant_name,
+          barcode,
+          product_id,
+          products!product_id(
+            product_id,
+            product_code,
+            product_name,
+            base_uom_id,
+            units_of_measure!base_uom_id(uom_id, uom_name)
+          )
+        `)
+        .eq('barcode', barcode)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (variantError && variantError.code !== 'PGRST116') throw variantError;
+
+      if (variantData) {
+        const product = {
+          ...(variantData.products as any),
+          uom: ((variantData.products as any).units_of_measure as any)
+        };
+        const variant = {
+          variant_id: variantData.variant_id,
+          variant_code: variantData.variant_code,
+          variant_name: variantData.variant_name,
+          barcode: variantData.barcode
+        };
+        onSelect(product, variant);
+        setOpen(false);
+        setBarcodeSearch("");
+        toast.success('Product variant found by barcode');
+        return;
+      }
+
+      toast.error('No product found with this barcode');
+    } catch (error) {
+      console.error('Error searching by barcode:', error);
+      toast.error('Error searching by barcode');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const filteredProducts = products.filter(product =>
     product.product_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.product_code.toLowerCase().includes(searchTerm.toLowerCase())
+    product.product_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (product.barcode && product.barcode.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const handleProductSelect = (product: Product) => {
     setSelectedProductId(product.product_id);
-    if (variants.length === 0) {
-      onSelect(product);
-      setOpen(false);
-    }
+    fetchVariants(product.product_id).then(() => {
+      if (variants.length === 0) {
+        onSelect(product);
+        setOpen(false);
+      }
+    });
   };
 
   const handleVariantSelect = (variant: ProductVariant) => {
@@ -155,11 +249,44 @@ const ProductSelector = ({ onSelect, selectedProduct, selectedVariant }: Product
         <DialogHeader>
           <DialogTitle>Select Product</DialogTitle>
           <DialogDescription>
-            Search and select a product for the stock entry
+            Search by name, code, or scan barcode to select a product
           </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-4">
+          {/* Barcode Search */}
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowBarcodeInput(!showBarcodeInput)}
+            >
+              <Scan className="h-4 w-4 mr-2" />
+              Barcode
+            </Button>
+            {showBarcodeInput && (
+              <div className="flex gap-2 flex-1">
+                <Input
+                  placeholder="Scan or enter barcode"
+                  value={barcodeSearch}
+                  onChange={(e) => setBarcodeSearch(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      searchByBarcode(barcodeSearch);
+                    }
+                  }}
+                />
+                <Button 
+                  size="sm" 
+                  onClick={() => searchByBarcode(barcodeSearch)}
+                  disabled={!barcodeSearch.trim() || isLoading}
+                >
+                  Search
+                </Button>
+              </div>
+            )}
+          </div>
+
           {!selectedProductId ? (
             <Command>
               <CommandInput 
@@ -175,15 +302,7 @@ const ProductSelector = ({ onSelect, selectedProduct, selectedVariant }: Product
                   {filteredProducts.map((product) => (
                     <CommandItem
                       key={product.product_id}
-                      onSelect={() => {
-                        fetchVariants(product.product_id).then(() => {
-                          if (variants.length === 0) {
-                            handleDirectSelect(product);
-                          } else {
-                            handleProductSelect(product);
-                          }
-                        });
-                      }}
+                      onSelect={() => handleProductSelect(product)}
                     >
                       <Check
                         className={cn(
@@ -191,9 +310,12 @@ const ProductSelector = ({ onSelect, selectedProduct, selectedVariant }: Product
                           selectedProduct?.product_id === product.product_id ? "opacity-100" : "opacity-0"
                         )}
                       />
-                      <div>
+                      <div className="flex-1">
                         <div className="font-medium">{product.product_code}</div>
                         <div className="text-sm text-muted-foreground">{product.product_name}</div>
+                        {product.barcode && (
+                          <div className="text-xs text-muted-foreground">Barcode: {product.barcode}</div>
+                        )}
                       </div>
                     </CommandItem>
                   ))}
@@ -220,7 +342,12 @@ const ProductSelector = ({ onSelect, selectedProduct, selectedVariant }: Product
                         className="w-full justify-start"
                         onClick={() => handleVariantSelect(variant)}
                       >
-                        {variant.variant_code} - {variant.variant_name}
+                        <div className="text-left">
+                          <div>{variant.variant_code} - {variant.variant_name}</div>
+                          {variant.barcode && (
+                            <div className="text-xs text-muted-foreground">Barcode: {variant.barcode}</div>
+                          )}
+                        </div>
                       </Button>
                     ))}
                   </div>

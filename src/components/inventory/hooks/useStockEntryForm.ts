@@ -7,15 +7,28 @@ import type {
   FormData,
   StockDetail,
   WarehouseData,
-  StorageBinData,
-  StockEntryFormState,
-  StockEntryFormActions
+  StorageBinData
 } from "../types";
 
-export const useStockEntryForm = (id?: string) => {
+// Simplified return type - no complex intersections
+interface UseStockEntryFormReturn {
+  loading: boolean;
+  warehouses: WarehouseData[];
+  storageBins: StorageBinData[];
+  formData: FormData;
+  details: StockDetail[];
+  updateFormData: (updates: Partial<FormData>) => void;
+  updateDetails: (newDetails: StockDetail[]) => void;
+  addNewItem: () => void;
+  removeItem: (index: number) => void;
+  handleSave: () => Promise<void>;
+  generatePickList: () => Promise<void>;
+}
+
+export const useStockEntryForm = (id?: string): UseStockEntryFormReturn => {
   const navigate = useNavigate();
   
-  // State with explicit types
+  // Explicit state types
   const [loading, setLoading] = useState<boolean>(false);
   const [warehouses, setWarehouses] = useState<WarehouseData[]>([]);
   const [storageBins, setStorageBins] = useState<StorageBinData[]>([]);
@@ -49,6 +62,7 @@ export const useStockEntryForm = (id?: string) => {
 
   const fetchWarehouses = async (): Promise<void> => {
     try {
+      // Explicit type annotation for Supabase query
       const { data, error } = await supabase
         .from('warehouses')
         .select('warehouse_id, warehouse_code, warehouse_name')
@@ -57,9 +71,14 @@ export const useStockEntryForm = (id?: string) => {
 
       if (error) throw error;
       
-      // Cast to our domain type immediately
-      const warehouseData = data as WarehouseData[];
-      setWarehouses(warehouseData || []);
+      // Cast immediately to domain type
+      const warehouseData: WarehouseData[] = (data || []).map(item => ({
+        warehouse_id: item.warehouse_id,
+        warehouse_code: item.warehouse_code,
+        warehouse_name: item.warehouse_name
+      }));
+      
+      setWarehouses(warehouseData);
     } catch (error) {
       console.error('Error fetching warehouses:', error);
       toast.error('Failed to fetch warehouses');
@@ -79,9 +98,13 @@ export const useStockEntryForm = (id?: string) => {
 
       if (error) throw error;
       
-      // Cast to our domain type immediately
-      const binData = data as StorageBinData[];
-      setStorageBins(binData || []);
+      // Cast immediately to domain type
+      const binData: StorageBinData[] = (data || []).map(item => ({
+        bin_id: item.bin_id,
+        bin_code: item.bin_code
+      }));
+      
+      setStorageBins(binData);
     } catch (error) {
       console.error('Error fetching storage bins:', error);
     }
@@ -112,13 +135,14 @@ export const useStockEntryForm = (id?: string) => {
   };
 
   const addNewItem = (): void => {
-    setDetails(prev => [...prev, {
+    const newItem: StockDetail = {
       quantity: 0,
       unit_cost: 0,
       total_cost: 0,
       previous_stock: 0,
       new_stock: 0
-    }]);
+    };
+    setDetails(prev => [...prev, newItem]);
   };
 
   const removeItem = (index: number): void => {
@@ -149,7 +173,7 @@ export const useStockEntryForm = (id?: string) => {
     setLoading(true);
 
     try {
-      // Create inventory transaction with explicit types
+      // Explicit transaction data type
       const transactionData = {
         company_id: 1,
         warehouse_id: parseInt(formData.warehouse_id),
@@ -173,7 +197,7 @@ export const useStockEntryForm = (id?: string) => {
 
       if (txnError) throw txnError;
 
-      // Create transaction details with explicit mapping
+      // Explicit transaction details mapping
       const transactionDetails = details
         .filter(d => d.product_id && d.quantity > 0)
         .map(d => ({
@@ -206,16 +230,13 @@ export const useStockEntryForm = (id?: string) => {
     }
   };
 
-  // Return as separate objects instead of using spread operator
-  const state: StockEntryFormState = {
+  // Return explicit object instead of spread operators
+  return {
     loading,
     warehouses,
     storageBins,
     formData,
-    details
-  };
-
-  const actions: StockEntryFormActions = {
+    details,
     updateFormData,
     updateDetails,
     addNewItem,
@@ -223,6 +244,4 @@ export const useStockEntryForm = (id?: string) => {
     handleSave,
     generatePickList
   };
-
-  return { state, actions };
 };

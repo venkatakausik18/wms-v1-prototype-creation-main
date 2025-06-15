@@ -12,7 +12,19 @@ const StockEntryOutward = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const { state, actions } = useStockEntryForm(id);
+  const {
+    loading,
+    warehouses,
+    storageBins,
+    formData,
+    details,
+    updateFormData,
+    updateDetails,
+    addNewItem,
+    removeItem,
+    handleSave,
+    generatePickList
+  } = useStockEntryForm(id);
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -30,25 +42,25 @@ const StockEntryOutward = () => {
       </div>
 
       <StockEntryHeader
-        formData={state.formData}
-        warehouses={state.warehouses}
-        onFormDataChange={actions.updateFormData}
+        formData={formData}
+        warehouses={warehouses}
+        onFormDataChange={updateFormData}
       />
 
       <StockItemsSection
-        details={state.details}
-        storageBins={state.storageBins}
-        onDetailsChange={actions.updateDetails}
-        onAddItem={actions.addNewItem}
-        onRemoveItem={actions.removeItem}
-        onGeneratePickList={actions.generatePickList}
-        warehouseId={state.formData.warehouse_id}
+        details={details}
+        storageBins={storageBins}
+        onDetailsChange={updateDetails}
+        onAddItem={addNewItem}
+        onRemoveItem={removeItem}
+        onGeneratePickList={generatePickList}
+        warehouseId={formData.warehouse_id}
       />
 
       <StockSummarySection
-        details={state.details}
-        onSave={actions.handleSave}
-        loading={state.loading}
+        details={details}
+        onSave={handleSave}
+        loading={loading}
       />
     </div>
   );

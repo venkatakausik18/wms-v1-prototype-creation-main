@@ -67,16 +67,22 @@ export const useStockTransferForm = (id?: string) => {
 
   const fetchWarehouses = async (): Promise<void> => {
     try {
-      // The key is: only pass the row type as a single generic argument!
-      const { data, error }: { data: LocalWarehouseData[] | null; error: PostgrestError | null } =
-        await supabase
-          .from<LocalWarehouseData>('warehouses')
-          .select('warehouse_id, warehouse_code, warehouse_name')
-          .eq('is_active', true)
-          .order('warehouse_name');
+      const { data, error } = await supabase
+        .from('warehouses')
+        .select('warehouse_id, warehouse_code, warehouse_name')
+        .eq('is_active', true)
+        .order('warehouse_name');
 
       if (error) throw error;
-      setWarehouses(data ?? []);
+
+      // Map to LocalWarehouseData[]
+      const mapped = (data ?? []).map((row: any) => ({
+        warehouse_id: row.warehouse_id,
+        warehouse_code: row.warehouse_code,
+        warehouse_name: row.warehouse_name,
+      })) as LocalWarehouseData[];
+
+      setWarehouses(mapped);
     } catch (error) {
       console.error('Error fetching warehouses:', error);
       toast.error('Failed to fetch warehouses');
@@ -87,16 +93,22 @@ export const useStockTransferForm = (id?: string) => {
     if (!warehouseId) return;
 
     try {
-      const { data, error }: { data: LocalStorageBinData[] | null; error: PostgrestError | null } =
-        await supabase
-          .from<LocalStorageBinData>('storage_bins')
-          .select('bin_id, bin_code')
-          .eq('warehouse_id', parseInt(warehouseId, 10))
-          .eq('is_active', true)
-          .order('bin_code');
+      const { data, error } = await supabase
+        .from('storage_bins')
+        .select('bin_id, bin_code')
+        .eq('warehouse_id', parseInt(warehouseId, 10))
+        .eq('is_active', true)
+        .order('bin_code');
 
       if (error) throw error;
-      setStorageBins(data ?? []);
+
+      // Map to LocalStorageBinData[]
+      const mapped = (data ?? []).map((row: any) => ({
+        bin_id: row.bin_id,
+        bin_code: row.bin_code,
+      })) as LocalStorageBinData[];
+
+      setStorageBins(mapped);
     } catch (error) {
       console.error('Error fetching storage bins:', error);
       toast.error('Failed to fetch storage bins');

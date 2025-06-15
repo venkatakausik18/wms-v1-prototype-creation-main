@@ -7,12 +7,10 @@ import type {
   FormData,
   StockDetail,
   WarehouseData,
-  StorageBinData,
-  ProductData,
-  UomData
+  StorageBinData
 } from "../types";
 
-// Simple return type without complex intersections
+// Simplified return type
 interface UseStockEntryFormReturn {
   loading: boolean;
   warehouses: WarehouseData[];
@@ -27,10 +25,18 @@ interface UseStockEntryFormReturn {
   generatePickList: () => Promise<void>;
 }
 
+// Create a factory function to avoid deep inference
+const createEmptyStockDetail = (): StockDetail => ({
+  quantity: 0,
+  unit_cost: 0,
+  total_cost: 0,
+  previous_stock: 0,
+  new_stock: 0
+});
+
 export const useStockEntryForm = (id?: string): UseStockEntryFormReturn => {
   const navigate = useNavigate();
   
-  // Explicit state types
   const [loading, setLoading] = useState<boolean>(false);
   const [warehouses, setWarehouses] = useState<WarehouseData[]>([]);
   const [storageBins, setStorageBins] = useState<StorageBinData[]>([]);
@@ -45,7 +51,7 @@ export const useStockEntryForm = (id?: string): UseStockEntryFormReturn => {
     remarks: ''
   });
 
-  // Start with empty array to avoid deep type inference
+  // Start with empty array to avoid any deep inference
   const [details, setDetails] = useState<StockDetail[]>([]);
 
   useEffect(() => {
@@ -122,13 +128,8 @@ export const useStockEntryForm = (id?: string): UseStockEntryFormReturn => {
   };
 
   const addNewItem = (): void => {
-    const newItem: StockDetail = {
-      quantity: 0,
-      unit_cost: 0,
-      total_cost: 0,
-      previous_stock: 0,
-      new_stock: 0
-    };
+    // Use the factory function to avoid deep inference
+    const newItem = createEmptyStockDetail();
     setDetails(prev => [...prev, newItem]);
   };
 

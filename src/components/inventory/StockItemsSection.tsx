@@ -19,6 +19,7 @@ interface StockDetail {
     product_id: number;
     product_code: string;
     product_name: string;
+    base_uom_id: number;
   };
   uom?: {
     uom_id: number;

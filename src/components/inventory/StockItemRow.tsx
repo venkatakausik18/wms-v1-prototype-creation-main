@@ -97,7 +97,8 @@ export const StockItemRow: React.FC<StockItemRowProps> = ({
   const selectedProduct = detail.product ? {
     product_id: detail.product.product_id,
     product_code: detail.product.product_code,
-    product_name: detail.product.product_name
+    product_name: detail.product.product_name,
+    base_uom_id: detail.product.base_uom_id
   } : undefined;
 
   const selectedVariant = detail.variant_id ? {

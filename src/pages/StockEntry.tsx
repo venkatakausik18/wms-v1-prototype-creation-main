@@ -105,7 +105,7 @@ const StockEntry = () => {
   });
 
   // Fetch storage bins - use any type to completely bypass deep inference
-  const { data: bins = [] } = useQuery({
+  const { data: binsData = [] } = useQuery({
     queryKey: ['storage-bins', formData.warehouse_id],
     queryFn: async (): Promise<StorageBin[]> => {
       if (!formData.warehouse_id) return [];
@@ -129,7 +129,7 @@ const StockEntry = () => {
   });
 
   // Type the bins data after query
-  const bins: StorageBin[] = (bins as StorageBin[]) || [];
+  const bins: StorageBin[] = binsData || [];
 
   const addDetailRow = () => {
     const newRow: StockEntryDetail = {

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import type { PostgrestError } from '@supabase/supabase-js';
 import type { 
   LocalTransferFormData, 
   LocalTransferDetail, 
@@ -24,7 +25,7 @@ interface UseStockTransferFormReturn {
   handleShip: () => Promise<void>;
 }
 
-export const useStockTransferForm = (id?: string): UseStockTransferFormReturn => {
+export const useStockTransferForm = (id?: string) => {
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState<boolean>(false);
@@ -65,17 +66,14 @@ export const useStockTransferForm = (id?: string): UseStockTransferFormReturn =>
 
   const fetchWarehouses = async (): Promise<void> => {
     try {
-      const response = await supabase
-        .from('warehouses')
-        .select('warehouse_id, warehouse_code, warehouse_name')
-        .eq('is_active', true)
-        .order('warehouse_name') as {
-          data: LocalWarehouseData[] | null;
-          error: any;
-        };
-
-      if (response.error) throw response.error;
-      setWarehouses(response.data ?? []);
+      const { data, error }: { data: LocalWarehouseData[] | null; error: PostgrestError | null } =
+        await supabase
+          .from<LocalWarehouseData>('warehouses')
+          .select('warehouse_id, warehouse_code, warehouse_name')
+          .eq('is_active', true)
+          .order('warehouse_name');
+      if (error) throw error;
+      setWarehouses(data ?? []);
     } catch (error) {
       console.error('Error fetching warehouses:', error);
       toast.error('Failed to fetch warehouses');
@@ -85,20 +83,18 @@ export const useStockTransferForm = (id?: string): UseStockTransferFormReturn =>
   const fetchStorageBins = async (warehouseId: string): Promise<void> => {
     if (!warehouseId) return;
     try {
-      const response = await supabase
-        .from('storage_bins')
-        .select('bin_id, bin_code')
-        .eq('warehouse_id', parseInt(warehouseId))
-        .eq('is_active', true)
-        .order('bin_code') as {
-          data: LocalStorageBinData[] | null;
-          error: any;
-        };
-
-      if (response.error) throw response.error;
-      setStorageBins(response.data ?? []);
+      const { data, error }: { data: LocalStorageBinData[] | null; error: PostgrestError | null } =
+        await supabase
+          .from<LocalStorageBinData>('storage_bins')
+          .select('bin_id, bin_code')
+          .eq('warehouse_id', parseInt(warehouseId, 10))
+          .eq('is_active', true)
+          .order('bin_code');
+      if (error) throw error;
+      setStorageBins(data ?? []);
     } catch (error) {
       console.error('Error fetching storage bins:', error);
+      toast.error('Failed to fetch storage bins');
     }
   };
 

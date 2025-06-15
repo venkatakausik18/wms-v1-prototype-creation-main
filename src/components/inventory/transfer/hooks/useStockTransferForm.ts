@@ -66,24 +66,18 @@ export const useStockTransferForm = (id?: string): UseStockTransferFormReturn =>
 
   const fetchWarehouses = async (): Promise<void> => {
     try {
-      // Explicitly type the response to avoid deep type instantiation
-      const { data, error } = await supabase
+      // Use basic query without complex type inference
+      const response = await supabase
         .from('warehouses')
         .select('warehouse_id, warehouse_code, warehouse_name')
         .eq('is_active', true)
-        .order('warehouse_name') as {
-          data: Array<{
-            warehouse_id: number;
-            warehouse_code: string | null;
-            warehouse_name: string;
-          }> | null;
-          error: any;
-        };
+        .order('warehouse_name');
 
-      if (error) throw error;
+      if (response.error) throw response.error;
       
-      // Map to our local type structure
-      const localWarehouses: LocalWarehouseData[] = (data || []).map(w => ({
+      // Safely map the data to our local type
+      const warehouseData = response.data || [];
+      const localWarehouses: LocalWarehouseData[] = warehouseData.map((w: any) => ({
         warehouse_id: w.warehouse_id,
         warehouse_code: w.warehouse_code || '',
         warehouse_name: w.warehouse_name
@@ -99,24 +93,19 @@ export const useStockTransferForm = (id?: string): UseStockTransferFormReturn =>
   const fetchStorageBins = async (warehouseId: string): Promise<void> => {
     if (!warehouseId) return;
     try {
-      // Explicitly type the response to avoid deep type instantiation
-      const { data, error } = await supabase
+      // Use basic query without complex type inference
+      const response = await supabase
         .from('storage_bins')
         .select('bin_id, bin_code')
         .eq('warehouse_id', parseInt(warehouseId))
         .eq('is_active', true)
-        .order('bin_code') as {
-          data: Array<{
-            bin_id: number;
-            bin_code: string;
-          }> | null;
-          error: any;
-        };
+        .order('bin_code');
 
-      if (error) throw error;
+      if (response.error) throw response.error;
       
-      // Map to our local type structure
-      const localBins: LocalStorageBinData[] = (data || []).map(b => ({
+      // Safely map the data to our local type
+      const binData = response.data || [];
+      const localBins: LocalStorageBinData[] = binData.map((b: any) => ({
         bin_id: b.bin_id,
         bin_code: b.bin_code
       }));

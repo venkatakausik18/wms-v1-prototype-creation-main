@@ -81,38 +81,38 @@ const PhysicalCount = () => {
 
   const [details, setDetails] = useState<CountDetail[]>([]);
 
-  // Fetch warehouses - let TypeScript infer
-  const { data: warehouses } = useQuery({
+  // Fetch warehouses with explicit generics to constrain type inference
+  const { data: warehouses } = useQuery<WarehouseData[], Error>({
     queryKey: ['warehouses'],
-    queryFn: async () => {
+    queryFn: async (): Promise<WarehouseData[]> => {
       const { data, error } = await supabase
         .from('warehouses')
         .select('warehouse_id, warehouse_name')
         .eq('is_active', true)
         .order('warehouse_name');
       if (error) throw error;
-      return data || [];
+      return (data || []) as WarehouseData[];
     },
   });
 
-  // Fetch products - let TypeScript infer
-  const { data: products } = useQuery({
+  // Fetch products with explicit generics to constrain type inference
+  const { data: products } = useQuery<ProductData[], Error>({
     queryKey: ['products-for-count'],
-    queryFn: async () => {
+    queryFn: async (): Promise<ProductData[]> => {
       const { data, error } = await supabase
         .from('products')
         .select('product_id, product_name, product_code')
         .eq('is_active', true)
         .order('product_name');
       if (error) throw error;
-      return data || [];
+      return (data || []) as ProductData[];
     },
   });
 
-  // Fetch storage bins - let TypeScript infer
-  const { data: bins } = useQuery({
+  // Fetch storage bins with explicit generics to constrain type inference
+  const { data: bins } = useQuery<StorageBinData[], Error>({
     queryKey: ['storage-bins', setupData.warehouse_id],
-    queryFn: async () => {
+    queryFn: async (): Promise<StorageBinData[]> => {
       if (!setupData.warehouse_id) return [];
       const { data, error } = await supabase
         .from('storage_bins')
@@ -121,7 +121,7 @@ const PhysicalCount = () => {
         .eq('is_active', true)
         .order('bin_code');
       if (error) throw error;
-      return data || [];
+      return (data || []) as StorageBinData[];
     },
     enabled: !!setupData.warehouse_id,
   });

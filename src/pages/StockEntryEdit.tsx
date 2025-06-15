@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -14,6 +13,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { ArrowLeft, Plus, Trash2, Save } from "lucide-react";
 import ProductSelector from "@/components/inventory/ProductSelector";
+
+type InwardTransactionType = 'purchase_in' | 'purchase_return_in' | 'transfer_in' | 'adjustment_in';
 
 interface StockEntryLine {
   id: string;
@@ -52,7 +53,7 @@ const StockEntryEdit = () => {
   
   const [formData, setFormData] = useState({
     txn_number: '',
-    txn_type: 'purchase_in' as 'purchase_in' | 'purchase_return_in' | 'transfer_in' | 'adjustment_in',
+    txn_type: 'purchase_in' as InwardTransactionType,
     txn_date: new Date().toISOString().split('T')[0],
     txn_time: new Date().toTimeString().slice(0, 5),
     warehouse_id: '',
@@ -182,7 +183,7 @@ const StockEntryEdit = () => {
 
       setFormData({
         txn_number: transaction.txn_number,
-        txn_type: transaction.txn_type,
+        txn_type: transaction.txn_type as InwardTransactionType,
         txn_date: transaction.txn_date,
         txn_time: transaction.txn_time,
         warehouse_id: transaction.warehouse_id.toString(),
@@ -460,7 +461,7 @@ const StockEntryEdit = () => {
                   </div>
                   <div>
                     <Label htmlFor="txn_type">Entry Type</Label>
-                    <Select value={formData.txn_type} onValueChange={(value) => setFormData({...formData, txn_type: value as any})}>
+                    <Select value={formData.txn_type} onValueChange={(value) => setFormData({...formData, txn_type: value as InwardTransactionType})}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>

@@ -3,7 +3,16 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Warehouse, Product, StorageBin } from "@/types/physicalCount";
 
-export const usePhysicalCountData = (warehouseId: string) => {
+interface UsePhysicalCountDataReturn {
+  warehouses: Warehouse[] | undefined;
+  products: Product[] | undefined;
+  bins: StorageBin[] | undefined;
+  isLoadingWarehouses: boolean;
+  isLoadingProducts: boolean;
+  isLoadingBins: boolean;
+}
+
+export const usePhysicalCountData = (warehouseId: string): UsePhysicalCountDataReturn => {
   const warehouses = useQuery({
     queryKey: ['warehouses'],
     queryFn: async (): Promise<Warehouse[]> => {

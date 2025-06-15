@@ -1,12 +1,10 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-// Don't import TransferFormData and TransferDetail here to avoid recursion/type explosion
-// import type { TransferFormData, TransferDetail } from "../types";
-import type { WarehouseData, StorageBinData } from "../../types";
 
-// Light local type definitions to avoid deep TypeScript recursion
+// Local flat type definitions to avoid deep TypeScript recursion
 interface LocalTransferFormData {
   transfer_number: string;
   transfer_date: string;
@@ -52,16 +50,28 @@ interface LocalTransferDetail {
   updated_at?: string;
 }
 
+// Local flat warehouse and storage bin types
+interface LocalWarehouseData {
+  warehouse_id: number;
+  warehouse_code?: string;
+  warehouse_name: string;
+}
+
+interface LocalStorageBinData {
+  bin_id: number;
+  bin_code: string;
+}
+
 interface UseStockTransferFormReturn {
   loading: boolean;
-  warehouses: WarehouseData[];
-  storageBins: StorageBinData[];
+  warehouses: LocalWarehouseData[];
+  storageBins: LocalStorageBinData[];
   formData: LocalTransferFormData;
   details: LocalTransferDetail[];
   updateFormData: (updates: Partial<LocalTransferFormData>) => void;
   updateDetails: (newDetails: LocalTransferDetail[]) => void;
   addNewItem: () => void;
-  removeItem: () => void;
+  removeItem: (index: number) => void;
   handleSave: () => Promise<void>;
   handleSubmitForApproval: () => Promise<void>;
   handleShip: () => Promise<void>;
@@ -71,10 +81,9 @@ export const useStockTransferForm = (id?: string): UseStockTransferFormReturn =>
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState<boolean>(false);
-  const [warehouses, setWarehouses] = useState<WarehouseData[]>([]);
-  const [storageBins, setStorageBins] = useState<StorageBinData[]>([]);
+  const [warehouses, setWarehouses] = useState<LocalWarehouseData[]>([]);
+  const [storageBins, setStorageBins] = useState<LocalStorageBinData[]>([]);
 
-  // All local types. No complex Partial or recursive reference.
   const [formData, setFormData] = useState<LocalTransferFormData>({
     transfer_number: '',
     transfer_date: new Date().toISOString().split('T')[0],
@@ -153,14 +162,12 @@ export const useStockTransferForm = (id?: string): UseStockTransferFormReturn =>
     // Implementation for editing existing transfers
   };
 
-  // This is the only use of Partial, with a LOCAL type.
   const updateFormData = (updates: Partial<LocalTransferFormData>) => {
     setFormData(prev => ({
       ...prev,
       ...updates,
     }));
 
-    // Only one lookup on ids as string; this is simple and flat.
     if (updates.from_warehouse_id || updates.to_warehouse_id) {
       fetchStorageBins(
         updates.from_warehouse_id
@@ -226,5 +233,3 @@ export const useStockTransferForm = (id?: string): UseStockTransferFormReturn =>
     handleShip
   };
 };
-
-// All code now uses local, flat types and avoids Partial on anything but flat LocalTransferFormData

@@ -45,6 +45,21 @@ interface StorageBin {
   bin_code: string;
 }
 
+interface PhysicalCountRecord {
+  count_id: number;
+  count_number: string;
+  company_id: number;
+  warehouse_id: number;
+  count_date: string;
+  count_time: string;
+  count_type: string;
+  method: string;
+  scheduled_by: number;
+  counted_by: number;
+  status: string;
+  created_by: number;
+}
+
 const PhysicalCount = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -117,8 +132,8 @@ const PhysicalCount = () => {
 
   const bins: StorageBin[] = binsData || [];
 
-  const createCountSetup = useMutation({
-    mutationFn: async () => {
+  const createCountSetup = useMutation<PhysicalCountRecord, Error, void>({
+    mutationFn: async (): Promise<PhysicalCountRecord> => {
       // Generate count number
       const countNumber = `CNT-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(Date.now()).slice(-4)}`;
 
@@ -141,9 +156,9 @@ const PhysicalCount = () => {
         .single();
 
       if (error) throw error;
-      return data;
+      return data as PhysicalCountRecord;
     },
-    onSuccess: (data) => {
+    onSuccess: (data: PhysicalCountRecord) => {
       setCountId(data.count_id);
       setCurrentStep('counting');
       toast({
@@ -151,7 +166,7 @@ const PhysicalCount = () => {
         description: "Physical count setup created. You can now start counting.",
       });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast({
         title: "Error",
         description: `Failed to create count setup: ${error.message}`,
@@ -216,7 +231,7 @@ const PhysicalCount = () => {
     }));
   };
 
-  const submitCountDetails = useMutation({
+  const submitCountDetails = useMutation<{ countId: number; adjustmentItems: number }, Error, void>({
     mutationFn: async () => {
       if (!countId) throw new Error("Count ID not found");
 
@@ -314,7 +329,7 @@ const PhysicalCount = () => {
       queryClient.invalidateQueries({ queryKey: ['physical-counts'] });
       navigate('/inventory/counts');
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast({
         title: "Error",
         description: `Failed to complete physical count: ${error.message}`,

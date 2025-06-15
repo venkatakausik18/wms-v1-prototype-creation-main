@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -62,7 +61,7 @@ interface UseStockTransferFormReturn {
   updateFormData: (updates: Partial<LocalTransferFormData>) => void;
   updateDetails: (newDetails: LocalTransferDetail[]) => void;
   addNewItem: () => void;
-  removeItem: (index: number) => void;
+  removeItem: () => void;
   handleSave: () => Promise<void>;
   handleSubmitForApproval: () => Promise<void>;
   handleShip: () => Promise<void>;
@@ -71,10 +70,11 @@ interface UseStockTransferFormReturn {
 export const useStockTransferForm = (id?: string): UseStockTransferFormReturn => {
   const navigate = useNavigate();
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [warehouses, setWarehouses] = useState<WarehouseData[]>([]);
   const [storageBins, setStorageBins] = useState<StorageBinData[]>([]);
 
+  // All local types. No complex Partial or recursive reference.
   const [formData, setFormData] = useState<LocalTransferFormData>({
     transfer_number: '',
     transfer_date: new Date().toISOString().split('T')[0],
@@ -153,14 +153,20 @@ export const useStockTransferForm = (id?: string): UseStockTransferFormReturn =>
     // Implementation for editing existing transfers
   };
 
+  // This is the only use of Partial, with a LOCAL type.
   const updateFormData = (updates: Partial<LocalTransferFormData>) => {
     setFormData(prev => ({
       ...prev,
       ...updates,
     }));
 
+    // Only one lookup on ids as string; this is simple and flat.
     if (updates.from_warehouse_id || updates.to_warehouse_id) {
-      fetchStorageBins(updates.from_warehouse_id || formData.from_warehouse_id);
+      fetchStorageBins(
+        updates.from_warehouse_id
+          ? updates.from_warehouse_id
+          : formData.from_warehouse_id
+      );
     }
   };
 
@@ -220,3 +226,5 @@ export const useStockTransferForm = (id?: string): UseStockTransferFormReturn =>
     handleShip
   };
 };
+
+// All code now uses local, flat types and avoids Partial on anything but flat LocalTransferFormData

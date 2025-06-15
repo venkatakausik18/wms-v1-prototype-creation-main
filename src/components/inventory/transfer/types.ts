@@ -1,4 +1,3 @@
-
 // Stock Transfer specific type definitions
 
 export interface StockTransfer {
@@ -17,7 +16,7 @@ export interface StockTransfer {
   approved_by?: number;
   approved_at?: string;
   approval_remarks?: string;
-  transport_method?: TransportMethod;
+  transport_method?: string;
   carrier_name?: string;
   tracking_number?: string;
   expected_delivery_date?: string;
@@ -77,13 +76,10 @@ export interface TransferFormData {
   to_warehouse_id: string;
   priority_level: string;
   transfer_type: string;
-  transport_method: TransportMethod | '';
+  transport_method: string;
   carrier_name: string;
   tracking_number: string;
   expected_delivery_date: string;
-  temperature_monitored: boolean;
-  temperature_range_min: string;
-  temperature_range_max: string;
   special_instructions: string;
   internal_notes: string;
 }
@@ -146,7 +142,7 @@ export interface TransferTemplate {
   description?: string;
   from_warehouse_id?: number;
   to_warehouse_id?: number;
-  transport_method?: TransportMethod;
+  transport_method?: string;
   priority_level: string;
   requires_approval: boolean;
   default_products?: any;

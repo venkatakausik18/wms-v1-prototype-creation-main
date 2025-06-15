@@ -29,6 +29,22 @@ interface CountDetail {
   adjustment_quantity: number;
 }
 
+interface Warehouse {
+  warehouse_id: number;
+  warehouse_name: string;
+}
+
+interface Product {
+  product_id: number;
+  product_name: string;
+  product_code: string;
+}
+
+interface StorageBin {
+  bin_id: number;
+  bin_code: string;
+}
+
 const PhysicalCount = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -53,7 +69,7 @@ const PhysicalCount = () => {
   // Fetch warehouses
   const { data: warehouses } = useQuery({
     queryKey: ['warehouses'],
-    queryFn: async () => {
+    queryFn: async (): Promise<Warehouse[]> => {
       const { data, error } = await supabase
         .from('warehouses')
         .select('warehouse_id, warehouse_name')
@@ -61,14 +77,14 @@ const PhysicalCount = () => {
         .order('warehouse_name');
       
       if (error) throw error;
-      return data;
+      return data || [];
     },
   });
 
   // Fetch products
   const { data: products } = useQuery({
     queryKey: ['products-for-count'],
-    queryFn: async () => {
+    queryFn: async (): Promise<Product[]> => {
       const { data, error } = await supabase
         .from('products')
         .select('product_id, product_name, product_code')
@@ -76,32 +92,30 @@ const PhysicalCount = () => {
         .order('product_name');
       
       if (error) throw error;
-      return data;
+      return data || [];
     },
   });
 
-  // Fetch storage bins
-  const { data: bins } = useQuery({
+  // Fetch storage bins with simplified typing
+  const { data: binsData } = useQuery({
     queryKey: ['storage-bins', setupData.warehouse_id],
-    queryFn: async () => {
+    queryFn: async (): Promise<StorageBin[]> => {
       if (!setupData.warehouse_id) return [];
       
       const { data, error } = await supabase
         .from('storage_bins')
-        .select(`
-          bin_id,
-          bin_code,
-          zone_name:warehouse_zones(zone_name)
-        `)
+        .select('bin_id, bin_code')
         .eq('warehouse_id', setupData.warehouse_id)
         .eq('is_active', true)
         .order('bin_code');
       
       if (error) throw error;
-      return data;
+      return (data || []) as StorageBin[];
     },
     enabled: !!setupData.warehouse_id,
   });
+
+  const bins: StorageBin[] = binsData || [];
 
   const createCountSetup = useMutation({
     mutationFn: async () => {

@@ -45,6 +45,8 @@ import SalesReturnList from "./pages/SalesReturnList";
 import SalesReturnEdit from "./pages/SalesReturnEdit";
 import CustomerReceiptList from "./pages/CustomerReceiptList";
 import CustomerReceiptEdit from "./pages/CustomerReceiptEdit";
+import StockEntryList from "./pages/StockEntryList";
+import StockEntryEdit from "./pages/StockEntryEdit";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -134,6 +136,12 @@ const App = () => (
             <Route path="/sales/receipts/add" element={<CustomerReceiptEdit />} />
             <Route path="/sales/receipts/edit/:receiptId" element={<CustomerReceiptEdit />} />
             <Route path="/sales/receipts/view/:receiptId" element={<CustomerReceiptEdit />} />
+            {/* Stock Entry Routes */}
+            <Route path="/inventory/stock-entry" element={<Navigate to="/inventory/stock-entry/list" replace />} />
+            <Route path="/inventory/stock-entry/list" element={<StockEntryList />} />
+            <Route path="/inventory/stock-entry/add" element={<StockEntryEdit />} />
+            <Route path="/inventory/stock-entry/edit/:txnId" element={<StockEntryEdit />} />
+            <Route path="/inventory/stock-entry/view/:txnId" element={<StockEntryEdit />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

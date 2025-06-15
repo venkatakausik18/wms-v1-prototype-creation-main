@@ -49,21 +49,3 @@ export interface ProductVariant {
   variant_code: string;
   variant_name: string;
 }
-
-// Hook state and actions - simplified interfaces
-export interface StockEntryFormState {
-  loading: boolean;
-  warehouses: WarehouseData[];
-  storageBins: StorageBinData[];
-  formData: FormData;
-  details: StockDetail[];
-}
-
-export interface StockEntryFormActions {
-  updateFormData: (updates: Partial<FormData>) => void;
-  updateDetails: (newDetails: StockDetail[]) => void;
-  addNewItem: () => void;
-  removeItem: (index: number) => void;
-  handleSave: () => Promise<void>;
-  generatePickList: () => Promise<void>;
-}

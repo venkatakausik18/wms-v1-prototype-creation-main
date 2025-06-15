@@ -10,7 +10,7 @@ import type {
   StorageBinData
 } from "../types";
 
-// Simplified return type - no complex intersections
+// Simple return type without complex intersections
 interface UseStockEntryFormReturn {
   loading: boolean;
   warehouses: WarehouseData[];
@@ -62,7 +62,7 @@ export const useStockEntryForm = (id?: string): UseStockEntryFormReturn => {
 
   const fetchWarehouses = async (): Promise<void> => {
     try {
-      // Explicit type annotation for Supabase query
+      // Explicit type and immediate casting to prevent deep inference
       const { data, error } = await supabase
         .from('warehouses')
         .select('warehouse_id, warehouse_code, warehouse_name')
@@ -71,13 +71,8 @@ export const useStockEntryForm = (id?: string): UseStockEntryFormReturn => {
 
       if (error) throw error;
       
-      // Cast immediately to domain type
-      const warehouseData: WarehouseData[] = (data || []).map(item => ({
-        warehouse_id: item.warehouse_id,
-        warehouse_code: item.warehouse_code,
-        warehouse_name: item.warehouse_name
-      }));
-      
+      // Immediate cast to domain type
+      const warehouseData = (data || []) as WarehouseData[];
       setWarehouses(warehouseData);
     } catch (error) {
       console.error('Error fetching warehouses:', error);
@@ -89,6 +84,7 @@ export const useStockEntryForm = (id?: string): UseStockEntryFormReturn => {
     if (!warehouseId) return;
     
     try {
+      // Explicit type and immediate casting to prevent deep inference
       const { data, error } = await supabase
         .from('storage_bins')
         .select('bin_id, bin_code')
@@ -98,12 +94,8 @@ export const useStockEntryForm = (id?: string): UseStockEntryFormReturn => {
 
       if (error) throw error;
       
-      // Cast immediately to domain type
-      const binData: StorageBinData[] = (data || []).map(item => ({
-        bin_id: item.bin_id,
-        bin_code: item.bin_code
-      }));
-      
+      // Immediate cast to domain type
+      const binData = (data || []) as StorageBinData[];
       setStorageBins(binData);
     } catch (error) {
       console.error('Error fetching storage bins:', error);

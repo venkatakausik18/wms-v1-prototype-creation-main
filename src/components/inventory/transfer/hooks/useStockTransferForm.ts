@@ -1,9 +1,65 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import type { TransferFormData, TransferDetail } from "../types";
-import type { WarehouseData, StorageBinData } from "../../types";
+
+// Simple local type definitions to avoid deep type recursion
+interface WarehouseData {
+  warehouse_id: number;
+  warehouse_code: string;
+  warehouse_name: string;
+}
+
+interface StorageBinData {
+  bin_id: number;
+  bin_code: string;
+}
+
+interface TransferFormData {
+  transfer_number: string;
+  transfer_date: string;
+  transfer_time: string;
+  from_warehouse_id: string;
+  to_warehouse_id: string;
+  priority_level: string;
+  transfer_type: string;
+  transport_method: string;
+  carrier_name: string;
+  tracking_number: string;
+  expected_delivery_date: string;
+  temperature_monitored: boolean;
+  temperature_range_min: string;
+  temperature_range_max: string;
+  special_instructions: string;
+  internal_notes: string;
+}
+
+interface TransferDetail {
+  detail_id?: number;
+  transfer_id?: number;
+  product_id?: number;
+  variant_id?: number;
+  requested_quantity: number;
+  shipped_quantity: number;
+  received_quantity: number;
+  uom_id?: number;
+  unit_cost: number;
+  total_cost: number;
+  from_bin_id?: number;
+  to_bin_id?: number;
+  serial_numbers?: string[];
+  batch_numbers?: string[];
+  expiry_dates?: string[];
+  line_status: string;
+  quality_status: string;
+  temperature_sensitive: boolean;
+  fragile: boolean;
+  hazardous: boolean;
+  special_handling_notes?: string;
+  created_at?: string;
+  updated_at?: string;
+}
 
 interface UseStockTransferFormReturn {
   loading: boolean;
@@ -105,28 +161,24 @@ export const useStockTransferForm = (id?: string): UseStockTransferFormReturn =>
     // Implementation for editing existing transfers
   };
 
-  // Ensure updates to formData always match TransferFormData types!
   const updateFormData = (updates: Partial<TransferFormData>) => {
     setFormData(prev => {
-      // Coerce transport_method type to TransferFormData's declaration
-      let newTransportMethod: any = updates.transport_method;
-      if (typeof newTransportMethod !== "undefined") {
-        // Empty string or valid TransportMethod (accept as-is)
-        // Otherwise fallback to empty string
-        const allowed = [
-          "",
-          "internal", "courier", "truck", "rail", "air", "sea"
-        ];
-        if (!allowed.includes(newTransportMethod)) {
-          newTransportMethod = "";
-        }
+      const allowedTransportMethods = [
+        "", "internal", "courier", "truck", "rail", "air", "sea"
+      ];
+      
+      let newTransportMethod = updates.transport_method;
+      if (typeof newTransportMethod !== "undefined" && !allowedTransportMethods.includes(newTransportMethod)) {
+        newTransportMethod = "";
       }
+      
       return {
         ...prev,
         ...updates,
         ...(typeof newTransportMethod !== "undefined" ? { transport_method: newTransportMethod } : {})
       };
     });
+    
     if (updates.from_warehouse_id || updates.to_warehouse_id) {
       fetchStorageBins(updates.from_warehouse_id || formData.from_warehouse_id);
     }

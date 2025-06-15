@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -105,28 +104,32 @@ const StockEntry = () => {
     },
   });
 
-  // Fetch storage bins - remove generic type to avoid deep instantiation
-  const { data: binsData } = useQuery({
+  // Fetch storage bins - use any type to completely bypass deep inference
+  const { data: bins = [] } = useQuery({
     queryKey: ['storage-bins', formData.warehouse_id],
-    queryFn: async () => {
+    queryFn: async (): Promise<StorageBin[]> => {
       if (!formData.warehouse_id) return [];
       
       const warehouseId = parseInt(formData.warehouse_id);
-      const { data, error } = await supabase
+      
+      // Use any to bypass complex type inference
+      const response: any = await (supabase as any)
         .from('storage_bins')
         .select('bin_id, bin_code')
         .eq('warehouse_id', warehouseId)
         .eq('is_active', true)
         .order('bin_code');
       
-      if (error) throw error;
-      return data;
+      if (response.error) throw response.error;
+      
+      // Explicitly cast to our interface
+      return (response.data || []) as StorageBin[];
     },
     enabled: Boolean(formData.warehouse_id),
   });
 
   // Type the bins data after query
-  const bins: StorageBin[] = (binsData as StorageBin[]) || [];
+  const bins: StorageBin[] = (bins as StorageBin[]) || [];
 
   const addDetailRow = () => {
     const newRow: StockEntryDetail = {

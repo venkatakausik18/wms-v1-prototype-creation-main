@@ -18,11 +18,29 @@ import { formatCurrency, formatNumber } from "@/utils/currency";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { getActiveReservations, createReservation } from "@/services/stockReservation";
 import { getAvailableSerialNumbers, updateSerialNumberStatus } from "@/services/serialNumberTracking";
-import { createPickList, type PickListDetail } from "@/services/pickListService";
+import { createPickList } from "@/services/pickListService";
 import { createQCHold, getActiveQCHolds } from "@/services/qualityControlService";
 import { createDamageAssessment } from "@/services/damageAssessmentService";
 
-// Simplified interface to avoid deep type instantiation
+// Simple interfaces to avoid deep type instantiation
+interface ProductInfo {
+  product_id: number;
+  product_code: string;
+  product_name: string;
+  base_uom_id: number;
+}
+
+interface VariantInfo {
+  variant_id: number;
+  variant_code: string;
+  variant_name: string;
+}
+
+interface UomInfo {
+  uom_id: number;
+  uom_name: string;
+}
+
 interface StockEntryDetail {
   product_id?: number;
   variant_id?: number;
@@ -34,21 +52,9 @@ interface StockEntryDetail {
   reason_code?: string;
   previous_stock: number;
   new_stock: number;
-  product?: {
-    product_id: number;
-    product_code: string;
-    product_name: string;
-    base_uom_id: number;
-  };
-  variant?: {
-    variant_id: number;
-    variant_code: string;
-    variant_name: string;
-  };
-  uom?: {
-    uom_id: number;
-    uom_name: string;
-  };
+  product?: ProductInfo;
+  variant?: VariantInfo;
+  uom?: UomInfo;
   batch_number?: string;
   expiry_date?: string;
   manufacturing_date?: string;
@@ -59,7 +65,7 @@ interface StockEntryDetail {
 
 interface TransactionFormData {
   txn_number: string;
-  txn_type: 'sale_out' | 'sale_return_out' | 'transfer_out' | 'adjustment_out';
+  txn_type: 'sale_out' | 'transfer_out' | 'adjustment_out';
   txn_date: string;
   txn_time: string;
   warehouse_id: string;
@@ -76,7 +82,6 @@ interface SimpleWarehouse {
 interface SimpleStorageBin {
   bin_id: number;
   bin_code: string;
-  bin_name: string;
 }
 
 const StockEntryOutward = () => {
@@ -111,7 +116,7 @@ const StockEntryOutward = () => {
   const [reservations, setReservations] = useState<any[]>([]);
   const [availableSerials, setAvailableSerials] = useState<any[]>([]);
   const [qcHolds, setQcHolds] = useState<any[]>([]);
-  const [pickListData, setPickListData] = useState<PickListDetail[]>([]);
+  const [pickListData, setPickListData] = useState<any[]>([]);
   const [showReservationDialog, setShowReservationDialog] = useState(false);
   const [showDamageAssessment, setShowDamageAssessment] = useState(false);
 
@@ -146,10 +151,10 @@ const StockEntryOutward = () => {
     try {
       const { data, error } = await supabase
         .from('storage_bins')
-        .select('bin_id, bin_code, bin_name')
+        .select('bin_id, bin_code')
         .eq('warehouse_id', parseInt(warehouseId))
         .eq('is_active', true)
-        .order('bin_name');
+        .order('bin_code');
 
       if (error) throw error;
       setStorageBins(data || []);
@@ -270,7 +275,7 @@ const StockEntryOutward = () => {
       return;
     }
 
-    const pickItems: PickListDetail[] = details
+    const pickItems = details
       .filter(d => d.product_id && d.quantity > 0)
       .map(d => ({
         product_id: d.product_id!,
@@ -462,7 +467,6 @@ const StockEntryOutward = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="sale_out">Sales Out</SelectItem>
-                    <SelectItem value="sale_return_out">Sales Return Out</SelectItem>
                     <SelectItem value="transfer_out">Transfer Out</SelectItem>
                     <SelectItem value="adjustment_out">Adjustment Out</SelectItem>
                   </SelectContent>
@@ -597,7 +601,7 @@ const StockEntryOutward = () => {
                         <SelectContent>
                           {storageBins.map((bin) => (
                             <SelectItem key={bin.bin_id} value={bin.bin_id.toString()}>
-                              {bin.bin_code} - {bin.bin_name}
+                              {bin.bin_code}
                             </SelectItem>
                           ))}
                         </SelectContent>

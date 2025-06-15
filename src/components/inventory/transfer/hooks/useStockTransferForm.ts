@@ -4,7 +4,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import type { TransferFormData, TransferDetail } from "../types";
-import type { WarehouseData, StorageBinData } from "../../types";
+
+// Simplified interface definitions to avoid deep type instantiation
+interface WarehouseData {
+  warehouse_id: number;
+  warehouse_code: string;
+  warehouse_name: string;
+}
+
+interface StorageBinData {
+  bin_id: number;
+  bin_code: string;
+}
 
 interface UseStockTransferFormReturn {
   loading: boolean;

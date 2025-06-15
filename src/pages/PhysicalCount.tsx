@@ -81,7 +81,7 @@ const PhysicalCount = () => {
 
   const [details, setDetails] = useState<CountDetail[]>([]);
 
-  // Fetch warehouses - let TypeScript infer type, no generics/assertion!
+  // Fetch warehouses - let TypeScript infer
   const { data: warehouses } = useQuery({
     queryKey: ['warehouses'],
     queryFn: async () => {
@@ -95,7 +95,7 @@ const PhysicalCount = () => {
     },
   });
 
-  // Fetch products - let TypeScript infer type, no generics/assertion!
+  // Fetch products - let TypeScript infer
   const { data: products } = useQuery({
     queryKey: ['products-for-count'],
     queryFn: async () => {
@@ -109,7 +109,7 @@ const PhysicalCount = () => {
     },
   });
 
-  // Fetch storage bins - let TypeScript infer type, no generics/assertion!
+  // Fetch storage bins - let TypeScript infer
   const { data: bins } = useQuery({
     queryKey: ['storage-bins', setupData.warehouse_id],
     queryFn: async () => {

@@ -826,6 +826,78 @@ export type Database = {
         }
         Relationships: []
       }
+      damage_assessments: {
+        Row: {
+          action_taken: string | null
+          assessed_by: number
+          assessment_date: string
+          company_id: number
+          created_at: string
+          created_by: number
+          damage_description: string | null
+          damage_id: number
+          damage_photos: Json | null
+          damage_severity: string
+          damage_type: string
+          damaged_quantity: number
+          estimated_loss_value: number | null
+          insurance_claim_number: string | null
+          product_id: number
+          related_transaction_id: number | null
+          serial_number: string | null
+          updated_at: string
+          updated_by: number | null
+          variant_id: number | null
+          warehouse_id: number
+        }
+        Insert: {
+          action_taken?: string | null
+          assessed_by: number
+          assessment_date?: string
+          company_id: number
+          created_at?: string
+          created_by: number
+          damage_description?: string | null
+          damage_id?: number
+          damage_photos?: Json | null
+          damage_severity: string
+          damage_type: string
+          damaged_quantity: number
+          estimated_loss_value?: number | null
+          insurance_claim_number?: string | null
+          product_id: number
+          related_transaction_id?: number | null
+          serial_number?: string | null
+          updated_at?: string
+          updated_by?: number | null
+          variant_id?: number | null
+          warehouse_id: number
+        }
+        Update: {
+          action_taken?: string | null
+          assessed_by?: number
+          assessment_date?: string
+          company_id?: number
+          created_at?: string
+          created_by?: number
+          damage_description?: string | null
+          damage_id?: number
+          damage_photos?: Json | null
+          damage_severity?: string
+          damage_type?: string
+          damaged_quantity?: number
+          estimated_loss_value?: number | null
+          insurance_claim_number?: string | null
+          product_id?: number
+          related_transaction_id?: number | null
+          serial_number?: string | null
+          updated_at?: string
+          updated_by?: number | null
+          variant_id?: number | null
+          warehouse_id?: number
+        }
+        Relationships: []
+      }
       data_encryption_keys: {
         Row: {
           algorithm: string
@@ -1306,15 +1378,22 @@ export type Database = {
       }
       inventory_transaction_details: {
         Row: {
+          batch_number: string | null
           bin_id: number | null
           created_at: string
+          expiry_date: string | null
           from_warehouse_id: number | null
           itd_id: number
+          manufacturing_date: string | null
           new_stock: number | null
+          pick_list_id: number | null
           previous_stock: number | null
           product_id: number
+          quality_status: string | null
           quantity: number
           reason_code: string | null
+          reservation_id: number | null
+          serial_numbers: string[] | null
           to_warehouse_id: number | null
           total_cost: number | null
           txn_id: number
@@ -1324,15 +1403,22 @@ export type Database = {
           variant_id: number | null
         }
         Insert: {
+          batch_number?: string | null
           bin_id?: number | null
           created_at?: string
+          expiry_date?: string | null
           from_warehouse_id?: number | null
           itd_id?: number
+          manufacturing_date?: string | null
           new_stock?: number | null
+          pick_list_id?: number | null
           previous_stock?: number | null
           product_id: number
+          quality_status?: string | null
           quantity: number
           reason_code?: string | null
+          reservation_id?: number | null
+          serial_numbers?: string[] | null
           to_warehouse_id?: number | null
           total_cost?: number | null
           txn_id: number
@@ -1342,15 +1428,22 @@ export type Database = {
           variant_id?: number | null
         }
         Update: {
+          batch_number?: string | null
           bin_id?: number | null
           created_at?: string
+          expiry_date?: string | null
           from_warehouse_id?: number | null
           itd_id?: number
+          manufacturing_date?: string | null
           new_stock?: number | null
+          pick_list_id?: number | null
           previous_stock?: number | null
           product_id?: number
+          quality_status?: string | null
           quantity?: number
           reason_code?: string | null
+          reservation_id?: number | null
+          serial_numbers?: string[] | null
           to_warehouse_id?: number | null
           total_cost?: number | null
           txn_id?: number
@@ -1897,6 +1990,197 @@ export type Database = {
             referencedColumns: ["warehouse_id"]
           },
         ]
+      }
+      pick_list_details: {
+        Row: {
+          batch_numbers: string[] | null
+          bin_id: number | null
+          created_at: string
+          expiry_dates: string[] | null
+          notes: string | null
+          pick_detail_id: number
+          pick_instructions: string | null
+          pick_list_id: number
+          pick_sequence: number | null
+          picked_quantity: number | null
+          product_id: number
+          required_quantity: number
+          serial_numbers: string[] | null
+          status: string
+          uom_id: number
+          updated_at: string
+          variant_id: number | null
+          warehouse_id: number
+        }
+        Insert: {
+          batch_numbers?: string[] | null
+          bin_id?: number | null
+          created_at?: string
+          expiry_dates?: string[] | null
+          notes?: string | null
+          pick_detail_id?: number
+          pick_instructions?: string | null
+          pick_list_id: number
+          pick_sequence?: number | null
+          picked_quantity?: number | null
+          product_id: number
+          required_quantity: number
+          serial_numbers?: string[] | null
+          status?: string
+          uom_id: number
+          updated_at?: string
+          variant_id?: number | null
+          warehouse_id: number
+        }
+        Update: {
+          batch_numbers?: string[] | null
+          bin_id?: number | null
+          created_at?: string
+          expiry_dates?: string[] | null
+          notes?: string | null
+          pick_detail_id?: number
+          pick_instructions?: string | null
+          pick_list_id?: number
+          pick_sequence?: number | null
+          picked_quantity?: number | null
+          product_id?: number
+          required_quantity?: number
+          serial_numbers?: string[] | null
+          status?: string
+          uom_id?: number
+          updated_at?: string
+          variant_id?: number | null
+          warehouse_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pick_list_details_pick_list_id_fkey"
+            columns: ["pick_list_id"]
+            isOneToOne: false
+            referencedRelation: "pick_lists"
+            referencedColumns: ["pick_list_id"]
+          },
+        ]
+      }
+      pick_lists: {
+        Row: {
+          actual_pick_time: unknown | null
+          company_id: number
+          created_at: string
+          created_by: number
+          estimated_pick_time: unknown | null
+          pick_list_date: string
+          pick_list_id: number
+          pick_list_number: string
+          pick_route_optimized: boolean | null
+          picker_id: number | null
+          priority_level: string
+          special_instructions: string | null
+          status: string
+          updated_at: string
+          updated_by: number | null
+          warehouse_id: number
+        }
+        Insert: {
+          actual_pick_time?: unknown | null
+          company_id: number
+          created_at?: string
+          created_by: number
+          estimated_pick_time?: unknown | null
+          pick_list_date?: string
+          pick_list_id?: number
+          pick_list_number: string
+          pick_route_optimized?: boolean | null
+          picker_id?: number | null
+          priority_level?: string
+          special_instructions?: string | null
+          status?: string
+          updated_at?: string
+          updated_by?: number | null
+          warehouse_id: number
+        }
+        Update: {
+          actual_pick_time?: unknown | null
+          company_id?: number
+          created_at?: string
+          created_by?: number
+          estimated_pick_time?: unknown | null
+          pick_list_date?: string
+          pick_list_id?: number
+          pick_list_number?: string
+          pick_route_optimized?: boolean | null
+          picker_id?: number | null
+          priority_level?: string
+          special_instructions?: string | null
+          status?: string
+          updated_at?: string
+          updated_by?: number | null
+          warehouse_id?: number
+        }
+        Relationships: []
+      }
+      product_serial_numbers: {
+        Row: {
+          bin_id: number | null
+          company_id: number
+          cost_price: number | null
+          created_at: string
+          current_location: string | null
+          expiry_date: string | null
+          internal_batch: string | null
+          last_transaction_id: number | null
+          product_id: number
+          purchase_date: string | null
+          selling_price: number | null
+          serial_id: number
+          serial_number: string
+          status: string
+          supplier_batch: string | null
+          updated_at: string
+          variant_id: number | null
+          warehouse_id: number | null
+        }
+        Insert: {
+          bin_id?: number | null
+          company_id: number
+          cost_price?: number | null
+          created_at?: string
+          current_location?: string | null
+          expiry_date?: string | null
+          internal_batch?: string | null
+          last_transaction_id?: number | null
+          product_id: number
+          purchase_date?: string | null
+          selling_price?: number | null
+          serial_id?: number
+          serial_number: string
+          status?: string
+          supplier_batch?: string | null
+          updated_at?: string
+          variant_id?: number | null
+          warehouse_id?: number | null
+        }
+        Update: {
+          bin_id?: number | null
+          company_id?: number
+          cost_price?: number | null
+          created_at?: string
+          current_location?: string | null
+          expiry_date?: string | null
+          internal_batch?: string | null
+          last_transaction_id?: number | null
+          product_id?: number
+          purchase_date?: string | null
+          selling_price?: number | null
+          serial_id?: number
+          serial_number?: string
+          status?: string
+          supplier_batch?: string | null
+          updated_at?: string
+          variant_id?: number | null
+          warehouse_id?: number | null
+        }
+        Relationships: []
       }
       product_variants: {
         Row: {
@@ -2691,6 +2975,78 @@ export type Database = {
             referencedColumns: ["warehouse_id"]
           },
         ]
+      }
+      quality_control_holds: {
+        Row: {
+          bin_id: number | null
+          company_id: number
+          created_at: string
+          created_by: number
+          hold_date: string
+          hold_quantity: number
+          hold_reason: string
+          inspection_notes: string | null
+          inspector_id: number | null
+          product_id: number
+          qc_hold_id: number
+          related_transaction_id: number | null
+          release_date: string | null
+          release_notes: string | null
+          released_by: number | null
+          serial_number: string | null
+          status: string
+          updated_at: string
+          updated_by: number | null
+          variant_id: number | null
+          warehouse_id: number
+        }
+        Insert: {
+          bin_id?: number | null
+          company_id: number
+          created_at?: string
+          created_by: number
+          hold_date?: string
+          hold_quantity?: number
+          hold_reason: string
+          inspection_notes?: string | null
+          inspector_id?: number | null
+          product_id: number
+          qc_hold_id?: number
+          related_transaction_id?: number | null
+          release_date?: string | null
+          release_notes?: string | null
+          released_by?: number | null
+          serial_number?: string | null
+          status?: string
+          updated_at?: string
+          updated_by?: number | null
+          variant_id?: number | null
+          warehouse_id: number
+        }
+        Update: {
+          bin_id?: number | null
+          company_id?: number
+          created_at?: string
+          created_by?: number
+          hold_date?: string
+          hold_quantity?: number
+          hold_reason?: string
+          inspection_notes?: string | null
+          inspector_id?: number | null
+          product_id?: number
+          qc_hold_id?: number
+          related_transaction_id?: number | null
+          release_date?: string | null
+          release_notes?: string | null
+          released_by?: number | null
+          serial_number?: string | null
+          status?: string
+          updated_at?: string
+          updated_by?: number | null
+          variant_id?: number | null
+          warehouse_id?: number
+        }
+        Relationships: []
       }
       roles: {
         Row: {
@@ -3596,6 +3952,72 @@ export type Database = {
             referencedColumns: ["warehouse_id"]
           },
         ]
+      }
+      stock_reservations: {
+        Row: {
+          bin_id: number | null
+          company_id: number
+          created_at: string
+          created_by: number
+          expiry_date: string | null
+          notes: string | null
+          product_id: number
+          reference_id: number | null
+          reference_number: string | null
+          reference_type: string
+          reservation_date: string
+          reservation_id: number
+          reserved_by: number
+          reserved_quantity: number
+          status: string
+          updated_at: string
+          updated_by: number | null
+          variant_id: number | null
+          warehouse_id: number
+        }
+        Insert: {
+          bin_id?: number | null
+          company_id: number
+          created_at?: string
+          created_by: number
+          expiry_date?: string | null
+          notes?: string | null
+          product_id: number
+          reference_id?: number | null
+          reference_number?: string | null
+          reference_type: string
+          reservation_date?: string
+          reservation_id?: number
+          reserved_by: number
+          reserved_quantity?: number
+          status?: string
+          updated_at?: string
+          updated_by?: number | null
+          variant_id?: number | null
+          warehouse_id: number
+        }
+        Update: {
+          bin_id?: number | null
+          company_id?: number
+          created_at?: string
+          created_by?: number
+          expiry_date?: string | null
+          notes?: string | null
+          product_id?: number
+          reference_id?: number | null
+          reference_number?: string | null
+          reference_type?: string
+          reservation_date?: string
+          reservation_id?: number
+          reserved_by?: number
+          reserved_quantity?: number
+          status?: string
+          updated_at?: string
+          updated_by?: number | null
+          variant_id?: number | null
+          warehouse_id?: number
+        }
+        Relationships: []
       }
       storage_bins: {
         Row: {
@@ -4534,6 +4956,15 @@ export type Database = {
     Functions: {
       calculate_customer_outstanding: {
         Args: { p_customer_id: number } | { p_customer_id: string }
+        Returns: number
+      }
+      get_available_stock: {
+        Args: {
+          p_product_id: number
+          p_warehouse_id: number
+          p_variant_id?: number
+          p_bin_id?: number
+        }
         Returns: number
       }
       get_user_id_from_auth: {

@@ -22,6 +22,7 @@ import { createPickList, type PickListDetail } from "@/services/pickListService"
 import { createQCHold, getActiveQCHolds } from "@/services/qualityControlService";
 import { createDamageAssessment } from "@/services/damageAssessmentService";
 
+// Simplified interface to avoid deep type instantiation
 interface StockEntryDetail {
   product_id?: number;
   variant_id?: number;
@@ -33,9 +34,21 @@ interface StockEntryDetail {
   reason_code?: string;
   previous_stock: number;
   new_stock: number;
-  product?: any;
-  variant?: any;
-  uom?: any;
+  product?: {
+    product_id: number;
+    product_code: string;
+    product_name: string;
+    base_uom_id: number;
+  };
+  variant?: {
+    variant_id: number;
+    variant_code: string;
+    variant_name: string;
+  };
+  uom?: {
+    uom_id: number;
+    uom_name: string;
+  };
   batch_number?: string;
   expiry_date?: string;
   manufacturing_date?: string;
@@ -44,18 +57,40 @@ interface StockEntryDetail {
   reservation_id?: number;
 }
 
+interface TransactionFormData {
+  txn_number: string;
+  txn_type: 'sale_out' | 'sale_return_out' | 'transfer_out' | 'adjustment_out';
+  txn_date: string;
+  txn_time: string;
+  warehouse_id: string;
+  reference_document: string;
+  remarks: string;
+}
+
+interface SimpleWarehouse {
+  warehouse_id: number;
+  warehouse_code: string;
+  warehouse_name: string;
+}
+
+interface SimpleStorageBin {
+  bin_id: number;
+  bin_code: string;
+  bin_name: string;
+}
+
 const StockEntryOutward = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [warehouses, setWarehouses] = useState<any[]>([]);
-  const [storageBins, setStorageBins] = useState<any[]>([]);
+  const [warehouses, setWarehouses] = useState<SimpleWarehouse[]>([]);
+  const [storageBins, setStorageBins] = useState<SimpleStorageBin[]>([]);
   const [activeTab, setActiveTab] = useState("entry");
 
   // Form state
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<TransactionFormData>({
     txn_number: '',
-    txn_type: 'sale_out' as const,
+    txn_type: 'sale_out',
     txn_date: new Date().toISOString().split('T')[0],
     txn_time: new Date().toTimeString().slice(0, 5),
     warehouse_id: '',
@@ -72,7 +107,7 @@ const StockEntryOutward = () => {
     quality_status: 'approved'
   }]);
 
-  // Enhanced state for outward features
+  // Enhanced state for outward features - simplified types
   const [reservations, setReservations] = useState<any[]>([]);
   const [availableSerials, setAvailableSerials] = useState<any[]>([]);
   const [qcHolds, setQcHolds] = useState<any[]>([]);
@@ -420,7 +455,7 @@ const StockEntryOutward = () => {
                 <Label htmlFor="txn_type">Entry Type</Label>
                 <Select 
                   value={formData.txn_type} 
-                  onValueChange={(value: any) => setFormData(prev => ({ ...prev, txn_type: value }))}
+                  onValueChange={(value: TransactionFormData['txn_type']) => setFormData(prev => ({ ...prev, txn_type: value }))}
                 >
                   <SelectTrigger>
                     <SelectValue />

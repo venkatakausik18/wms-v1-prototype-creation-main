@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -37,7 +36,7 @@ const createEmptyStockDetail = (): StockDetail => ({
 export const useStockEntryForm = (id?: string): UseStockEntryFormReturn => {
   const navigate = useNavigate();
   
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState(false);
   const [warehouses, setWarehouses] = useState<WarehouseData[]>([]);
   const [storageBins, setStorageBins] = useState<StorageBinData[]>([]);
 
@@ -65,7 +64,7 @@ export const useStockEntryForm = (id?: string): UseStockEntryFormReturn => {
     }
   }, [id]);
 
-  const fetchWarehouses = async (): Promise<void> => {
+  const fetchWarehouses = async () => {
     try {
       const { data, error } = await supabase
         .from('warehouses')
@@ -83,7 +82,7 @@ export const useStockEntryForm = (id?: string): UseStockEntryFormReturn => {
     }
   };
 
-  const fetchStorageBins = async (warehouseId: string): Promise<void> => {
+  const fetchStorageBins = async (warehouseId: string) => {
     if (!warehouseId) return;
     
     try {
@@ -103,7 +102,7 @@ export const useStockEntryForm = (id?: string): UseStockEntryFormReturn => {
     }
   };
 
-  const generateTransactionNumber = (): void => {
+  const generateTransactionNumber = () => {
     const prefix = 'OUT';
     const timestamp = Date.now();
     setFormData(prev => ({
@@ -112,34 +111,39 @@ export const useStockEntryForm = (id?: string): UseStockEntryFormReturn => {
     }));
   };
 
-  const fetchStockEntry = async (): Promise<void> => {
+  const fetchStockEntry = async () => {
     // Implementation for editing existing entries
   };
 
-  const updateFormData = (updates: Partial<FormData>): void => {
+  const updateFormData = (updates: Partial<FormData>) => {
     setFormData(prev => ({ ...prev, ...updates }));
     if (updates.warehouse_id) {
       fetchStorageBins(updates.warehouse_id);
     }
   };
 
-  const updateDetails = (newDetails: StockDetail[]): void => {
+  const updateDetails = (newDetails: StockDetail[]) => {
     setDetails(newDetails);
   };
 
-  const addNewItem = (): void => {
-    // Use the factory function to avoid deep inference
-    const newItem = createEmptyStockDetail();
+  const addNewItem = () => {
+    const newItem: StockDetail = {
+      quantity: 0,
+      unit_cost: 0,
+      total_cost: 0,
+      previous_stock: 0,
+      new_stock: 0
+    };
     setDetails(prev => [...prev, newItem]);
   };
 
-  const removeItem = (index: number): void => {
+  const removeItem = (index: number) => {
     if (details.length > 1) {
       setDetails(prev => prev.filter((_, i) => i !== index));
     }
   };
 
-  const generatePickList = async (): Promise<void> => {
+  const generatePickList = async () => {
     if (!formData.warehouse_id) {
       toast.error('Please select a warehouse first');
       return;
@@ -147,7 +151,7 @@ export const useStockEntryForm = (id?: string): UseStockEntryFormReturn => {
     toast.success('Pick list generation feature coming soon');
   };
 
-  const handleSave = async (): Promise<void> => {
+  const handleSave = async () => {
     if (!formData.warehouse_id) {
       toast.error('Please select a warehouse');
       return;

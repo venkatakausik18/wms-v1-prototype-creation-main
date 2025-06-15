@@ -4019,6 +4019,138 @@ export type Database = {
         }
         Relationships: []
       }
+      stock_transfers: {
+        Row: {
+          actual_cost: number | null
+          actual_delivery_date: string | null
+          approval_remarks: string | null
+          approval_status: Database["public"]["Enums"]["approval_status"]
+          approved_at: string | null
+          approved_by: number | null
+          carrier_name: string | null
+          company_id: number
+          created_at: string
+          created_by: number
+          current_location: string | null
+          estimated_cost: number | null
+          expected_delivery_date: string | null
+          from_warehouse_id: number
+          internal_notes: string | null
+          is_template: boolean | null
+          priority_level: string
+          requires_approval: boolean
+          shipping_documents: Json | null
+          special_instructions: string | null
+          temperature_monitored: boolean | null
+          temperature_range_max: number | null
+          temperature_range_min: number | null
+          template_id: number | null
+          template_name: string | null
+          to_warehouse_id: number
+          total_items: number | null
+          total_quantity: number | null
+          total_value: number | null
+          tracking_number: string | null
+          transfer_date: string
+          transfer_id: number
+          transfer_number: string
+          transfer_status: Database["public"]["Enums"]["transfer_status"]
+          transfer_time: string
+          transfer_type: string
+          transport_method:
+            | Database["public"]["Enums"]["transport_method"]
+            | null
+          updated_at: string
+          updated_by: number | null
+        }
+        Insert: {
+          actual_cost?: number | null
+          actual_delivery_date?: string | null
+          approval_remarks?: string | null
+          approval_status?: Database["public"]["Enums"]["approval_status"]
+          approved_at?: string | null
+          approved_by?: number | null
+          carrier_name?: string | null
+          company_id: number
+          created_at?: string
+          created_by: number
+          current_location?: string | null
+          estimated_cost?: number | null
+          expected_delivery_date?: string | null
+          from_warehouse_id: number
+          internal_notes?: string | null
+          is_template?: boolean | null
+          priority_level?: string
+          requires_approval?: boolean
+          shipping_documents?: Json | null
+          special_instructions?: string | null
+          temperature_monitored?: boolean | null
+          temperature_range_max?: number | null
+          temperature_range_min?: number | null
+          template_id?: number | null
+          template_name?: string | null
+          to_warehouse_id: number
+          total_items?: number | null
+          total_quantity?: number | null
+          total_value?: number | null
+          tracking_number?: string | null
+          transfer_date: string
+          transfer_id?: number
+          transfer_number: string
+          transfer_status?: Database["public"]["Enums"]["transfer_status"]
+          transfer_time: string
+          transfer_type?: string
+          transport_method?:
+            | Database["public"]["Enums"]["transport_method"]
+            | null
+          updated_at?: string
+          updated_by?: number | null
+        }
+        Update: {
+          actual_cost?: number | null
+          actual_delivery_date?: string | null
+          approval_remarks?: string | null
+          approval_status?: Database["public"]["Enums"]["approval_status"]
+          approved_at?: string | null
+          approved_by?: number | null
+          carrier_name?: string | null
+          company_id?: number
+          created_at?: string
+          created_by?: number
+          current_location?: string | null
+          estimated_cost?: number | null
+          expected_delivery_date?: string | null
+          from_warehouse_id?: number
+          internal_notes?: string | null
+          is_template?: boolean | null
+          priority_level?: string
+          requires_approval?: boolean
+          shipping_documents?: Json | null
+          special_instructions?: string | null
+          temperature_monitored?: boolean | null
+          temperature_range_max?: number | null
+          temperature_range_min?: number | null
+          template_id?: number | null
+          template_name?: string | null
+          to_warehouse_id?: number
+          total_items?: number | null
+          total_quantity?: number | null
+          total_value?: number | null
+          tracking_number?: string | null
+          transfer_date?: string
+          transfer_id?: number
+          transfer_number?: string
+          transfer_status?: Database["public"]["Enums"]["transfer_status"]
+          transfer_time?: string
+          transfer_type?: string
+          transport_method?:
+            | Database["public"]["Enums"]["transport_method"]
+            | null
+          updated_at?: string
+          updated_by?: number | null
+        }
+        Relationships: []
+      }
       storage_bins: {
         Row: {
           bin_code: string
@@ -4166,6 +4298,261 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "companies"
             referencedColumns: ["company_id"]
+          },
+        ]
+      }
+      transfer_approvals: {
+        Row: {
+          approval_id: number
+          approval_level: string
+          approval_step: number
+          approved_at: string | null
+          approver_id: number
+          comments: string | null
+          created_at: string
+          max_value_threshold: number | null
+          min_value_threshold: number | null
+          rejection_reason: string | null
+          status: Database["public"]["Enums"]["approval_status"]
+          transfer_id: number
+        }
+        Insert: {
+          approval_id?: number
+          approval_level: string
+          approval_step: number
+          approved_at?: string | null
+          approver_id: number
+          comments?: string | null
+          created_at?: string
+          max_value_threshold?: number | null
+          min_value_threshold?: number | null
+          rejection_reason?: string | null
+          status?: Database["public"]["Enums"]["approval_status"]
+          transfer_id: number
+        }
+        Update: {
+          approval_id?: number
+          approval_level?: string
+          approval_step?: number
+          approved_at?: string | null
+          approver_id?: number
+          comments?: string | null
+          created_at?: string
+          max_value_threshold?: number | null
+          min_value_threshold?: number | null
+          rejection_reason?: string | null
+          status?: Database["public"]["Enums"]["approval_status"]
+          transfer_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transfer_approvals_transfer_id_fkey"
+            columns: ["transfer_id"]
+            isOneToOne: false
+            referencedRelation: "stock_transfers"
+            referencedColumns: ["transfer_id"]
+          },
+        ]
+      }
+      transfer_details: {
+        Row: {
+          batch_numbers: string[] | null
+          created_at: string
+          detail_id: number
+          expiry_dates: string[] | null
+          fragile: boolean | null
+          from_bin_id: number | null
+          hazardous: boolean | null
+          line_status: string
+          product_id: number
+          quality_status: string | null
+          received_quantity: number | null
+          requested_quantity: number
+          serial_numbers: string[] | null
+          shipped_quantity: number | null
+          special_handling_notes: string | null
+          temperature_sensitive: boolean | null
+          to_bin_id: number | null
+          total_cost: number | null
+          transfer_id: number
+          unit_cost: number | null
+          uom_id: number
+          updated_at: string
+          variant_id: number | null
+        }
+        Insert: {
+          batch_numbers?: string[] | null
+          created_at?: string
+          detail_id?: number
+          expiry_dates?: string[] | null
+          fragile?: boolean | null
+          from_bin_id?: number | null
+          hazardous?: boolean | null
+          line_status?: string
+          product_id: number
+          quality_status?: string | null
+          received_quantity?: number | null
+          requested_quantity: number
+          serial_numbers?: string[] | null
+          shipped_quantity?: number | null
+          special_handling_notes?: string | null
+          temperature_sensitive?: boolean | null
+          to_bin_id?: number | null
+          total_cost?: number | null
+          transfer_id: number
+          unit_cost?: number | null
+          uom_id: number
+          updated_at?: string
+          variant_id?: number | null
+        }
+        Update: {
+          batch_numbers?: string[] | null
+          created_at?: string
+          detail_id?: number
+          expiry_dates?: string[] | null
+          fragile?: boolean | null
+          from_bin_id?: number | null
+          hazardous?: boolean | null
+          line_status?: string
+          product_id?: number
+          quality_status?: string | null
+          received_quantity?: number | null
+          requested_quantity?: number
+          serial_numbers?: string[] | null
+          shipped_quantity?: number | null
+          special_handling_notes?: string | null
+          temperature_sensitive?: boolean | null
+          to_bin_id?: number | null
+          total_cost?: number | null
+          transfer_id?: number
+          unit_cost?: number | null
+          uom_id?: number
+          updated_at?: string
+          variant_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transfer_details_transfer_id_fkey"
+            columns: ["transfer_id"]
+            isOneToOne: false
+            referencedRelation: "stock_transfers"
+            referencedColumns: ["transfer_id"]
+          },
+        ]
+      }
+      transfer_templates: {
+        Row: {
+          company_id: number
+          created_at: string
+          created_by: number
+          default_products: Json | null
+          description: string | null
+          from_warehouse_id: number | null
+          is_active: boolean | null
+          priority_level: string | null
+          requires_approval: boolean | null
+          template_code: string
+          template_id: number
+          template_name: string
+          to_warehouse_id: number | null
+          transport_method:
+            | Database["public"]["Enums"]["transport_method"]
+            | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: number
+          created_at?: string
+          created_by: number
+          default_products?: Json | null
+          description?: string | null
+          from_warehouse_id?: number | null
+          is_active?: boolean | null
+          priority_level?: string | null
+          requires_approval?: boolean | null
+          template_code: string
+          template_id?: number
+          template_name: string
+          to_warehouse_id?: number | null
+          transport_method?:
+            | Database["public"]["Enums"]["transport_method"]
+            | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: number
+          created_at?: string
+          created_by?: number
+          default_products?: Json | null
+          description?: string | null
+          from_warehouse_id?: number | null
+          is_active?: boolean | null
+          priority_level?: string | null
+          requires_approval?: boolean | null
+          template_code?: string
+          template_id?: number
+          template_name?: string
+          to_warehouse_id?: number | null
+          transport_method?:
+            | Database["public"]["Enums"]["transport_method"]
+            | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      transfer_tracking: {
+        Row: {
+          created_at: string
+          event_time: string
+          humidity: number | null
+          latitude: number | null
+          location_name: string | null
+          longitude: number | null
+          notes: string | null
+          photos: Json | null
+          recorded_by: number | null
+          status: string
+          temperature: number | null
+          tracking_id: number
+          transfer_id: number
+        }
+        Insert: {
+          created_at?: string
+          event_time?: string
+          humidity?: number | null
+          latitude?: number | null
+          location_name?: string | null
+          longitude?: number | null
+          notes?: string | null
+          photos?: Json | null
+          recorded_by?: number | null
+          status: string
+          temperature?: number | null
+          tracking_id?: number
+          transfer_id: number
+        }
+        Update: {
+          created_at?: string
+          event_time?: string
+          humidity?: number | null
+          latitude?: number | null
+          location_name?: string | null
+          longitude?: number | null
+          notes?: string | null
+          photos?: Json | null
+          recorded_by?: number | null
+          status?: string
+          temperature?: number | null
+          tracking_id?: number
+          transfer_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transfer_tracking_transfer_id_fkey"
+            columns: ["transfer_id"]
+            isOneToOne: false
+            referencedRelation: "stock_transfers"
+            referencedColumns: ["transfer_id"]
           },
         ]
       }
@@ -5036,6 +5423,21 @@ export type Database = {
         | "json"
         | "date"
         | "time"
+      transfer_status:
+        | "draft"
+        | "pending_approval"
+        | "approved"
+        | "in_transit"
+        | "partially_received"
+        | "completed"
+        | "cancelled"
+      transport_method:
+        | "internal"
+        | "courier"
+        | "truck"
+        | "rail"
+        | "air"
+        | "sea"
       txn_type:
         | "purchase_in"
         | "purchase_return_in"
@@ -5227,6 +5629,16 @@ export const Constants = {
         "date",
         "time",
       ],
+      transfer_status: [
+        "draft",
+        "pending_approval",
+        "approved",
+        "in_transit",
+        "partially_received",
+        "completed",
+        "cancelled",
+      ],
+      transport_method: ["internal", "courier", "truck", "rail", "air", "sea"],
       txn_type: [
         "purchase_in",
         "purchase_return_in",

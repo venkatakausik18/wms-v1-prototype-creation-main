@@ -105,8 +105,8 @@ const StockEntry = () => {
     },
   });
 
-  // Fetch storage bins - simplified to avoid type issues
-  const { data: bins = [] } = useQuery<StorageBin[]>({
+  // Fetch storage bins - remove generic type to avoid deep instantiation
+  const { data: binsData } = useQuery({
     queryKey: ['storage-bins', formData.warehouse_id],
     queryFn: async () => {
       if (!formData.warehouse_id) return [];
@@ -120,10 +120,13 @@ const StockEntry = () => {
         .order('bin_code');
       
       if (error) throw error;
-      return (data || []) as StorageBin[];
+      return data;
     },
     enabled: Boolean(formData.warehouse_id),
   });
+
+  // Type the bins data after query
+  const bins: StorageBin[] = (binsData as StorageBin[]) || [];
 
   const addDetailRow = () => {
     const newRow: StockEntryDetail = {

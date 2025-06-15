@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -66,24 +65,17 @@ export const useStockTransferForm = (id?: string): UseStockTransferFormReturn =>
 
   const fetchWarehouses = async (): Promise<void> => {
     try {
-      // Use basic query without complex type inference
       const response = await supabase
         .from('warehouses')
         .select('warehouse_id, warehouse_code, warehouse_name')
         .eq('is_active', true)
-        .order('warehouse_name');
+        .order('warehouse_name') as {
+          data: LocalWarehouseData[] | null;
+          error: any;
+        };
 
       if (response.error) throw response.error;
-      
-      // Safely map the data to our local type
-      const warehouseData = response.data || [];
-      const localWarehouses: LocalWarehouseData[] = warehouseData.map((w: any) => ({
-        warehouse_id: w.warehouse_id,
-        warehouse_code: w.warehouse_code || '',
-        warehouse_name: w.warehouse_name
-      }));
-      
-      setWarehouses(localWarehouses);
+      setWarehouses(response.data ?? []);
     } catch (error) {
       console.error('Error fetching warehouses:', error);
       toast.error('Failed to fetch warehouses');
@@ -93,24 +85,18 @@ export const useStockTransferForm = (id?: string): UseStockTransferFormReturn =>
   const fetchStorageBins = async (warehouseId: string): Promise<void> => {
     if (!warehouseId) return;
     try {
-      // Use basic query without complex type inference
       const response = await supabase
         .from('storage_bins')
         .select('bin_id, bin_code')
         .eq('warehouse_id', parseInt(warehouseId))
         .eq('is_active', true)
-        .order('bin_code');
+        .order('bin_code') as {
+          data: LocalStorageBinData[] | null;
+          error: any;
+        };
 
       if (response.error) throw response.error;
-      
-      // Safely map the data to our local type
-      const binData = response.data || [];
-      const localBins: LocalStorageBinData[] = binData.map((b: any) => ({
-        bin_id: b.bin_id,
-        bin_code: b.bin_code
-      }));
-      
-      setStorageBins(localBins);
+      setStorageBins(response.data ?? []);
     } catch (error) {
       console.error('Error fetching storage bins:', error);
     }

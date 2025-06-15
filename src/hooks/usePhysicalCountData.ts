@@ -4,9 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Warehouse, Product, StorageBin } from "@/types/physicalCount";
 
 export const usePhysicalCountData = (warehouseId: string) => {
-  const warehouses = useQuery<Warehouse[]>({
+  const warehouses = useQuery({
     queryKey: ['warehouses'],
-    queryFn: async () => {
+    queryFn: async (): Promise<Warehouse[]> => {
       const { data, error } = await supabase
         .from('warehouses')
         .select('warehouse_id, warehouse_name')
@@ -18,9 +18,9 @@ export const usePhysicalCountData = (warehouseId: string) => {
     },
   });
 
-  const products = useQuery<Product[]>({
+  const products = useQuery({
     queryKey: ['products-for-count'],
-    queryFn: async () => {
+    queryFn: async (): Promise<Product[]> => {
       const { data, error } = await supabase
         .from('products')
         .select('product_id, product_name, product_code')
@@ -32,9 +32,9 @@ export const usePhysicalCountData = (warehouseId: string) => {
     },
   });
 
-  const bins = useQuery<StorageBin[]>({
+  const bins = useQuery({
     queryKey: ['storage-bins', warehouseId],
-    queryFn: async () => {
+    queryFn: async (): Promise<StorageBin[]> => {
       if (!warehouseId) return [];
       
       const { data, error } = await supabase

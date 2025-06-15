@@ -1,18 +1,66 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import type { TransferFormData, TransferDetail } from "../types";
+// Don't import TransferFormData and TransferDetail here to avoid recursion/type explosion
+// import type { TransferFormData, TransferDetail } from "../types";
 import type { WarehouseData, StorageBinData } from "../../types";
+
+// Light local type definitions to avoid deep TypeScript recursion
+interface LocalTransferFormData {
+  transfer_number: string;
+  transfer_date: string;
+  transfer_time: string;
+  from_warehouse_id: string;
+  to_warehouse_id: string;
+  priority_level: string;
+  transfer_type: string;
+  transport_method: string;
+  carrier_name: string;
+  tracking_number: string;
+  expected_delivery_date: string;
+  temperature_monitored: boolean;
+  temperature_range_min: string;
+  temperature_range_max: string;
+  special_instructions: string;
+  internal_notes: string;
+}
+
+interface LocalTransferDetail {
+  detail_id?: number;
+  transfer_id?: number;
+  product_id?: number;
+  variant_id?: number;
+  requested_quantity: number;
+  shipped_quantity: number;
+  received_quantity: number;
+  uom_id?: number;
+  unit_cost: number;
+  total_cost: number;
+  from_bin_id?: number;
+  to_bin_id?: number;
+  serial_numbers?: string[];
+  batch_numbers?: string[];
+  expiry_dates?: string[];
+  line_status: string;
+  quality_status: string;
+  temperature_sensitive: boolean;
+  fragile: boolean;
+  hazardous: boolean;
+  special_handling_notes?: string;
+  created_at?: string;
+  updated_at?: string;
+}
 
 interface UseStockTransferFormReturn {
   loading: boolean;
   warehouses: WarehouseData[];
   storageBins: StorageBinData[];
-  formData: TransferFormData;
-  details: TransferDetail[];
-  updateFormData: (updates: Partial<TransferFormData>) => void;
-  updateDetails: (newDetails: TransferDetail[]) => void;
+  formData: LocalTransferFormData;
+  details: LocalTransferDetail[];
+  updateFormData: (updates: Partial<LocalTransferFormData>) => void;
+  updateDetails: (newDetails: LocalTransferDetail[]) => void;
   addNewItem: () => void;
   removeItem: (index: number) => void;
   handleSave: () => Promise<void>;
@@ -27,7 +75,7 @@ export const useStockTransferForm = (id?: string): UseStockTransferFormReturn =>
   const [warehouses, setWarehouses] = useState<WarehouseData[]>([]);
   const [storageBins, setStorageBins] = useState<StorageBinData[]>([]);
 
-  const [formData, setFormData] = useState<TransferFormData>({
+  const [formData, setFormData] = useState<LocalTransferFormData>({
     transfer_number: '',
     transfer_date: new Date().toISOString().split('T')[0],
     transfer_time: new Date().toTimeString().slice(0, 5),
@@ -46,7 +94,7 @@ export const useStockTransferForm = (id?: string): UseStockTransferFormReturn =>
     internal_notes: '',
   });
 
-  const [details, setDetails] = useState<TransferDetail[]>([]);
+  const [details, setDetails] = useState<LocalTransferDetail[]>([]);
 
   useEffect(() => {
     fetchWarehouses();
@@ -105,23 +153,23 @@ export const useStockTransferForm = (id?: string): UseStockTransferFormReturn =>
     // Implementation for editing existing transfers
   };
 
-  const updateFormData = (updates: Partial<TransferFormData>) => {
+  const updateFormData = (updates: Partial<LocalTransferFormData>) => {
     setFormData(prev => ({
       ...prev,
       ...updates,
     }));
-    
+
     if (updates.from_warehouse_id || updates.to_warehouse_id) {
       fetchStorageBins(updates.from_warehouse_id || formData.from_warehouse_id);
     }
   };
 
-  const updateDetails = (newDetails: TransferDetail[]) => {
+  const updateDetails = (newDetails: LocalTransferDetail[]) => {
     setDetails(newDetails);
   };
 
   const addNewItem = () => {
-    const newItem: TransferDetail = {
+    const newItem: LocalTransferDetail = {
       requested_quantity: 0,
       shipped_quantity: 0,
       received_quantity: 0,

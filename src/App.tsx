@@ -1,3 +1,4 @@
+
 import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,16 +13,11 @@ const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
-const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Product Management
 const ProductList = lazy(() => import("./pages/ProductList"));
 const ProductEdit = lazy(() => import("./pages/ProductEdit"));
-
-// UOM Management
-const UomList = lazy(() => import("./pages/UomList"));
-const UomEdit = lazy(() => import("./pages/UomEdit"));
 
 // Category Management
 const CategoryList = lazy(() => import("./pages/CategoryList"));
@@ -30,10 +26,6 @@ const CategoryEdit = lazy(() => import("./pages/CategoryEdit"));
 // Warehouse Management
 const WarehouseList = lazy(() => import("./pages/WarehouseList"));
 const WarehouseEdit = lazy(() => import("./pages/WarehouseEdit"));
-
-// Storage Bin Management
-const StorageBinList = lazy(() => import("./pages/StorageBinList"));
-const StorageBinEdit = lazy(() => import("./pages/StorageBinEdit"));
 
 // Stock Entry Management
 const StockEntryList = lazy(() => import("./pages/StockEntryList"));
@@ -66,14 +58,6 @@ function App() {
                 </ProtectedRoute>
               } />
 
-              <Route path="/profile" element={
-                <ProtectedRoute>
-                  <Layout>
-                    <ProfilePage />
-                  </Layout>
-                </ProtectedRoute>
-              } />
-
               {/* Product Routes */}
               <Route path="/products" element={
                 <ProtectedRoute>
@@ -93,29 +77,6 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <ProductEdit />
-                  </Layout>
-                </ProtectedRoute>
-              } />
-
-              {/* UOM Routes */}
-              <Route path="/uoms" element={
-                <ProtectedRoute>
-                  <Layout>
-                    <UomList />
-                  </Layout>
-                </ProtectedRoute>
-              } />
-              <Route path="/uoms/new" element={
-                <ProtectedRoute>
-                  <Layout>
-                    <UomEdit />
-                  </Layout>
-                </ProtectedRoute>
-              } />
-              <Route path="/uoms/edit/:id" element={
-                <ProtectedRoute>
-                  <Layout>
-                    <UomEdit />
                   </Layout>
                 </ProtectedRoute>
               } />
@@ -162,29 +123,6 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <WarehouseEdit />
-                  </Layout>
-                </ProtectedRoute>
-              } />
-
-              {/* Storage Bin Routes */}
-              <Route path="/storage-bins" element={
-                <ProtectedRoute>
-                  <Layout>
-                    <StorageBinList />
-                  </Layout>
-                </ProtectedRoute>
-              } />
-              <Route path="/storage-bins/new" element={
-                <ProtectedRoute>
-                  <Layout>
-                    <StorageBinEdit />
-                  </Layout>
-                </ProtectedRoute>
-              } />
-              <Route path="/storage-bins/edit/:id" element={
-                <ProtectedRoute>
-                  <Layout>
-                    <StorageBinEdit />
                   </Layout>
                 </ProtectedRoute>
               } />

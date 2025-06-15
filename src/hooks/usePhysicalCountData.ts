@@ -23,7 +23,7 @@ export const usePhysicalCountData = (warehouseId: string): UsePhysicalCountDataR
         .order('warehouse_name');
       
       if (error) throw error;
-      return data;
+      return data as Warehouse[];
     },
   });
 
@@ -37,14 +37,14 @@ export const usePhysicalCountData = (warehouseId: string): UsePhysicalCountDataR
         .order('product_name');
       
       if (error) throw error;
-      return data;
+      return data as Product[];
     },
   });
 
   const binsQuery = useQuery({
     queryKey: ['storage-bins', warehouseId],
     queryFn: async () => {
-      if (!warehouseId) return [];
+      if (!warehouseId) return [] as StorageBin[];
       
       const { data, error } = await supabase
         .from('storage_bins')
@@ -54,7 +54,7 @@ export const usePhysicalCountData = (warehouseId: string): UsePhysicalCountDataR
         .order('bin_code');
       
       if (error) throw error;
-      return data;
+      return data as StorageBin[];
     },
     enabled: !!warehouseId,
   });

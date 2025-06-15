@@ -1,30 +1,14 @@
-
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-
-interface FormData {
-  txn_number: string;
-  txn_type: 'sale_out' | 'transfer_out' | 'adjustment_out';
-  txn_date: string;
-  txn_time: string;
-  warehouse_id: string;
-  reference_document: string;
-  remarks: string;
-}
-
-interface Warehouse {
-  warehouse_id: number;
-  warehouse_code: string;
-  warehouse_name: string;
-}
+import type { FormData, WarehouseData } from "./types";
 
 interface StockEntryHeaderProps {
   formData: FormData;
-  warehouses: Warehouse[];
+  warehouses: WarehouseData[];
   onFormDataChange: (updates: Partial<FormData>) => void;
 }
 

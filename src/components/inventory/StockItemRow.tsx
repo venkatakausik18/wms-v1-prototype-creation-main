@@ -7,44 +7,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Trash2 } from "lucide-react";
 import ProductSelector from "./ProductSelector";
 import { formatCurrency, formatNumber } from "@/utils/currency";
-
-interface StockDetail {
-  product_id?: number;
-  variant_id?: number;
-  quantity: number;
-  unit_cost: number;
-  total_cost: number;
-  uom_id?: number;
-  bin_id?: number;
-  previous_stock: number;
-  new_stock: number;
-  product?: {
-    product_id: number;
-    product_code: string;
-    product_name: string;
-    base_uom_id: number;
-  };
-  uom?: {
-    uom_id: number;
-    uom_name: string;
-  };
-}
-
-interface ProductVariant {
-  variant_id: number;
-  variant_code: string;
-  variant_name: string;
-}
-
-interface StorageBin {
-  bin_id: number;
-  bin_code: string;
-}
+import type { StockDetail, StorageBinData, ProductVariant } from "./types";
 
 interface StockItemRowProps {
   detail: StockDetail;
   index: number;
-  storageBins: StorageBin[];
+  storageBins: StorageBinData[];
   warehouseId: string;
   onUpdate: (updates: Partial<StockDetail>) => void;
   onRemove: () => void;

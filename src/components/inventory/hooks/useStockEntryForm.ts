@@ -3,72 +3,16 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import type {
+  FormData,
+  StockDetail,
+  WarehouseData,
+  StorageBinData,
+  StockEntryFormState,
+  StockEntryFormActions
+} from "../types";
 
-// Explicit type definitions
-interface FormData {
-  txn_number: string;
-  txn_type: 'sale_out' | 'transfer_out' | 'adjustment_out';
-  txn_date: string;
-  txn_time: string;
-  warehouse_id: string;
-  reference_document: string;
-  remarks: string;
-}
-
-interface StockDetail {
-  product_id?: number;
-  variant_id?: number;
-  quantity: number;
-  unit_cost: number;
-  total_cost: number;
-  uom_id?: number;
-  bin_id?: number;
-  previous_stock: number;
-  new_stock: number;
-  product?: {
-    product_id: number;
-    product_code: string;
-    product_name: string;
-    base_uom_id: number;
-  };
-  uom?: {
-    uom_id: number;
-    uom_name: string;
-  };
-}
-
-// Simplified data types with explicit annotations
-type WarehouseData = {
-  warehouse_id: number;
-  warehouse_code: string;
-  warehouse_name: string;
-};
-
-type StorageBinData = {
-  bin_id: number;
-  bin_code: string;
-};
-
-// Hook state types
-interface HookState {
-  loading: boolean;
-  warehouses: WarehouseData[];
-  storageBins: StorageBinData[];
-  formData: FormData;
-  details: StockDetail[];
-}
-
-// Hook actions types
-interface HookActions {
-  updateFormData: (updates: Partial<FormData>) => void;
-  updateDetails: (newDetails: StockDetail[]) => void;
-  addNewItem: () => void;
-  removeItem: (index: number) => void;
-  handleSave: () => Promise<void>;
-  generatePickList: () => Promise<void>;
-}
-
-export const useStockEntryForm = (id?: string): HookState & HookActions => {
+export const useStockEntryForm = (id?: string) => {
   const navigate = useNavigate();
   
   // State with explicit types
@@ -114,8 +58,8 @@ export const useStockEntryForm = (id?: string): HookState & HookActions => {
       if (error) throw error;
       
       // Cast to our domain type immediately
-      const warehouseData = (data || []) as WarehouseData[];
-      setWarehouses(warehouseData);
+      const warehouseData = data as WarehouseData[];
+      setWarehouses(warehouseData || []);
     } catch (error) {
       console.error('Error fetching warehouses:', error);
       toast.error('Failed to fetch warehouses');
@@ -136,8 +80,8 @@ export const useStockEntryForm = (id?: string): HookState & HookActions => {
       if (error) throw error;
       
       // Cast to our domain type immediately
-      const binData = (data || []) as StorageBinData[];
-      setStorageBins(binData);
+      const binData = data as StorageBinData[];
+      setStorageBins(binData || []);
     } catch (error) {
       console.error('Error fetching storage bins:', error);
     }
@@ -262,14 +206,16 @@ export const useStockEntryForm = (id?: string): HookState & HookActions => {
     }
   };
 
-  return {
-    // State
+  // Return as separate objects instead of using spread operator
+  const state: StockEntryFormState = {
     loading,
     warehouses,
     storageBins,
     formData,
-    details,
-    // Actions
+    details
+  };
+
+  const actions: StockEntryFormActions = {
     updateFormData,
     updateDetails,
     addNewItem,
@@ -277,4 +223,6 @@ export const useStockEntryForm = (id?: string): HookState & HookActions => {
     handleSave,
     generatePickList
   };
+
+  return { state, actions };
 };

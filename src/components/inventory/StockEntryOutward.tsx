@@ -11,21 +11,8 @@ import { useStockEntryForm } from "./hooks/useStockEntryForm";
 const StockEntryOutward = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("entry");
 
-  const {
-    formData,
-    details,
-    loading,
-    warehouses,
-    storageBins,
-    updateFormData,
-    updateDetails,
-    addNewItem,
-    removeItem,
-    handleSave,
-    generatePickList
-  } = useStockEntryForm(id);
+  const { state, actions } = useStockEntryForm(id);
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -43,25 +30,25 @@ const StockEntryOutward = () => {
       </div>
 
       <StockEntryHeader
-        formData={formData}
-        warehouses={warehouses}
-        onFormDataChange={updateFormData}
+        formData={state.formData}
+        warehouses={state.warehouses}
+        onFormDataChange={actions.updateFormData}
       />
 
       <StockItemsSection
-        details={details}
-        storageBins={storageBins}
-        onDetailsChange={updateDetails}
-        onAddItem={addNewItem}
-        onRemoveItem={removeItem}
-        onGeneratePickList={generatePickList}
-        warehouseId={formData.warehouse_id}
+        details={state.details}
+        storageBins={state.storageBins}
+        onDetailsChange={actions.updateDetails}
+        onAddItem={actions.addNewItem}
+        onRemoveItem={actions.removeItem}
+        onGeneratePickList={actions.generatePickList}
+        warehouseId={state.formData.warehouse_id}
       />
 
       <StockSummarySection
-        details={details}
-        onSave={handleSave}
-        loading={loading}
+        details={state.details}
+        onSave={actions.handleSave}
+        loading={state.loading}
       />
     </div>
   );

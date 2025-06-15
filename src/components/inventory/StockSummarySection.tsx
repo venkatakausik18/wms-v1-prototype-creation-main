@@ -4,12 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { formatCurrency, formatNumber } from "@/utils/currency";
-
-interface StockDetail {
-  product_id?: number;
-  quantity: number;
-  total_cost: number;
-}
+import type { StockDetail } from "./types";
 
 interface StockSummarySectionProps {
   details: StockDetail[];

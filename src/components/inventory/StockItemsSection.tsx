@@ -4,37 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, List } from "lucide-react";
 import { StockItemRow } from "./StockItemRow";
-
-interface StockDetail {
-  product_id?: number;
-  variant_id?: number;
-  quantity: number;
-  unit_cost: number;
-  total_cost: number;
-  uom_id?: number;
-  bin_id?: number;
-  previous_stock: number;
-  new_stock: number;
-  product?: {
-    product_id: number;
-    product_code: string;
-    product_name: string;
-    base_uom_id: number;
-  };
-  uom?: {
-    uom_id: number;
-    uom_name: string;
-  };
-}
-
-interface StorageBin {
-  bin_id: number;
-  bin_code: string;
-}
+import type { StockDetail, StorageBinData } from "./types";
 
 interface StockItemsSectionProps {
   details: StockDetail[];
-  storageBins: StorageBin[];
+  storageBins: StorageBinData[];
   onDetailsChange: (newDetails: StockDetail[]) => void;
   onAddItem: () => void;
   onRemoveItem: (index: number) => void;

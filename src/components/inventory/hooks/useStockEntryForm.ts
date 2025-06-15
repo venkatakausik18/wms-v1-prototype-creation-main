@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -6,7 +7,9 @@ import type {
   FormData,
   StockDetail,
   WarehouseData,
-  StorageBinData
+  StorageBinData,
+  ProductData,
+  UomData
 } from "../types";
 
 // Simple return type without complex intersections
@@ -58,16 +61,14 @@ export const useStockEntryForm = (id?: string): UseStockEntryFormReturn => {
 
   const fetchWarehouses = async (): Promise<void> => {
     try {
-      // Explicit generic type to prevent deep inference
       const { data, error } = await supabase
         .from('warehouses')
-        .select<'warehouse_id, warehouse_code, warehouse_name', WarehouseData>('warehouse_id, warehouse_code, warehouse_name')
+        .select('warehouse_id, warehouse_code, warehouse_name')
         .eq('is_active', true)
         .order('warehouse_name');
 
       if (error) throw error;
       
-      // Immediate cast to domain type
       const warehouseData = (data || []) as WarehouseData[];
       setWarehouses(warehouseData);
     } catch (error) {
@@ -80,17 +81,15 @@ export const useStockEntryForm = (id?: string): UseStockEntryFormReturn => {
     if (!warehouseId) return;
     
     try {
-      // Explicit generic type to prevent deep inference
       const { data, error } = await supabase
         .from('storage_bins')
-        .select<'bin_id, bin_code', StorageBinData>('bin_id, bin_code')
+        .select('bin_id, bin_code')
         .eq('warehouse_id', parseInt(warehouseId))
         .eq('is_active', true)
         .order('bin_code');
 
       if (error) throw error;
       
-      // Immediate cast to domain type
       const binData = (data || []) as StorageBinData[];
       setStorageBins(binData);
     } catch (error) {
@@ -161,7 +160,6 @@ export const useStockEntryForm = (id?: string): UseStockEntryFormReturn => {
     setLoading(true);
 
     try {
-      // Explicit transaction data type
       const transactionData = {
         company_id: 1,
         warehouse_id: parseInt(formData.warehouse_id),
@@ -185,7 +183,6 @@ export const useStockEntryForm = (id?: string): UseStockEntryFormReturn => {
 
       if (txnError) throw txnError;
 
-      // Explicit transaction details mapping
       const transactionDetails = details
         .filter(d => d.product_id && d.quantity > 0)
         .map(d => ({
@@ -218,7 +215,6 @@ export const useStockEntryForm = (id?: string): UseStockEntryFormReturn => {
     }
   };
 
-  // Explicit return object instead of spread operators
   return {
     loading,
     warehouses,

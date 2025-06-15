@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Trash2 } from "lucide-react";
 import ProductSelector from "./ProductSelector";
 import { formatCurrency, formatNumber } from "@/utils/currency";
-import type { StockDetail, StorageBinData, ProductVariant } from "./types";
+import type { StockDetail, StorageBinData, ProductVariant, ProductData, UomData } from "./types";
 
 interface StockItemRowProps {
   detail: StockDetail;
@@ -28,19 +28,27 @@ export const StockItemRow: React.FC<StockItemRowProps> = ({
   onRemove,
   canRemove
 }) => {
+  // Store product and UOM data separately for display
+  const [productData, setProductData] = React.useState<ProductData | undefined>();
+  const [uomData, setUomData] = React.useState<UomData | undefined>();
+
   const handleProductSelect = (product: any, variant?: ProductVariant) => {
     const updates: Partial<StockDetail> = {
       product_id: product.product_id,
       variant_id: variant?.variant_id,
-      product: {
-        product_id: product.product_id,
-        product_code: product.product_code,
-        product_name: product.product_name,
-        base_uom_id: product.base_uom_id || product.uom?.uom_id || 1
-      },
-      uom_id: product.base_uom_id || product.uom?.uom_id,
-      uom: product.uom
+      uom_id: product.base_uom_id || product.uom?.uom_id
     };
+    
+    // Store display data separately
+    setProductData({
+      product_id: product.product_id,
+      product_code: product.product_code,
+      product_name: product.product_name,
+      base_uom_id: product.base_uom_id || product.uom?.uom_id || 1
+    });
+    
+    setUomData(product.uom);
+    
     onUpdate(updates);
   };
 
@@ -62,11 +70,11 @@ export const StockItemRow: React.FC<StockItemRowProps> = ({
     });
   };
 
-  const selectedProduct = detail.product ? {
-    product_id: detail.product.product_id,
-    product_code: detail.product.product_code,
-    product_name: detail.product.product_name,
-    base_uom_id: detail.product.base_uom_id
+  const selectedProduct = productData ? {
+    product_id: productData.product_id,
+    product_code: productData.product_code,
+    product_name: productData.product_name,
+    base_uom_id: productData.base_uom_id
   } : undefined;
 
   const selectedVariant = detail.variant_id ? {
@@ -101,7 +109,7 @@ export const StockItemRow: React.FC<StockItemRowProps> = ({
       </div>
       <div className="col-span-1">
         <Label>UOM</Label>
-        <Input value={detail.uom?.uom_name || ''} disabled />
+        <Input value={uomData?.uom_name || ''} disabled />
       </div>
       <div className="col-span-1">
         <Label>Unit Cost</Label>

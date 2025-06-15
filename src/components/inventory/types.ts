@@ -11,16 +11,20 @@ export interface StockDetail {
   bin_id?: number;
   previous_stock: number;
   new_stock: number;
-  product?: {
-    product_id: number;
-    product_code: string;
-    product_name: string;
-    base_uom_id: number;
-  };
-  uom?: {
-    uom_id: number;
-    uom_name: string;
-  };
+  // Removed nested optional objects to avoid deep type instantiation
+}
+
+// Separate interfaces for product and UOM data when needed
+export interface ProductData {
+  product_id: number;
+  product_code: string;
+  product_name: string;
+  base_uom_id: number;
+}
+
+export interface UomData {
+  uom_id: number;
+  uom_name: string;
 }
 
 export interface FormData {

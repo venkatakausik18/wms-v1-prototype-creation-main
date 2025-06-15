@@ -81,10 +81,10 @@ const PhysicalCount = () => {
 
   const [details, setDetails] = useState<CountDetail[]>([]);
 
-  // Fetch warehouses
-  const { data: warehouses } = useQuery({
+  // Fetch warehouses with explicit typing
+  const { data: warehouses } = useQuery<Warehouse[]>({
     queryKey: ['warehouses'],
-    queryFn: async (): Promise<Warehouse[]> => {
+    queryFn: async () => {
       const { data, error } = await supabase
         .from('warehouses')
         .select('warehouse_id, warehouse_name')
@@ -92,14 +92,14 @@ const PhysicalCount = () => {
         .order('warehouse_name');
       
       if (error) throw error;
-      return data || [];
+      return (data || []) as Warehouse[];
     },
   });
 
-  // Fetch products
-  const { data: products } = useQuery({
+  // Fetch products with explicit typing
+  const { data: products } = useQuery<Product[]>({
     queryKey: ['products-for-count'],
-    queryFn: async (): Promise<Product[]> => {
+    queryFn: async () => {
       const { data, error } = await supabase
         .from('products')
         .select('product_id, product_name, product_code')
@@ -107,14 +107,14 @@ const PhysicalCount = () => {
         .order('product_name');
       
       if (error) throw error;
-      return data || [];
+      return (data || []) as Product[];
     },
   });
 
-  // Fetch storage bins with simplified typing
-  const { data: binsData } = useQuery({
+  // Fetch storage bins with explicit typing
+  const { data: bins } = useQuery<StorageBin[]>({
     queryKey: ['storage-bins', setupData.warehouse_id],
-    queryFn: async (): Promise<StorageBin[]> => {
+    queryFn: async () => {
       if (!setupData.warehouse_id) return [];
       
       const { data, error } = await supabase
@@ -129,8 +129,6 @@ const PhysicalCount = () => {
     },
     enabled: !!setupData.warehouse_id,
   });
-
-  const bins: StorageBin[] = binsData || [];
 
   const createCountSetup = useMutation<PhysicalCountRecord, Error, void>({
     mutationFn: async (): Promise<PhysicalCountRecord> => {

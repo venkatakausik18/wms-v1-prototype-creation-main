@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -29,21 +28,22 @@ interface CountDetail {
   adjustment_quantity: number;
 }
 
-interface Warehouse {
+// Simplified type definitions that match the selected fields exactly
+type WarehouseData = {
   warehouse_id: number;
   warehouse_name: string;
-}
+};
 
-interface Product {
+type ProductData = {
   product_id: number;
   product_name: string;
   product_code: string;
-}
+};
 
-interface StorageBin {
+type StorageBinData = {
   bin_id: number;
   bin_code: string;
-}
+};
 
 interface PhysicalCountRecord {
   count_id: number;
@@ -81,8 +81,8 @@ const PhysicalCount = () => {
 
   const [details, setDetails] = useState<CountDetail[]>([]);
 
-  // Fetch warehouses with explicit typing
-  const { data: warehouses } = useQuery<Warehouse[]>({
+  // Fetch warehouses - remove explicit generic and let TypeScript infer
+  const { data: warehouses } = useQuery({
     queryKey: ['warehouses'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -92,12 +92,12 @@ const PhysicalCount = () => {
         .order('warehouse_name');
       
       if (error) throw error;
-      return (data || []) as Warehouse[];
+      return (data || []) as WarehouseData[];
     },
   });
 
-  // Fetch products with explicit typing
-  const { data: products } = useQuery<Product[]>({
+  // Fetch products - remove explicit generic and let TypeScript infer
+  const { data: products } = useQuery({
     queryKey: ['products-for-count'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -107,12 +107,12 @@ const PhysicalCount = () => {
         .order('product_name');
       
       if (error) throw error;
-      return (data || []) as Product[];
+      return (data || []) as ProductData[];
     },
   });
 
-  // Fetch storage bins with explicit typing
-  const { data: bins } = useQuery<StorageBin[]>({
+  // Fetch storage bins - remove explicit generic and let TypeScript infer
+  const { data: bins } = useQuery({
     queryKey: ['storage-bins', setupData.warehouse_id],
     queryFn: async () => {
       if (!setupData.warehouse_id) return [];
@@ -125,7 +125,7 @@ const PhysicalCount = () => {
         .order('bin_code');
       
       if (error) throw error;
-      return (data || []) as StorageBin[];
+      return (data || []) as StorageBinData[];
     },
     enabled: !!setupData.warehouse_id,
   });

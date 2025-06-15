@@ -62,10 +62,10 @@ export const useStockEntryForm = (id?: string): UseStockEntryFormReturn => {
 
   const fetchWarehouses = async (): Promise<void> => {
     try {
-      // Explicit type and immediate casting to prevent deep inference
+      // Explicit generic type to prevent deep inference
       const { data, error } = await supabase
         .from('warehouses')
-        .select('warehouse_id, warehouse_code, warehouse_name')
+        .select<'warehouse_id, warehouse_code, warehouse_name', WarehouseData>('warehouse_id, warehouse_code, warehouse_name')
         .eq('is_active', true)
         .order('warehouse_name');
 
@@ -84,10 +84,10 @@ export const useStockEntryForm = (id?: string): UseStockEntryFormReturn => {
     if (!warehouseId) return;
     
     try {
-      // Explicit type and immediate casting to prevent deep inference
+      // Explicit generic type to prevent deep inference
       const { data, error } = await supabase
         .from('storage_bins')
-        .select('bin_id, bin_code')
+        .select<'bin_id, bin_code', StorageBinData>('bin_id, bin_code')
         .eq('warehouse_id', parseInt(warehouseId))
         .eq('is_active', true)
         .order('bin_code');
@@ -222,7 +222,7 @@ export const useStockEntryForm = (id?: string): UseStockEntryFormReturn => {
     }
   };
 
-  // Return explicit object instead of spread operators
+  // Explicit return object instead of spread operators
   return {
     loading,
     warehouses,

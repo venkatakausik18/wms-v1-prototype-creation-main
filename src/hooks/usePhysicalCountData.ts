@@ -13,7 +13,7 @@ interface UsePhysicalCountDataReturn {
 }
 
 export const usePhysicalCountData = (warehouseId: string): UsePhysicalCountDataReturn => {
-  const warehouses = useQuery({
+  const warehousesQuery = useQuery({
     queryKey: ['warehouses'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -23,11 +23,11 @@ export const usePhysicalCountData = (warehouseId: string): UsePhysicalCountDataR
         .order('warehouse_name');
       
       if (error) throw error;
-      return data || [];
+      return data;
     },
   });
 
-  const products = useQuery({
+  const productsQuery = useQuery({
     queryKey: ['products-for-count'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -37,11 +37,11 @@ export const usePhysicalCountData = (warehouseId: string): UsePhysicalCountDataR
         .order('product_name');
       
       if (error) throw error;
-      return data || [];
+      return data;
     },
   });
 
-  const bins = useQuery({
+  const binsQuery = useQuery({
     queryKey: ['storage-bins', warehouseId],
     queryFn: async () => {
       if (!warehouseId) return [];
@@ -54,17 +54,17 @@ export const usePhysicalCountData = (warehouseId: string): UsePhysicalCountDataR
         .order('bin_code');
       
       if (error) throw error;
-      return data || [];
+      return data;
     },
     enabled: !!warehouseId,
   });
 
   return {
-    warehouses: warehouses.data as Warehouse[] | undefined,
-    products: products.data as Product[] | undefined,
-    bins: bins.data as StorageBin[] | undefined,
-    isLoadingWarehouses: warehouses.isLoading,
-    isLoadingProducts: products.isLoading,
-    isLoadingBins: bins.isLoading,
+    warehouses: warehousesQuery.data,
+    products: productsQuery.data,
+    bins: binsQuery.data,
+    isLoadingWarehouses: warehousesQuery.isLoading,
+    isLoadingProducts: productsQuery.isLoading,
+    isLoadingBins: binsQuery.isLoading,
   };
 };

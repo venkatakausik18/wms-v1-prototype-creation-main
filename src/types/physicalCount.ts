@@ -1,4 +1,11 @@
 
+import type { Database } from "@/integrations/supabase/types";
+
+// Use Supabase generated types for better type safety
+export type Warehouse = Pick<Database['public']['Tables']['warehouses']['Row'], 'warehouse_id' | 'warehouse_name'>;
+export type Product = Pick<Database['public']['Tables']['products']['Row'], 'product_id' | 'product_name' | 'product_code'>;
+export type StorageBin = Pick<Database['public']['Tables']['storage_bins']['Row'], 'bin_id' | 'bin_code'>;
+
 export interface CountDetail {
   id: string;
   product_id: number;
@@ -12,22 +19,6 @@ export interface CountDetail {
   reason_for_variance: string;
   adjustment_decision: 'no_change' | 'adjust_to_count' | 'investigate';
   adjustment_quantity: number;
-}
-
-export interface Warehouse {
-  warehouse_id: number;
-  warehouse_name: string;
-}
-
-export interface Product {
-  product_id: number;
-  product_name: string;
-  product_code: string;
-}
-
-export interface StorageBin {
-  bin_id: number;
-  bin_code: string;
 }
 
 export interface PhysicalCountRecord {

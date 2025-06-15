@@ -3,64 +3,12 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-
-// Local flat type definitions to avoid deep TypeScript recursion
-interface LocalTransferFormData {
-  transfer_number: string;
-  transfer_date: string;
-  transfer_time: string;
-  from_warehouse_id: string;
-  to_warehouse_id: string;
-  priority_level: string;
-  transfer_type: string;
-  transport_method: string;
-  carrier_name: string;
-  tracking_number: string;
-  expected_delivery_date: string;
-  temperature_monitored: boolean;
-  temperature_range_min: string;
-  temperature_range_max: string;
-  special_instructions: string;
-  internal_notes: string;
-}
-
-interface LocalTransferDetail {
-  detail_id?: number;
-  transfer_id?: number;
-  product_id?: number;
-  variant_id?: number;
-  requested_quantity: number;
-  shipped_quantity: number;
-  received_quantity: number;
-  uom_id?: number;
-  unit_cost: number;
-  total_cost: number;
-  from_bin_id?: number;
-  to_bin_id?: number;
-  serial_numbers?: string[];
-  batch_numbers?: string[];
-  expiry_dates?: string[];
-  line_status: string;
-  quality_status: string;
-  temperature_sensitive: boolean;
-  fragile: boolean;
-  hazardous: boolean;
-  special_handling_notes?: string;
-  created_at?: string;
-  updated_at?: string;
-}
-
-// Local flat warehouse and storage bin types
-interface LocalWarehouseData {
-  warehouse_id: number;
-  warehouse_code: string;
-  warehouse_name: string;
-}
-
-interface LocalStorageBinData {
-  bin_id: number;
-  bin_code: string;
-}
+import type { 
+  LocalTransferFormData, 
+  LocalTransferDetail, 
+  LocalWarehouseData, 
+  LocalStorageBinData 
+} from "../types-local";
 
 interface UseStockTransferFormReturn {
   loading: boolean;
@@ -125,7 +73,15 @@ export const useStockTransferForm = (id?: string): UseStockTransferFormReturn =>
         .order('warehouse_name');
 
       if (error) throw error;
-      setWarehouses(data || []);
+      
+      // Map to our local type structure
+      const localWarehouses: LocalWarehouseData[] = (data || []).map(w => ({
+        warehouse_id: w.warehouse_id,
+        warehouse_code: w.warehouse_code || '',
+        warehouse_name: w.warehouse_name
+      }));
+      
+      setWarehouses(localWarehouses);
     } catch (error) {
       console.error('Error fetching warehouses:', error);
       toast.error('Failed to fetch warehouses');
@@ -143,7 +99,14 @@ export const useStockTransferForm = (id?: string): UseStockTransferFormReturn =>
         .order('bin_code');
 
       if (error) throw error;
-      setStorageBins(data || []);
+      
+      // Map to our local type structure
+      const localBins: LocalStorageBinData[] = (data || []).map(b => ({
+        bin_id: b.bin_id,
+        bin_code: b.bin_code
+      }));
+      
+      setStorageBins(localBins);
     } catch (error) {
       console.error('Error fetching storage bins:', error);
     }

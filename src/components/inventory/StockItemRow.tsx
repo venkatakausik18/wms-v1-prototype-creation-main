@@ -22,11 +22,18 @@ interface StockDetail {
     product_id: number;
     product_code: string;
     product_name: string;
+    base_uom_id: number;
   };
   uom?: {
     uom_id: number;
     uom_name: string;
   };
+}
+
+interface ProductVariant {
+  variant_id: number;
+  variant_code: string;
+  variant_name: string;
 }
 
 interface StorageBin {
@@ -53,15 +60,20 @@ export const StockItemRow: React.FC<StockItemRowProps> = ({
   onRemove,
   canRemove
 }) => {
-  const handleProductSelect = (product: any, variant?: any) => {
-    onUpdate({
+  const handleProductSelect = (product: any, variant?: ProductVariant) => {
+    const updates: Partial<StockDetail> = {
       product_id: product.product_id,
       variant_id: variant?.variant_id,
-      product,
-      variant,
-      uom_id: product.base_uom_id,
+      product: {
+        product_id: product.product_id,
+        product_code: product.product_code,
+        product_name: product.product_name,
+        base_uom_id: product.base_uom_id || product.uom?.uom_id || 1
+      },
+      uom_id: product.base_uom_id || product.uom?.uom_id,
       uom: product.uom
-    });
+    };
+    onUpdate(updates);
   };
 
   const handleQuantityChange = (quantity: number) => {
@@ -82,14 +94,26 @@ export const StockItemRow: React.FC<StockItemRowProps> = ({
     });
   };
 
+  const selectedProduct = detail.product ? {
+    product_id: detail.product.product_id,
+    product_code: detail.product.product_code,
+    product_name: detail.product.product_name
+  } : undefined;
+
+  const selectedVariant = detail.variant_id ? {
+    variant_id: detail.variant_id,
+    variant_code: '',
+    variant_name: ''
+  } : undefined;
+
   return (
     <div className="grid grid-cols-12 gap-2 items-end p-4 border rounded-lg">
       <div className="col-span-3">
         <Label>Product</Label>
         <ProductSelector
           onSelect={handleProductSelect}
-          selectedProduct={detail.product}
-          selectedVariant={detail.variant}
+          selectedProduct={selectedProduct}
+          selectedVariant={selectedVariant}
         />
       </div>
       <div className="col-span-1">

@@ -24,18 +24,25 @@ interface StockDetail {
   bin_id?: number;
   previous_stock: number;
   new_stock: number;
-  product?: any;
-  variant?: any;
-  uom?: any;
+  product?: {
+    product_id: number;
+    product_code: string;
+    product_name: string;
+    base_uom_id: number;
+  };
+  uom?: {
+    uom_id: number;
+    uom_name: string;
+  };
 }
 
-interface Warehouse {
+interface SimpleWarehouse {
   warehouse_id: number;
   warehouse_code: string;
   warehouse_name: string;
 }
 
-interface StorageBin {
+interface SimpleStorageBin {
   bin_id: number;
   bin_code: string;
 }
@@ -43,8 +50,8 @@ interface StorageBin {
 export const useStockEntryForm = (id?: string) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
-  const [storageBins, setStorageBins] = useState<StorageBin[]>([]);
+  const [warehouses, setWarehouses] = useState<SimpleWarehouse[]>([]);
+  const [storageBins, setStorageBins] = useState<SimpleStorageBin[]>([]);
 
   const [formData, setFormData] = useState<FormData>({
     txn_number: '',

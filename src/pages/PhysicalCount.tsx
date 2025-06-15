@@ -81,7 +81,7 @@ const PhysicalCount = () => {
 
   const [details, setDetails] = useState<CountDetail[]>([]);
 
-  // Fetch warehouses - remove explicit generic and let TypeScript infer
+  // Fetch warehouses - let TypeScript infer type, no generics/assertion!
   const { data: warehouses } = useQuery({
     queryKey: ['warehouses'],
     queryFn: async () => {
@@ -90,13 +90,12 @@ const PhysicalCount = () => {
         .select('warehouse_id, warehouse_name')
         .eq('is_active', true)
         .order('warehouse_name');
-      
       if (error) throw error;
-      return (data || []) as WarehouseData[];
+      return data || [];
     },
   });
 
-  // Fetch products - remove explicit generic and let TypeScript infer
+  // Fetch products - let TypeScript infer type, no generics/assertion!
   const { data: products } = useQuery({
     queryKey: ['products-for-count'],
     queryFn: async () => {
@@ -105,27 +104,24 @@ const PhysicalCount = () => {
         .select('product_id, product_name, product_code')
         .eq('is_active', true)
         .order('product_name');
-      
       if (error) throw error;
-      return (data || []) as ProductData[];
+      return data || [];
     },
   });
 
-  // Fetch storage bins - remove explicit generic and let TypeScript infer
+  // Fetch storage bins - let TypeScript infer type, no generics/assertion!
   const { data: bins } = useQuery({
     queryKey: ['storage-bins', setupData.warehouse_id],
     queryFn: async () => {
       if (!setupData.warehouse_id) return [];
-      
       const { data, error } = await supabase
         .from('storage_bins')
         .select('bin_id, bin_code')
         .eq('warehouse_id', setupData.warehouse_id)
         .eq('is_active', true)
         .order('bin_code');
-      
       if (error) throw error;
-      return (data || []) as StorageBinData[];
+      return data || [];
     },
     enabled: !!setupData.warehouse_id,
   });
